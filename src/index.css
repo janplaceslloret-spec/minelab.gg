@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: #0B0F1A;
+  --color-primary: #FFFFFF;
+  --color-accent-green: #22C55E;
+  --color-accent-violet: #6366F1;
+  --font-sans: "Montserrat", sans-serif;
+  --font-heading: "Montserrat", sans-serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-primary);
+    font-family: var(--font-sans);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6, .font-heading {
+    text-transform: uppercase;
+    letter-spacing: -0.05em; /* tracking-tighter */
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-gradient-to-br from-accent-green to-accent-violet;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+
+  .text-gradient:hover {
+    transform: translateY(-2px);
+    text-shadow: 0 0 20px rgba(34, 197, 94, 0.4);
+  }
+
+  .glass-panel {
+    background-color: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+  }
+}
