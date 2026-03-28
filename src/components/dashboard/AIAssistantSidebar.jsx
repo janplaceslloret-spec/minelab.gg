@@ -70,10 +70,11 @@ const AIAssistantSidebar = ({ activeServer, user }) => {
            });
            
            if (newData.status === 'completed') {
+               // Fast cleanup to free memory. The inline UI will hide instantly due to status check.
                setTimeout(() => {
                    setWorkflowState(null);
                    setWorkflowHistory([]);
-               }, 3000);
+               }, 1000);
            }
         }
       })
@@ -173,64 +174,63 @@ const AIAssistantSidebar = ({ activeServer, user }) => {
             )}
           </div>
         ))}
-        {isTyping && (
-          <div className="flex justify-start">
-            <div className="bg-[#171717] border border-[#2A2A2A] px-4 py-4 rounded-2xl rounded-tl-none shadow-md">
-              <div className="flex gap-1.5">
-                <div className="w-1.5 h-1.5 bg-[#6B6B6B] rounded-full animate-bounce"></div>
-                <div className="w-1.5 h-1.5 bg-[#6B6B6B] rounded-full animate-bounce [animation-delay:0.2s]"></div>
-                <div className="w-1.5 h-1.5 bg-[#6B6B6B] rounded-full animate-bounce [animation-delay:0.4s]"></div>
-              </div>
+        {/* Inline Execution/Typing Bubble */}
+        {(isTyping || (workflowState && workflowState.status !== 'completed')) && (
+          <div className="flex justify-start mt-2">
+            <div className="bg-[#171717] border border-[#2A2A2A] px-4 py-3.5 rounded-2xl rounded-tl-sm shadow-md min-w-[60px]">
+              
+              {/* If we have a workflow state, show the progress UI inline */}
+              {workflowState && workflowHistory.length > 0 ? (
+                <div className="flex flex-col gap-3 min-w-[220px]">
+                  <div className="flex items-center justify-between mb-1">
+                     <h4 className="text-[11px] font-bold text-[#E5E5E5] uppercase tracking-wider flex items-center gap-1.5">
+                       <Zap size={10} className="text-[#22C55E]" /> EJECUTANDO ACCIÓN
+                     </h4>
+                     <span className="text-xs font-bold text-[#22C55E]">{workflowState.progress}%</span>
+                  </div>
+                  
+                  {/* Progress bar */}
+                  <div className="w-full bg-[#0B0B0B] rounded-full h-1.5 overflow-hidden border border-[#2A2A2A]">
+                    <div 
+                      className="bg-[#22C55E] h-1.5 rounded-full transition-all duration-500 relative"
+                      style={{ width: `${Math.max(3, workflowState.progress)}%` }}
+                    >
+                      <div className="absolute inset-0 bg-white/20 w-full h-full animate-[pulse_1s_infinite]"></div>
+                    </div>
+                  </div>
+
+                  {/* Checklist */}
+                  <div className="flex flex-col gap-2 mt-1">
+                    {workflowHistory.map((step, idx) => {
+                       const isLast = idx === workflowHistory.length - 1;
+                       const isCompleted = !isLast || step.status === 'completed';
+                       
+                       return (
+                         <div key={idx} className={`flex items-start gap-2.5 text-[13px] transition-all duration-300 ${isCompleted ? 'text-[#888888]' : 'text-[#FFFFFF] font-medium'}`}>
+                           {isCompleted ? (
+                             <span className="text-[14px] leading-none shrink-0 mt-[1px]">✅</span>
+                           ) : (
+                             <span className="text-[14px] leading-none shrink-0 mt-[1px] animate-pulse">⏳</span>
+                           )}
+                           <span className="leading-snug">{step.message}</span>
+                         </div>
+                       );
+                    })}
+                  </div>
+                </div>
+              ) : (
+                /* Otherwise just show typing dots */
+                <div className="flex gap-1.5 h-[20px] items-center px-1">
+                  <div className="w-1.5 h-1.5 bg-[#6B6B6B] rounded-full animate-bounce"></div>
+                  <div className="w-1.5 h-1.5 bg-[#6B6B6B] rounded-full animate-bounce [animation-delay:0.2s]"></div>
+                  <div className="w-1.5 h-1.5 bg-[#6B6B6B] rounded-full animate-bounce [animation-delay:0.4s]"></div>
+                </div>
+              )}
             </div>
           </div>
         )}
         <div ref={scrollRef} />
       </div>
-
-      {/* Workflow Progress Card */}
-      {workflowState && workflowHistory.length > 0 && (
-        <div className="px-4 pb-4">
-          <div className="bg-[#171717] border border-[#2A2A2A] rounded-2xl p-4 shadow-[0_4px_15px_rgba(0,0,0,0.5)]">
-            <div className="flex items-center justify-between mb-3">
-               <h4 className="text-[11px] font-bold text-[#E5E5E5] uppercase tracking-wider flex items-center gap-1.5">
-                 <Zap size={10} className="text-[#22C55E]" /> EJECUTANDO ACCIÓN
-               </h4>
-               <span className="text-xs font-bold text-[#22C55E]">{workflowState.progress}%</span>
-            </div>
-            
-            {/* Progress bar */}
-            <div className="w-full bg-[#0B0B0B] rounded-full h-1.5 mb-3.5 overflow-hidden border border-[#2A2A2A]">
-              <div 
-                className="bg-[#22C55E] h-1.5 rounded-full transition-all duration-500 relative"
-                style={{ width: `${Math.max(3, workflowState.progress)}%` }}
-              >
-                {workflowState.status === 'running' && (
-                  <div className="absolute inset-0 bg-white/20 w-full h-full animate-[pulse_1s_infinite]"></div>
-                )}
-              </div>
-            </div>
-
-            {/* Checklist */}
-            <div className="flex flex-col gap-2.5">
-              {workflowHistory.map((step, idx) => {
-                 const isLast = idx === workflowHistory.length - 1;
-                 const isCompleted = !isLast || step.status === 'completed';
-                 
-                 return (
-                   <div key={idx} className={`flex items-start gap-2.5 text-[13px] transition-all duration-300 ${isCompleted ? 'text-[#888888]' : 'text-[#FFFFFF] font-medium'}`}>
-                     {isCompleted ? (
-                       <span className="text-[14px] leading-none shrink-0 mt-[1px]">✅</span>
-                     ) : (
-                       <span className="text-[14px] leading-none shrink-0 mt-[1px] animate-pulse">⏳</span>
-                     )}
-                     <span className="leading-snug">{step.message}</span>
-                   </div>
-                 );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Input */}
       <div className="p-4 border-t border-[#2A2A2A] bg-[#141414]">

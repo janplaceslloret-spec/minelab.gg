@@ -1,0 +1,9 @@
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient('https://bttpqnuwspwlszzlapht.supabase.co', 'sb_publishable_4_B13I-ub3MVtDqMUgh0bg_yEN7ALTZ');
+
+async function test() {
+  const { data, error } = await supabase.from('profiles').select('*').eq('email', 'janplaceslloret@gmail.com');
+  console.log('Result for janplaceslloret@gmail.com:', JSON.stringify({data, error}, null, 2));
+}
+test();
