@@ -133,7 +133,7 @@ const DashboardLayout = () => {
                const mockUser = { id: payload.sub, email: payload.email };
                setUser(mockUser);
                window.history.replaceState(null, '', window.location.pathname);
-               fetchServersAndState(mockUser.id);
+               fetchServersAndState(mockUser.id, mockUser.email);
                return; // Skip normal getSession if we just successfully forced it
              } catch (e) {
                console.error("Failed to parse local JWT token:", e);
@@ -147,7 +147,7 @@ const DashboardLayout = () => {
         
         if (session) {
           setUser(session.user);
-          fetchServersAndState(session.user.id);
+          fetchServersAndState(session.user.id, session.user.email);
         } else {
            const forcedToken = localStorage.getItem('minelab-forced-token');
            if (forcedToken) {
@@ -156,7 +156,7 @@ const DashboardLayout = () => {
                  const payload = JSON.parse(atob(payloadBase64));
                  const mockUser = { id: payload.sub, email: payload.email };
                  setUser(mockUser);
-                 fetchServersAndState(mockUser.id);
+                 fetchServersAndState(mockUser.id, mockUser.email);
                } catch (e) {
                  navigate('/');
                }
@@ -171,12 +171,12 @@ const DashboardLayout = () => {
       }
     };
 
-    const fetchServersAndState = async (userId) => {
+    const fetchServersAndState = async (userId, userEmail = '') => {
       console.log("[DashboardLayout] Fetching servers for user:", userId);
       try {
         const [serversResponse, profileResponse] = await Promise.all([
            supabase.from('mc_servers').select('*').eq('user_id', userId),
-           supabase.from('profiles').select('plan_status, plan').eq('id', userId).limit(1).maybeSingle()
+           supabase.from('profiles').select('plan_status, plan').or(`id.eq.${userId},email.eq.${userEmail}`).limit(1).maybeSingle()
         ]);
         
         const { data: servers, error: serversError } = serversResponse;
@@ -245,7 +245,7 @@ const DashboardLayout = () => {
       console.log("[DashboardLayout] onAuthStateChange event:", event, session ? "with session" : "no session");
       if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session) {
         setUser(session.user);
-        fetchServersAndState(session.user.id);
+        fetchServersAndState(session.user.id, session.user.email);
       } else if (event === 'SIGNED_OUT') {
         localStorage.removeItem('minelab-forced-token');
         navigate('/');
