@@ -174,24 +174,26 @@ const DashboardLayout = () => {
     const fetchServersAndState = async (userId, userEmail = '') => {
       console.log("[DashboardLayout] Fetching servers for user:", userId);
       try {
-        const lowerEmail = String(userEmail).toLowerCase();
-        const [serversResponse, profileResponse] = await Promise.all([
+        const lowerEmail = userEmail ? String(userEmail).toLowerCase() : '';
+        const [serversResponse, profileResponse1] = await Promise.all([
            supabase.from('mc_servers').select('*').eq('user_id', userId),
-           supabase.from('profiles').select('plan_status, plan').or(`id.eq.${userId},email.eq.${lowerEmail}`)
+           supabase.from('profiles').select('plan_status, plan').eq('id', userId).limit(1).maybeSingle()
         ]);
         
         const { data: servers, error: serversError } = serversResponse;
-        const profilesList = profileResponse.data || [];
+        let profile = profileResponse1.data;
         
-        // Profiles might return multiple rows if Auth trigger created an empty one and Admin created a manual paid one.
-        // We find the first one that has a valid premium plan.
-        const validPlansCheck = ['pro4gb', 'pro6gb', 'pro8gb', 'pro12gb'];
-        const profile = profilesList.find(p => {
-          const stat = String(p.plan_status || p.plan || 'none').toLowerCase().replace(/[-_ ]/g, '');
-          return validPlansCheck.includes(stat);
-        }) || profilesList[0] || null;
+        // If ID didn't find a valid plan, try by email as a fallback
+        let currentPlanStatus = profile?.plan_status || profile?.plan || 'none';
+        
+        if (currentPlanStatus === 'none' && lowerEmail) {
+            const { data: profileResponse2 } = await supabase.from('profiles').select('plan_status, plan').eq('email', lowerEmail).limit(1).maybeSingle();
+            if (profileResponse2) {
+               profile = profileResponse2;
+               currentPlanStatus = profile?.plan_status || profile?.plan || 'none';
+            }
+        }
 
-        const currentPlanStatus = profile?.plan_status || profile?.plan || 'none';
         setPlanStatus(currentPlanStatus);
 
         if (servers && servers.length > 0) {
@@ -215,9 +217,8 @@ const DashboardLayout = () => {
         
         const isWizardRequested = window.location.search.includes('wizard=true');
         
-        // Robust plan validation stripping extra spaces, hyphens, underscores
-        const normalizedPlan = String(currentPlanStatus).toLowerCase().replace(/[-_ ]/g, '');
-        const validPlans = ['pro4gb', 'pro6gb', 'pro8gb', 'pro12gb'];
+        const normalizedPlan = String(currentPlanStatus).trim().toLowerCase();
+        const validPlans = ['pro_4gb', 'pro_6gb', 'pro_8gb', 'pro_12gb', 'admin'];
         const isPlanValid = validPlans.includes(normalizedPlan);
         
         if (!isPlanValid) {
@@ -307,8 +308,8 @@ const DashboardLayout = () => {
        setViewState('wizard');
      } else if (user && viewState === 'wizard' && !window.location.search.includes('wizard=true')) {
         // Evaluate immediately on back navigation based on planStatus instead of fetching servers again
-        const normalizedPlanCheck = String(planStatus).toLowerCase().replace(/[-_ ]/g, '');
-        const validPlansCheck = ['pro4gb', 'pro6gb', 'pro8gb', 'pro12gb'];
+        const normalizedPlanCheck = String(planStatus).trim().toLowerCase();
+        const validPlansCheck = ['pro_4gb', 'pro_6gb', 'pro_8gb', 'pro_12gb', 'admin'];
         if (!validPlansCheck.includes(normalizedPlanCheck)) {
            setViewState('wizard');
            navigate('/panel?wizard=true', { replace: true });
