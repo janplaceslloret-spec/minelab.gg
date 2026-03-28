@@ -176,14 +176,15 @@ const DashboardLayout = () => {
       try {
         const [serversResponse, profileResponse] = await Promise.all([
            supabase.from('mc_servers').select('*').eq('user_id', userId),
-           supabase.from('profiles').select('plan_status').eq('id', userId).single()
+           supabase.from('profiles').select('plan_status, plan').eq('id', userId).limit(1).maybeSingle()
         ]);
         
         const { data: servers, error: serversError } = serversResponse;
         const { data: profile } = profileResponse;
         
         // Profiles might not return cleanly if empty, default to none
-        const currentPlanStatus = profile?.plan_status || 'none';
+        // We check both plan_status and plan to be robust.
+        const currentPlanStatus = profile?.plan_status || profile?.plan || 'none';
         setPlanStatus(currentPlanStatus);
 
         if (servers && servers.length > 0) {
@@ -206,8 +207,11 @@ const DashboardLayout = () => {
         console.log("[DashboardLayout] Profile plan status:", currentPlanStatus);
         
         const isWizardRequested = window.location.search.includes('wizard=true');
-        const validPlans = ['pro_4gb', 'pro_6gb', 'pro_8gb', 'pro_12gb'];
-        const isPlanValid = validPlans.includes(currentPlanStatus.toLowerCase());
+        
+        // Robust plan validation stripping extra spaces, hyphens, underscores
+        const normalizedPlan = String(currentPlanStatus).toLowerCase().replace(/[-_ ]/g, '');
+        const validPlans = ['pro4gb', 'pro6gb', 'pro8gb', 'pro12gb'];
+        const isPlanValid = validPlans.includes(normalizedPlan);
         
         if (!isPlanValid) {
           // Rule: If plan_status is none or invalid -> restrict access, redirect to wizard
@@ -296,8 +300,9 @@ const DashboardLayout = () => {
        setViewState('wizard');
      } else if (user && viewState === 'wizard' && !window.location.search.includes('wizard=true')) {
         // Evaluate immediately on back navigation based on planStatus instead of fetching servers again
-        const validPlans = ['pro_4gb', 'pro_6gb', 'pro_8gb', 'pro_12gb'];
-        if (!validPlans.includes(planStatus.toLowerCase())) {
+        const normalizedPlanCheck = String(planStatus).toLowerCase().replace(/[-_ ]/g, '');
+        const validPlansCheck = ['pro4gb', 'pro6gb', 'pro8gb', 'pro12gb'];
+        if (!validPlansCheck.includes(normalizedPlanCheck)) {
            setViewState('wizard');
            navigate('/panel?wizard=true', { replace: true });
         } else {
