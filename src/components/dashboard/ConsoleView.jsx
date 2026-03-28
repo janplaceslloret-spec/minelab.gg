@@ -40,7 +40,7 @@ const ConsoleView = ({ server }) => {
   };
 
   useEffect(() => {
-    if (server?.status_server === 'running' && server?.ready) {
+    if (server?.status_server === 'running') {
       connectConsole();
     } else {
       if (socketRef.current) {
@@ -53,7 +53,7 @@ const ConsoleView = ({ server }) => {
       if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current);
       if (socketRef.current) socketRef.current.close();
     };
-  }, [server?.status_server, server?.ready]);
+  }, [server?.status_server]);
 
   useEffect(() => {
     if (consoleEndRef.current) {
@@ -85,12 +85,6 @@ const ConsoleView = ({ server }) => {
       <div className="flex-1 min-h-[500px] bg-[#0B0B0B] rounded-xl border border-[#2A2A2A] overflow-hidden shadow-2xl flex flex-col">
         <div className="flex-1 overflow-y-auto p-4 font-mono text-sm leading-relaxed text-[#B3B3B3] scrollbar-thin scrollbar-thumb-zinc-800">
           {server?.status_server === 'running' ? (
-            !server?.ready ? (
-              <div className="h-full flex flex-col items-center justify-center text-zinc-500 text-center p-8 space-y-3">
-                <div className="w-6 h-6 border-2 border-[#22C55E] border-t-transparent rounded-full animate-spin"></div>
-                <p className="text-sm italic">Preparando entorno seguro...</p>
-              </div>
-            ) : (
               consoleLogs.length === 0 ? (
                 <div className="text-zinc-700 italic flex h-full items-center justify-center">Esperando datos del servidor...</div>
               ) : (
@@ -98,7 +92,6 @@ const ConsoleView = ({ server }) => {
                   <div key={i} className="mb-1 text-zinc-300 break-all whitespace-pre-wrap">{log}</div>
                 ))
               )
-            )
           ) : (
             <div className="h-full flex flex-col items-center justify-center text-zinc-600 italic text-center p-8">
               Consola desactivada. El servidor debe estar iniciado (Start).
@@ -113,13 +106,13 @@ const ConsoleView = ({ server }) => {
             type="text" 
             value={commandInput}
             onChange={(e) => setCommandInput(e.target.value)}
-            disabled={server?.status_server !== 'running' || !server?.ready || wsStatus !== 'connected'}
-            placeholder={server?.status_server === 'running' && server?.ready ? "Comando..." : "Cerrado"}
+            disabled={server?.status_server !== 'running' || wsStatus !== 'connected'}
+            placeholder={server?.status_server === 'running' ? "Comando..." : "Cerrado"}
             className="flex-1 bg-transparent border-none text-zinc-100 px-3 py-4 text-sm font-mono focus:ring-0 placeholder:text-zinc-700 disabled:opacity-50 outline-none"
           />
           <button 
             type="submit"
-            disabled={server?.status_server !== 'running' || !server?.ready || wsStatus !== 'connected'}
+            disabled={server?.status_server !== 'running' || wsStatus !== 'connected'}
             className="px-6 text-[#22C55E] hover:text-white transition-colors disabled:opacity-50 font-bold text-sm bg-black/20"
           >
             Enviar
