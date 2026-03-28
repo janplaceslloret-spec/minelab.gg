@@ -6,7 +6,7 @@ import {
   LogIn, LogOut, AlertCircle, Loader2
 } from 'lucide-react';
 
-const API_BASE = '/api';
+const API_BASE = `${import.meta.env.VITE_API_URL}/api`;
 
 /* ─── Player Detail Modal ─── */
 const PlayerModal = ({ player, server, onClose, onAction }) => {

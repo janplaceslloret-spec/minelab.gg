@@ -16,7 +16,7 @@ const FileManagerView = ({ server }) => {
     if (!serverId) return;
     try {
       setLoading(true);
-      const res = await fetch(`/api/files?server=${serverId}&path=${encodeURIComponent(currentPath)}`);
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/files?server=${serverId}&path=${encodeURIComponent(currentPath)}`);
       const data = await res.json();
       setFiles(Array.isArray(data) ? data : []);
     } catch (err) {
@@ -42,7 +42,7 @@ const FileManagerView = ({ server }) => {
     try {
       setLoading(true);
       const filePath = currentPath ? `${currentPath}/${file.name}` : file.name;
-      const res = await fetch(`/api/files/read?server=${serverId}&file=${encodeURIComponent(filePath)}`);
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/files/read?server=${serverId}&file=${encodeURIComponent(filePath)}`);
       const data = await res.json();
 
       setSelectedFile(file);
@@ -59,7 +59,7 @@ const FileManagerView = ({ server }) => {
     try {
       setSaving(true);
       const filePath = currentPath ? `${currentPath}/${selectedFile.name}` : selectedFile.name;
-      await fetch("/api/files/write", {
+      await fetch(`${import.meta.env.VITE_API_URL}/api/files/write`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -81,7 +81,7 @@ const FileManagerView = ({ server }) => {
     if (!ok || !serverId) return;
 
     const filePath = currentPath ? `${currentPath}/${name}` : name;
-    await fetch("/api/files/delete", {
+    await fetch(`${import.meta.env.VITE_API_URL}/api/files/delete`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ server: serverId, file: filePath }),
@@ -97,7 +97,7 @@ const FileManagerView = ({ server }) => {
   const downloadItem = (item) => {
     if (!serverId) return;
     const filePath = currentPath ? `${currentPath}/${item.name}` : item.name;
-    window.open(`/api/files/download?server=${serverId}&file=${encodeURIComponent(filePath)}`);
+    window.open(`${import.meta.env.VITE_API_URL}/api/files/download?server=${serverId}&file=${encodeURIComponent(filePath)}`);
   };
 
   const uploadFile = async (e) => {
@@ -110,7 +110,7 @@ const FileManagerView = ({ server }) => {
     form.append("server", serverId);
     form.append("path", currentPath);
 
-    await fetch("/api/files/upload", {
+    await fetch(`${import.meta.env.VITE_API_URL}/api/files/upload`, {
       method: "POST",
       body: form,
     });
