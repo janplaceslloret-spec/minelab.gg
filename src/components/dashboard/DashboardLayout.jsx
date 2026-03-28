@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
+import { createClient } from '@supabase/supabase-js';
 import Sidebar from './Sidebar';
 import MainContent from './MainContent';
 import AIAssistantSidebar from './AIAssistantSidebar';
@@ -8,6 +9,14 @@ import CreateServerWizard from './CreateServerWizard';
 import { Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import DiscordWidget from '../DiscordWidget';
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// Create a secondary client that NEVER sends the user's JWT, 
+// allowing it to read profiles table rows as 'anon' role (which bypasses the strict authenticated RLS)
+const supabaseAnon = createClient(supabaseUrl, supabaseKey, {
+  auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+});
 
 const DashboardLayout = () => {
   const [viewState, setViewState] = useState('loading'); // 'loading', 'empty', 'wizard', 'dashboard'
@@ -187,7 +196,11 @@ const DashboardLayout = () => {
         let currentPlanStatus = profile?.plan_status || profile?.plan || 'none';
         
         if (currentPlanStatus === 'none' && lowerEmail) {
-            const { data: profileResponse2 } = await supabase.from('profiles').select('plan_status, plan').eq('email', lowerEmail).limit(1).maybeSingle();
+            // WE MUST USE THE ANON CLIENT HERE! 
+            // If the user's Auth UUID doesn't match the manually inserted profile's UUID,
+            // Supabase's RLS for 'authenticated' users hides the row entirely.
+            // But the 'anon' role can read it!
+            const { data: profileResponse2 } = await supabaseAnon.from('profiles').select('plan_status, plan').eq('email', lowerEmail).limit(1).maybeSingle();
             if (profileResponse2) {
                profile = profileResponse2;
                currentPlanStatus = profile?.plan_status || profile?.plan || 'none';
