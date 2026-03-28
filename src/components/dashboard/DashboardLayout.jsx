@@ -174,16 +174,23 @@ const DashboardLayout = () => {
     const fetchServersAndState = async (userId, userEmail = '') => {
       console.log("[DashboardLayout] Fetching servers for user:", userId);
       try {
+        const lowerEmail = String(userEmail).toLowerCase();
         const [serversResponse, profileResponse] = await Promise.all([
            supabase.from('mc_servers').select('*').eq('user_id', userId),
-           supabase.from('profiles').select('plan_status, plan').or(`id.eq.${userId},email.eq.${userEmail}`).limit(1).maybeSingle()
+           supabase.from('profiles').select('plan_status, plan').or(`id.eq.${userId},email.eq.${lowerEmail}`)
         ]);
         
         const { data: servers, error: serversError } = serversResponse;
-        const { data: profile } = profileResponse;
+        const profilesList = profileResponse.data || [];
         
-        // Profiles might not return cleanly if empty, default to none
-        // We check both plan_status and plan to be robust.
+        // Profiles might return multiple rows if Auth trigger created an empty one and Admin created a manual paid one.
+        // We find the first one that has a valid premium plan.
+        const validPlansCheck = ['pro4gb', 'pro6gb', 'pro8gb', 'pro12gb'];
+        const profile = profilesList.find(p => {
+          const stat = String(p.plan_status || p.plan || 'none').toLowerCase().replace(/[-_ ]/g, '');
+          return validPlansCheck.includes(stat);
+        }) || profilesList[0] || null;
+
         const currentPlanStatus = profile?.plan_status || profile?.plan || 'none';
         setPlanStatus(currentPlanStatus);
 
