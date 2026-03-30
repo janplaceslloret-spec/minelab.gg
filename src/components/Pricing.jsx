@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Check, Cpu, Zap } from 'lucide-react';
+import { Check, Cpu, Zap, Info } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -27,13 +27,6 @@ const Pricing = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
     }
   };
 
-  const planFeatures = [
-    "Servidores optimizados para Minecraft",
-    "Asistente de IA para gestionar el servidor",
-    "Instalación automática de plugins",
-    "Reparación automática de errores",
-    "Gestión simplificada del servidor"
-  ];
 
   const plans = [
     {
@@ -105,7 +98,7 @@ const Pricing = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
             POTENCIA SIN LÍMITES <br/> A <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent-green to-accent-violet">MITAD DE PRECIO</span>
           </h2>
           <p className="text-white/60 text-lg">
-            Precios exclusivos de Beta anticipada por tiempo limitado.
+            Planes con especificaciones técnicas claras y máximo rendimiento para tu servidor.
           </p>
         </div>
 
@@ -131,9 +124,6 @@ const Pricing = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
               </div>
 
               <div className="mb-8 text-center relative">
-                <p className="text-white/60 font-bold text-[10px] uppercase tracking-widest mb-3 bg-white/5 inline-block px-3 py-1 rounded-full border border-white/10">
-                  PRECIO EXCLUSIVO BETA
-                </p>
                 <div className="flex flex-col items-center justify-center relative">
                   <span className="text-white/30 font-bold text-xl line-through decoration-red-500/50 block mb-1">
                     {plan.originalPrice}
@@ -143,39 +133,84 @@ const Pricing = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
                     <span className="text-white/50 text-sm mb-2 ml-1 uppercase font-sans font-medium tracking-wide">/ mes</span>
                   </div>
                 </div>
-                {/* Text requested by user */}
-                <div className="mt-6 flex flex-col gap-2">
-                  <p className="text-accent-green font-bold text-sm uppercase tracking-wider">
-                    PRECIO BETA DE POR VIDA
-                  </p>
-                  <p className="text-white/50 text-[11px] leading-tight px-2">
-                    Los usuarios que compren durante la beta mantendrán este precio para siempre.
-                  </p>
-                </div>
               </div>
 
-              <ul className="space-y-4 mb-10 flex-1">
-                {planFeatures.map((feat, f_idx) => (
-                  <li key={f_idx} className="flex items-start gap-3 text-white/80 text-sm">
-                    <Check size={18} className={`shrink-0 mt-0.5 ${plan.popular ? 'text-accent-green' : 'text-white/30'}`} /> 
+              <ul className="space-y-4 mb-8 flex-1">
+                {[
+                  `${plan.name} asignada`,
+                  "Ubicado en Nuremberg, Alemania",
+                  "Red eu-central",
+                  "Almacenamiento SSD/NVMe",
+                  "Backups disponibles",
+                  "Infraestructura de alto rendimiento",
+                  "Compatible con Paper, Forge, Fabric y Vanilla"
+                ].map((feat, f_idx) => (
+                  <li key={f_idx} className="flex items-start gap-3 justify-start text-white/80 text-[13px] text-left">
+                    <Check size={16} className={`shrink-0 mt-0.5 ${plan.popular ? 'text-accent-green' : 'text-white/40'}`} /> 
                     <span>{feat}</span>
                   </li>
                 ))}
               </ul>
 
+              <div className="mb-8 p-4 rounded-xl bg-black/20 border border-white/5 text-white/60 text-[12px] text-left leading-snug flex items-start gap-3">
+                <Info size={16} className="text-accent-green shrink-0 mt-0.5" />
+                <span>
+                  Mods + plugins en el mismo servidor dependen de la versión y configuración compatible.
+                </span>
+              </div>
+
               <button 
                 onClick={() => handleSubscribe(plan.stripeLink)}
                 disabled={loading}
-                className={`w-full py-4 rounded-xl font-heading font-bold text-sm uppercase tracking-widest transition-all duration-300
+                className={`w-full py-4 rounded-xl font-heading font-bold text-sm uppercase tracking-widest transition-all duration-300 mt-auto
                 ${plan.popular 
                   ? 'bg-accent-green text-gray-900 hover:bg-[#1faa50] shadow-[0_10px_20px_rgba(34,197,94,0.2)] hover:-translate-y-1' 
                   : 'bg-white/5 text-white hover:bg-white/10 border border-white/10 hover:border-white/20 hover:-translate-y-1'
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
-                Crear servidor con IA
+                Crear servidor
               </button>
             </div>
           ))}
+        </div>
+
+        {/* FAQ Section specifically for plugins + mods */}
+        <div className="mt-20 max-w-4xl mx-auto p-8 rounded-[2rem] bg-[#1a2333]/30 border border-white/10 relative overflow-hidden backdrop-blur-sm">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-accent-green/10 rounded-full blur-[80px] -z-10"></div>
+          
+          <div className="flex flex-col md:flex-row gap-8 items-start md:items-center">
+            <div className="flex-1">
+              <h3 className="text-xl font-heading font-bold uppercase tracking-wide text-white mb-4 flex items-center gap-3">
+                <Info className="text-accent-green" size={24} />
+                ¿Se pueden usar plugins + mods a la vez?
+              </h3>
+              <ul className="space-y-3 text-white/70 text-sm">
+                <li className="flex items-start gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-accent-green/50 mt-2 shrink-0"></div>
+                  <span><strong className="text-white/90">Paper</strong> se usa para plugins.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-accent-green/50 mt-2 shrink-0"></div>
+                  <span><strong className="text-white/90">Forge y Fabric</strong> se usan para mods.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-accent-green/50 mt-2 shrink-0"></div>
+                  <span>Combinar ambos depende de la versión y de un software compatible que lo soporte.</span>
+                </li>
+              </ul>
+            </div>
+            <div className="w-full md:w-auto flex flex-col items-start md:items-end justify-center md:pl-8 md:border-l border-white/10 pt-6 md:pt-0">
+              <p className="text-white/80 text-sm mb-4 font-medium">¿Necesitas mods + plugins?</p>
+              <a 
+                href="https://discord.gg/minelab" 
+                target="_blank" 
+                rel="noreferrer" 
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-accent-green/50 text-white font-medium text-sm transition-all text-center"
+              >
+                Consulta compatibilidad
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </section>
