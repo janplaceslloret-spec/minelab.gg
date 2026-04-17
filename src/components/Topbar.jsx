@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, Sparkles } from 'lucide-react';
+import { Zap } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 
 const Topbar = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
@@ -26,50 +26,49 @@ const Topbar = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
   }, []);
 
   return (
-    <div className="fixed top-0 left-0 right-0 w-full z-50 bg-gradient-to-r from-[#0B0F1A] via-[#0B0F1A] to-accent-green/20 border-b border-accent-green/10 shadow-[0_0_15px_rgba(34,197,94,0.15)] backdrop-blur-md">
-      <div className="container mx-auto px-4 max-w-7xl flex flex-col md:flex-row items-center justify-between py-2 md:py-2.5 gap-3 md:gap-4">
-        
+    <div className="top-bar" style={{ background: '#0B0F1A', borderBottom: '1px solid rgba(34,197,94,0.15)', position: 'fixed', top: 0, left: 0, right: 0, width: '100%', zIndex: 50 }}>
+      <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '8px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '20px' }}>
+
         {/* Left Side: Counter & Promotional Text */}
-        <div className="flex flex-col md:flex-row items-center gap-3 md:gap-4">
-          
-          {/* Dashboard-style Pill Counter */}
-          <div className="flex items-center gap-2 bg-black/60 border border-dashed border-accent-green/50 rounded-full px-3 py-1 shadow-[0_0_10px_rgba(34,197,94,0.2)]">
-            <Clock size={12} className="text-accent-green animate-pulse" />
-            <span className="font-mono font-bold text-white text-xs tracking-widest">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+
+          {/* Countdown Badge */}
+          <div style={{ background: 'rgba(74,222,128,0.2)', border: '1px dashed #4ADE80', borderRadius: '8px', padding: '4px 12px', display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+            <span style={{ fontSize: '12px', lineHeight: 1 }}>⏰</span>
+            <span style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 900, letterSpacing: '-0.5px', color: 'white', fontSize: '13px', whiteSpace: 'nowrap' }}>
               {String(timeLeft.hours).padStart(2, '0')}h {String(timeLeft.minutes).padStart(2, '0')}m {String(timeLeft.seconds).padStart(2, '0')}s
             </span>
           </div>
 
           {/* Promotional Text */}
-          <div className="flex flex-col items-center md:items-start leading-tight">
-            <span className="text-white font-bold tracking-wide text-[11px] md:text-sm uppercase flex items-center gap-1.5">
-              <Sparkles size={14} className="text-yellow-400" />
-              ACCESO ANTICIPADO A LA BETA DE MINELAB
-            </span>
-            <span className="text-white/60 font-medium text-[9px] md:text-[11px] tracking-wide mt-0.5">
-              Los primeros usuarios mantienen precio reducido de por vida
-            </span>
-          </div>
+          <span style={{ color: 'white', fontSize: '13px', fontWeight: 400, whiteSpace: 'nowrap', display: 'flex', alignItems: 'center' }}>
+            ¡Obtén&nbsp;<strong style={{ fontWeight: 700 }}>ACCESO ANTICIPADO</strong>&nbsp;a la beta por un precio exclusivo!
+            <img src="/flecha-verde.png" alt="→" style={{ width: '20px', height: 'auto', marginLeft: '8px' }} />
+          </span>
 
         </div>
 
         {/* Right Side: Stats & CTA */}
-        <div className="flex flex-col md:flex-row items-center gap-4">
-          
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexShrink: 0 }}>
+
           {/* Dynamic Stats */}
-          <div className="hidden md:flex items-center gap-1.5 text-accent-green/80 font-medium text-xs tracking-wide">
-            <span className="opacity-70">→</span>
-            <span><strong className="text-white">193</strong> jugadores en <strong className="text-white">58</strong> servidores</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', whiteSpace: 'nowrap' }}>
+            <span style={{ color: 'white', fontWeight: 700, fontSize: '16px', lineHeight: 1 }}>→</span>
+            <span style={{ color: 'white' }}>
+              <strong style={{ color: '#4ADE80' }}>193</strong> jugadores en <strong style={{ color: '#4ADE80' }}>58</strong> servidores 📦
+            </span>
           </div>
 
-          {/* Action CTA Button */}
-          <button 
+          {/* CTA Button */}
+          <button
             onClick={isLoggedIn ? onOpenDashboard : onLoginDemo}
-            className="bg-white/90 hover:bg-white text-gray-900 px-5 py-1.5 rounded-lg text-[11px] md:text-xs font-bold uppercase tracking-widest transition-all duration-300 shadow-[0_0_10px_rgba(255,255,255,0.3)] hover:shadow-[0_0_20px_rgba(255,255,255,0.6)] border border-white flex items-center justify-center min-w-[150px]"
+            style={{ background: '#ffffff', color: '#000000', padding: '6px 16px', borderRadius: '6px', fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap', transition: 'background 0.2s' }}
+            onMouseEnter={e => e.target.style.background = '#e5e7eb'}
+            onMouseLeave={e => e.target.style.background = '#ffffff'}
           >
-            {isLoggedIn ? 'Ir al Panel' : 'Solicitar Acceso'}
+            {isLoggedIn ? 'IR AL PANEL' : 'SOLICITAR ACCESO'}
           </button>
-          
+
         </div>
 
       </div>

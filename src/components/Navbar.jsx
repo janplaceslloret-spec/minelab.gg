@@ -24,9 +24,11 @@ const Navbar = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             className="flex items-center gap-3 cursor-pointer group"
           >
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent-blue to-accent-violet flex items-center justify-center transform group-hover:rotate-12 transition-transform duration-300 shadow-[0_0_15px_rgba(34,197,94,0.3)]">
-              <Server size={18} className="text-white" />
-            </div>
+            <img 
+              src="/favicon.png" 
+              alt="MineLab Logo" 
+              className="w-9 h-9 transform group-hover:rotate-6 transition-transform duration-300"
+            />
             <span className="font-heading font-extrabold text-2xl tracking-tighter text-white uppercase">MINELAB</span>
           </div>
 

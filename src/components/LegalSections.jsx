@@ -26,7 +26,7 @@ const LegalSections = () => {
         <section id="contact" className="scroll-mt-32">
           <h2 className="text-xl font-bold text-white mb-4">Contacto Técnico</h2>
           <p className="mb-4">Para incidencias técnicas de grado severo que evadan los sistemas automáticos de la IA, por favor contacta a nuestro equipo humano de ingenieros Cloud y Server Administrators.</p>
-          <p>Email directo: <strong>soporte@minelab.host</strong> (Tiempo medio de respuesta: 15 minutos).</p>
+          <p>Email directo: <strong>janplaces@minelab.gg</strong> (Tiempo medio de respuesta: 15 minutos).</p>
         </section>
 
         {/* LEGAL */}
