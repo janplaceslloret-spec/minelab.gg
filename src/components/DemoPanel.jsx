@@ -312,15 +312,15 @@ const DemoMainContent = ({ activeTab }) => {
 
         <div className="p-8 max-w-[1400px] w-full mx-auto flex flex-col gap-6 shrink-0 mt-4">
           {/* Main Banner */}
-          <div className="w-full bg-[#171717] rounded-xl overflow-hidden relative border border-[#2A2A2A] shadow-md flex mb-6 min-h-[160px] md:min-h-[200px]">
-            <div className="w-full relative flex h-full min-h-[160px] md:min-h-[200px]">
+          <div className="w-full bg-[#171717] rounded-xl overflow-hidden relative border border-[#2A2A2A] shadow-md flex mb-6 min-h-[140px]">
+            <div className="w-full relative flex h-full min-h-[140px]">
               <div className="relative w-[60%] shrink-0 h-full">
                 <div className="absolute inset-0 bg-gradient-to-br from-[#22C55E]/10 via-[#171717] to-[#171717]"></div>
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#171717]/50 to-[#171717]"></div>
               </div>
               <div className="relative z-10 flex-1 flex flex-col justify-center items-center text-center -ml-[15%]">
-                <h2 className="text-[#FFFFFF] text-4xl md:text-5xl lg:text-7xl font-heading font-extrabold uppercase tracking-tighter leading-[0.9]">
-                  <span className="text-3xl md:text-4xl lg:text-6xl text-[#ffffff]/90">MINELAB</span><br />MINECRAFT
+                <h2 className="text-[#FFFFFF] text-3xl md:text-4xl font-heading font-extrabold uppercase tracking-tighter leading-[0.9]">
+                  <span className="text-2xl md:text-3xl text-[#ffffff]/90">MINELAB</span><br />MINECRAFT
                 </h2>
               </div>
             </div>
@@ -657,7 +657,7 @@ const DemoPanel = () => {
   const [activeTab, setActiveTab] = useState('overview');
 
   return (
-    <div className="flex h-[700px] w-full overflow-hidden bg-[#0B0B0B]">
+    <div className="flex h-[900px] w-full overflow-hidden bg-[#0B0B0B]">
       <DemoSidebar activeTab={activeTab} onTabChange={setActiveTab} />
       <div className="flex-1 flex min-w-0 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-800">
         <DemoMainContent activeTab={activeTab} />
