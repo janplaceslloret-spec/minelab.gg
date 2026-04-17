@@ -4,7 +4,7 @@ const DiscordWidget = ({ className }) => {
   return (
     <div className={`fixed z-50 group ${className || 'bottom-6 right-6'}`}>
       <a 
-        href="https://discord.gg/pjuaZmcQ" 
+        href="https://discord.gg/TS49z4yr" 
         target="_blank" 
         rel="noopener noreferrer"
         className="flex items-center bg-[#1E1F22] hover:bg-[#5865F2] border border-white/10 p-3 rounded-full transition-all duration-300 shadow-lg hover:shadow-[0_0_20px_rgba(88,101,242,0.5)] cursor-pointer overflow-hidden"

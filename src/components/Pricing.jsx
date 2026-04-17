@@ -202,7 +202,7 @@ const Pricing = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
             <div className="w-full md:w-auto flex flex-col items-start md:items-end justify-center md:pl-8 md:border-l border-white/10 pt-6 md:pt-0">
               <p className="text-white/80 text-sm mb-4 font-medium">¿Necesitas mods + plugins?</p>
               <a 
-                href="https://discord.gg/minelab" 
+                href="https://discord.gg/TS49z4yr" 
                 target="_blank" 
                 rel="noreferrer" 
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-accent-green/50 text-white font-medium text-sm transition-all text-center"
