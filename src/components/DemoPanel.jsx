@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   LayoutDashboard, Terminal, FolderOpen, Users, Settings, DatabaseBackup,
   Layers, Cpu, Activity, Bot, Send, Sparkles, Zap, Play, Square, RotateCcw,
-  LogOut
+  LogOut, X, MessageCircle
 } from 'lucide-react';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip } from 'recharts';
 
@@ -122,13 +122,11 @@ const DemoSidebar = ({ activeTab, onTabChange }) => {
         key={item.id}
         onClick={() => !item.disabled && onTabChange(item.id)}
         disabled={item.disabled}
-        className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-sm group ${
-          item.disabled ? 'opacity-40 cursor-not-allowed' : ''
-        } ${
-          isActive
+        className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-sm group ${item.disabled ? 'opacity-40 cursor-not-allowed' : ''
+          } ${isActive
             ? 'bg-[rgba(34,197,94,0.1)] text-[#22C55E] border border-[rgba(34,197,94,0.3)] shadow-[0_0_15px_rgba(34,197,94,0.1)]'
             : 'text-[#B3B3B3] hover:text-[#FFFFFF] hover:bg-[rgba(255,255,255,0.05)] border border-transparent'
-        }`}
+          }`}
       >
         <span className={isActive ? 'text-[#22C55E]' : 'text-[#6B6B6B] group-hover:text-[#B3B3B3]'}>{item.icon}</span>
         {item.label}
@@ -148,7 +146,7 @@ const DemoSidebar = ({ activeTab, onTabChange }) => {
           <span className="text-white text-sm font-bold truncate uppercase tracking-tight">{FAKE_SERVER.server_name}</span>
           <span className="text-[#6B6B6B] font-mono text-[10px] tracking-widest">{FAKE_SERVER.ip}:{FAKE_SERVER.port}</span>
         </div>
-        
+
         <div className="flex items-center gap-1.5 w-full grid grid-cols-3">
           <button className="w-full py-1.5 rounded text-[9px] font-bold tracking-wider transition-all duration-300 flex items-center justify-center gap-1 uppercase bg-[rgba(255,255,255,0.02)] text-white/30 cursor-not-allowed">
             START
@@ -249,14 +247,17 @@ const DemoMainContent = ({ activeTab }) => {
   // Auto-scroll console
   useEffect(() => {
     if (consoleEndRef.current) {
-      consoleEndRef.current.scrollIntoView({ behavior: 'smooth' });
+      const container = consoleEndRef.current.parentElement;
+      if (container) {
+        container.scrollTop = container.scrollHeight;
+      }
     }
   }, [consoleLogs]);
 
   const latest = metricsHistory[metricsHistory.length - 1] || { cpu: 30, ram_mb: 3200 };
   const maxRamMb = FAKE_SERVER.ram_gb * 1024;
   const ramPercent = Math.min(100, (latest.ram_mb / maxRamMb) * 100);
-  
+
   let ramTextClass = "text-[#22C55E]";
   if (ramPercent > 80) ramTextClass = "text-[#EF4444]";
   else if (ramPercent > 50) ramTextClass = "text-amber-500";
@@ -276,7 +277,7 @@ const DemoMainContent = ({ activeTab }) => {
   };
 
   const getActivityText = (act) => {
-    switch(act.type) {
+    switch (act.type) {
       case 'player_join': return `Jugador ${act.player || ''} se unió al servidor`;
       case 'player_leave': return `Jugador ${act.player || ''} salió del servidor`;
       case 'server_start': return 'Servidor iniciado';
@@ -295,7 +296,7 @@ const DemoMainContent = ({ activeTab }) => {
     return (
       <main className="flex-1 flex flex-col bg-[#121212] relative z-10 min-w-0">
         {/* Top Navbar */}
-        <div className="w-full px-8 py-4 flex justify-between items-center text-sm font-semibold text-[#B3B3B3] bg-[#121212]/90 backdrop-blur-md shadow-[0_4px_30px_rgba(0,0,0,0.5)] border-b border-[#2A2A2A]">
+        <div className="w-full px-4 md:px-8 py-3 md:py-4 flex justify-between items-center text-sm font-semibold text-[#B3B3B3] bg-[#121212]/90 backdrop-blur-md shadow-[0_4px_30px_rgba(0,0,0,0.5)] border-b border-[#2A2A2A]">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded bg-[#22C55E] flex items-center justify-center shadow-[0_0_10px_rgba(34,197,94,0.2)]">
               <LayoutDashboard size={14} className="text-[#0B0B0B]" />
@@ -305,31 +306,31 @@ const DemoMainContent = ({ activeTab }) => {
           <div className="flex items-center gap-6">
             <button className="flex items-center gap-2 hover:text-white transition-colors cursor-pointer">
               <span className="text-lg leading-none">🇪🇸</span>
-              Español
+              <span className="hidden sm:inline">Español</span>
             </button>
           </div>
         </div>
 
-        <div className="p-8 max-w-[1400px] w-full mx-auto flex flex-col gap-6 shrink-0 mt-4">
+        <div className="p-4 md:p-8 max-w-[1400px] w-full mx-auto flex flex-col gap-4 md:gap-6 shrink-0 mt-2 md:mt-4">
           {/* Main Banner */}
-          <div className="w-full bg-[#171717] rounded-xl overflow-hidden relative border border-[#2A2A2A] shadow-md flex mb-6 min-h-[140px]">
-            <div className="w-full relative flex h-full min-h-[140px]">
-              <div className="relative w-[60%] shrink-0 h-full">
-                <div className="absolute inset-0 bg-gradient-to-br from-[#22C55E]/10 via-[#171717] to-[#171717]"></div>
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#171717]/50 to-[#171717]"></div>
-              </div>
-              <div className="relative z-10 flex-1 flex flex-col justify-center items-center text-center -ml-[15%]">
-                <h2 className="text-[#FFFFFF] text-3xl md:text-4xl font-heading font-extrabold uppercase tracking-tighter leading-[0.9]">
-                  <span className="text-2xl md:text-3xl text-[#ffffff]/90">MINELAB</span><br />MINECRAFT
-                </h2>
-              </div>
+          <div className="w-full bg-[#171717] rounded-xl overflow-hidden relative border border-[#2A2A2A] shadow-md mb-4 md:mb-6 h-[130px] sm:h-[180px] md:h-[200px] lg:h-[240px]">
+            <div
+              className="absolute inset-0 bg-cover bg-center"
+              style={{ backgroundImage: "url('/images/JROHAHT42NEQZCHQ5NOCKUUXJ4.jpg')" }}
+            ></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-[#171717]/30 via-[#171717]/60 to-[#171717]/90"></div>
+            <div className="absolute inset-0 bg-gradient-to-t from-[#171717]/50 to-transparent"></div>
+            <div className="relative z-10 w-full h-full flex flex-col justify-center items-center md:items-end pr-4 md:pr-10">
+              <h2 className="text-[#FFFFFF] text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-heading font-extrabold uppercase tracking-tighter leading-[0.85] drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
+                <span className="text-xl sm:text-2xl md:text-4xl lg:text-5xl text-[#ffffff]/90">MINELAB</span><br />MINECRAFT
+              </h2>
             </div>
           </div>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
             {/* RAM */}
-            <div className="bg-[#171717] border border-[#2A2A2A] rounded-xl p-5 shadow-sm flex flex-col justify-between min-h-[160px]">
+            <div className="bg-[#171717] border border-[#2A2A2A] rounded-xl p-4 md:p-5 shadow-sm flex flex-col justify-between min-h-[120px] md:min-h-[160px]">
               <div className="flex items-center justify-between mb-1">
                 <p className="text-[#B3B3B3] text-xs font-bold uppercase tracking-wider">Uso de RAM</p>
                 <div className="bg-[#121212] p-2 rounded-lg border border-[#2A2A2A]">
@@ -361,7 +362,7 @@ const DemoMainContent = ({ activeTab }) => {
             </div>
 
             {/* CPU */}
-            <div className="bg-[#171717] border border-[#2A2A2A] rounded-xl p-5 shadow-sm flex flex-col justify-between min-h-[160px]">
+            <div className="bg-[#171717] border border-[#2A2A2A] rounded-xl p-4 md:p-5 shadow-sm flex flex-col justify-between min-h-[120px] md:min-h-[160px]">
               <div className="flex items-center justify-between mb-1">
                 <p className="text-[#B3B3B3] text-xs font-bold uppercase tracking-wider">Uso de CPU</p>
                 <div className="bg-[#121212] p-2 rounded-lg border border-[#2A2A2A]">
@@ -392,7 +393,7 @@ const DemoMainContent = ({ activeTab }) => {
             </div>
 
             {/* PLAYERS */}
-            <div className="bg-[#171717] border border-[#2A2A2A] rounded-xl p-5 shadow-sm flex flex-col justify-between min-h-[140px]">
+            <div className="bg-[#171717] border border-[#2A2A2A] rounded-xl p-4 md:p-5 shadow-sm flex flex-col justify-between min-h-[100px] md:min-h-[140px]">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-[#B3B3B3] text-xs font-bold uppercase tracking-wider">Jugadores online</p>
                 <div className="bg-[#121212] p-2 rounded-lg border border-[#2A2A2A]">
@@ -406,9 +407,9 @@ const DemoMainContent = ({ activeTab }) => {
           </div>
 
           {/* Server Information */}
-          <div className="bg-[#171717] border border-[#2A2A2A] shadow-sm rounded-xl p-6 flex flex-col">
-            <h3 className="text-[#FFFFFF] text-lg font-extrabold mb-6 uppercase tracking-tight">Información del Servidor</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-8">
+          <div className="bg-[#171717] border border-[#2A2A2A] shadow-sm rounded-xl p-4 md:p-6 flex flex-col">
+            <h3 className="text-[#FFFFFF] text-base md:text-lg font-extrabold mb-4 md:mb-6 uppercase tracking-tight">Información del Servidor</h3>
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-4 md:gap-y-6 md:gap-x-8">
               <div className="flex flex-col gap-1">
                 <span className="text-[#6B6B6B] text-[10px] font-bold uppercase tracking-wider">Estado</span>
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-widest w-fit bg-[#22C55E]/10 border border-[#22C55E]/20 text-[#22C55E]">
@@ -436,8 +437,8 @@ const DemoMainContent = ({ activeTab }) => {
           </div>
 
           {/* Activity Log */}
-          <div className="bg-[#171717] border border-[#2A2A2A] shadow-sm rounded-xl p-6 flex flex-col min-h-[300px]">
-            <h3 className="text-[#FFFFFF] text-lg font-extrabold mb-6 uppercase tracking-tight">Actividad reciente</h3>
+          <div className="bg-[#171717] border border-[#2A2A2A] shadow-sm rounded-xl p-4 md:p-6 flex flex-col min-h-[200px] md:min-h-[300px]">
+            <h3 className="text-[#FFFFFF] text-base md:text-lg font-extrabold mb-4 md:mb-6 uppercase tracking-tight">Actividad reciente</h3>
             <div className="flex flex-col gap-3">
               {FAKE_ACTIVITIES.map((act) => (
                 <div key={act.id} className="flex items-center justify-between p-4 bg-[#121212] border border-[#2A2A2A] rounded-lg">
@@ -461,7 +462,7 @@ const DemoMainContent = ({ activeTab }) => {
   if (activeTab === 'console') {
     return (
       <main className="flex-1 flex flex-col bg-[#121212] relative z-10 min-w-0">
-        <div className="w-full px-8 py-4 flex justify-between items-center text-sm font-semibold text-[#B3B3B3] bg-[#121212]/90 backdrop-blur-md shadow-[0_4px_30px_rgba(0,0,0,0.5)] border-b border-[#2A2A2A]">
+        <div className="w-full px-4 md:px-8 py-3 md:py-4 flex justify-between items-center text-sm font-semibold text-[#B3B3B3] bg-[#121212]/90 backdrop-blur-md shadow-[0_4px_30px_rgba(0,0,0,0.5)] border-b border-[#2A2A2A]">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded bg-[#22C55E] flex items-center justify-center shadow-[0_0_10px_rgba(34,197,94,0.2)]">
               <LayoutDashboard size={14} className="text-[#0B0B0B]" />
@@ -470,7 +471,7 @@ const DemoMainContent = ({ activeTab }) => {
           </div>
         </div>
 
-        <div className="p-8 max-w-[1400px] w-full mx-auto flex flex-col gap-6 mt-4 flex-1">
+        <div className="p-4 md:p-8 max-w-[1400px] w-full mx-auto flex flex-col gap-4 md:gap-6 mt-2 md:mt-4 flex-1">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-bold text-zinc-400 flex items-center gap-2 uppercase tracking-widest">
               Terminal en Vivo
@@ -478,7 +479,7 @@ const DemoMainContent = ({ activeTab }) => {
             </h3>
             <span className="text-[10px] text-zinc-600 font-mono">CONNECTED</span>
           </div>
-          
+
           <div className="flex-1 min-h-[400px] bg-[#0B0B0B] rounded-xl border border-[#2A2A2A] overflow-hidden shadow-2xl flex flex-col">
             <div className="flex-1 overflow-y-auto p-4 font-mono text-sm leading-relaxed text-[#B3B3B3] scrollbar-thin scrollbar-thumb-zinc-800">
               {consoleLogs.map((log, i) => (
@@ -487,7 +488,7 @@ const DemoMainContent = ({ activeTab }) => {
               <div className="w-2 h-3 bg-white/50 animate-pulse mt-1 inline-block"></div>
               <div ref={consoleEndRef} />
             </div>
-            
+
             <div className="border-t border-[#2A2A2A] flex bg-[#121212] shrink-0">
               <span className="flex items-center pl-4 text-[#22C55E] font-mono text-sm">/</span>
               <input
@@ -518,7 +519,7 @@ const DemoMainContent = ({ activeTab }) => {
 // DEMO AI ASSISTANT SIDEBAR
 // ═══════════════════════════════════════════════════════════
 
-const DemoAISidebar = () => {
+const DemoAISidebar = ({ isMobile = false, onClose = null }) => {
   const [inputStr, setInputStr] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef(null);
@@ -528,7 +529,10 @@ const DemoAISidebar = () => {
 
   useEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollIntoView({ behavior: 'smooth' });
+      const container = scrollRef.current.parentElement;
+      if (container) {
+        container.scrollTop = container.scrollHeight;
+      }
     }
   }, [messages, isTyping]);
 
@@ -563,8 +567,98 @@ const DemoAISidebar = () => {
 
   const quickActions = ['Instalar mod', 'Arreglar error', 'Optimizar servidor', 'Cambiar versión'];
 
+  if (isMobile) {
+    return (
+      <div className="flex flex-col h-full bg-[#141414]">
+        {/* Mobile Header with close */}
+        <div className="px-4 py-4 border-b border-white/5 bg-[#141414] flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-[#171717] flex items-center justify-center border border-[#22C55E]/30 shadow-[0_0_15px_rgba(34,197,94,0.2)]">
+              <Bot size={16} className="text-[#22C55E]" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-[#FFFFFF] tracking-wide flex items-center gap-1.5">
+                ASISTENTE IA <Sparkles size={12} className="text-[#22C55E] opacity-80" />
+              </h3>
+              <p className="text-[10px] text-[#22C55E] font-medium uppercase tracking-widest flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] animate-pulse inline-block shadow-[0_0_8px_#22C55E] shrink-0"></span> ONLINE
+              </p>
+            </div>
+          </div>
+          <button onClick={onClose} className="w-8 h-8 rounded-lg bg-[#2A2A2A] flex items-center justify-center text-[#B3B3B3] hover:text-white hover:bg-red-500/20 transition-colors">
+            <X size={16} />
+          </button>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="px-4 py-3 border-b border-white/5 flex flex-wrap gap-2">
+          {quickActions.map((action, i) => (
+            <button
+              key={i}
+              onClick={() => handleSendMessage(null, action)}
+              disabled={isTyping}
+              className="px-2.5 py-1.5 bg-[#171717] border border-white/5 hover:border-[#22C55E]/30 hover:bg-[rgba(34,197,94,0.05)] rounded-lg text-xs font-medium text-[#B3B3B3] hover:text-[#FFFFFF] transition-all flex items-center gap-1.5 disabled:opacity-50"
+            >
+              <Zap size={10} className="text-[#22C55E]" /> {action}
+            </button>
+          ))}
+        </div>
+
+        {/* Chat Area */}
+        <div className="flex-1 p-4 flex flex-col gap-4 overflow-y-auto">
+          {messages.map((msg, i) => (
+            <div key={i} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+              {msg.role === 'user' ? (
+                <div className="max-w-[85%] bg-[#22C55E] text-[#0B0B0B] font-semibold px-4 py-3 rounded-2xl rounded-tr-sm shadow-md text-sm whitespace-pre-wrap">
+                  {msg.text}
+                </div>
+              ) : (
+                <div className="max-w-[90%] bg-[#171717] border border-[#2A2A2A] text-[#E5E5E5] px-4 py-3.5 rounded-2xl rounded-tl-sm shadow-md text-sm leading-relaxed whitespace-pre-wrap">
+                  {msg.text}
+                </div>
+              )}
+            </div>
+          ))}
+          {isTyping && (
+            <div className="flex justify-start mt-2">
+              <div className="bg-[#171717] border border-[#2A2A2A] px-4 py-3.5 rounded-2xl rounded-tl-sm shadow-md min-w-[60px]">
+                <div className="flex gap-1.5 h-[20px] items-center px-1">
+                  <div className="w-1.5 h-1.5 bg-[#6B6B6B] rounded-full animate-bounce"></div>
+                  <div className="w-1.5 h-1.5 bg-[#6B6B6B] rounded-full animate-bounce [animation-delay:0.2s]"></div>
+                  <div className="w-1.5 h-1.5 bg-[#6B6B6B] rounded-full animate-bounce [animation-delay:0.4s]"></div>
+                </div>
+              </div>
+            </div>
+          )}
+          <div ref={scrollRef} />
+        </div>
+
+        {/* Input */}
+        <div className="p-4 border-t border-[#2A2A2A] bg-[#141414]">
+          <form className="relative flex items-center group" onSubmit={handleSendMessage}>
+            <input
+              type="text"
+              placeholder="Pregúntale a la IA..."
+              className="w-full bg-[#0B0B0B] border border-[#2A2A2A] rounded-xl py-3.5 pl-4 pr-12 text-sm text-[#FFFFFF] transition-all focus:outline-none focus:border-[#22C55E]/50 focus:shadow-[0_0_15px_rgba(34,197,94,0.1)] placeholder-[#6B6B6B] disabled:opacity-50"
+              value={inputStr}
+              onChange={(e) => setInputStr(e.target.value)}
+              disabled={isTyping}
+            />
+            <button
+              type="submit"
+              disabled={isTyping || !inputStr.trim()}
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#22C55E] hover:bg-[#1faa50] text-[#0B0B0B] w-8 h-8 rounded-lg transition-colors flex items-center justify-center shrink-0 disabled:opacity-50"
+            >
+              <Send size={14} className="ml-[-2px] mt-[1px]" />
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <aside className="w-[350px] bg-[#141414] border-l border-white/5 flex flex-col shrink-0 hidden lg:flex shadow-[-10px_0_30px_rgba(0,0,0,0.5)]">
+    <aside className="w-[350px] bg-[#141414] border-l border-white/5 flex flex-col shrink-0 hidden lg:flex shadow-[-10px_0_30px_rgba(0,0,0,0.5)] h-full overflow-hidden">
       {/* Header */}
       <div className="px-6 py-5 border-b border-white/5 bg-[#141414] shadow-[0_5px_20px_rgba(0,0,0,0.2)] flex flex-col gap-4 relative z-10">
         <div className="flex items-center gap-3">
@@ -573,7 +667,7 @@ const DemoAISidebar = () => {
           </div>
           <div>
             <h3 className="text-sm font-bold text-[#FFFFFF] tracking-wide flex items-center gap-1.5">
-              ASISTENTE IA <Sparkles size={12} className="text-[#22C55E] opacity-80"/>
+              ASISTENTE IA <Sparkles size={12} className="text-[#22C55E] opacity-80" />
             </h3>
             <p className="text-[10px] text-[#22C55E] font-medium uppercase tracking-widest flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] animate-pulse inline-block shadow-[0_0_8px_#22C55E] shrink-0"></span> ONLINE
@@ -650,19 +744,76 @@ const DemoAISidebar = () => {
 };
 
 // ═══════════════════════════════════════════════════════════
+// MOBILE TAB BAR
+// ═══════════════════════════════════════════════════════════
+
+const MobileTabBar = ({ activeTab, onTabChange }) => {
+  const tabs = [
+    { icon: <LayoutDashboard size={16} />, label: 'Dashboard', id: 'overview' },
+    { icon: <Terminal size={16} />, label: 'Consola', id: 'console' },
+  ];
+
+  return (
+    <div className="flex md:hidden bg-[#0F0F0F] border-b border-[#2A2A2A] px-2 py-1.5 gap-1 shrink-0">
+      {tabs.map(tab => (
+        <button
+          key={tab.id}
+          onClick={() => onTabChange(tab.id)}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${activeTab === tab.id
+            ? 'bg-[rgba(34,197,94,0.1)] text-[#22C55E] border border-[rgba(34,197,94,0.3)] shadow-[0_0_10px_rgba(34,197,94,0.1)]'
+            : 'text-[#6B6B6B] hover:text-[#B3B3B3] border border-transparent'
+            }`}
+        >
+          {tab.icon}
+          {tab.label}
+        </button>
+      ))}
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════
 // DEMO PANEL (MAIN EXPORT)
 // ═══════════════════════════════════════════════════════════
 
 const DemoPanel = () => {
   const [activeTab, setActiveTab] = useState('overview');
+  const [mobileChatOpen, setMobileChatOpen] = useState(false);
 
   return (
-    <div className="flex h-[900px] w-full overflow-hidden bg-[#0B0B0B]">
+    <div className="flex flex-col md:flex-row h-auto md:h-[850px] w-full overflow-hidden bg-[#0B0B0B] relative">
+      {/* Desktop sidebar */}
       <DemoSidebar activeTab={activeTab} onTabChange={setActiveTab} />
-      <div className="flex-1 flex min-w-0 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-800">
-        <DemoMainContent activeTab={activeTab} />
+
+      {/* Mobile tab bar */}
+      <MobileTabBar activeTab={activeTab} onTabChange={setActiveTab} />
+
+      {/* Main content area */}
+      <div className="flex-1 flex min-w-0 overflow-hidden h-auto md:h-full">
+        <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-800 min-w-0 h-auto md:h-full">
+          <DemoMainContent activeTab={activeTab} />
+        </div>
+        {/* Desktop AI sidebar */}
         <DemoAISidebar />
       </div>
+
+      {/* Mobile AI Chat Toggle Tab */}
+      {!mobileChatOpen && (
+        <button
+          onClick={() => setMobileChatOpen(true)}
+          className="lg:hidden fixed right-0 top-1/2 -translate-y-1/2 z-50 flex items-center gap-1 bg-[#22C55E] text-[#0B0B0B] pl-2.5 pr-2 py-3 rounded-l-xl shadow-[0_0_20px_rgba(34,197,94,0.3)] hover:shadow-[0_0_30px_rgba(34,197,94,0.5)] transition-all group"
+        >
+          <MessageCircle size={18} className="group-hover:scale-110 transition-transform" />
+          <span className="text-[10px] font-bold uppercase tracking-wider writing-mode-vertical" style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}>IA</span>
+        </button>
+      )}
+
+      {/* Mobile AI Chat Overlay */}
+      {mobileChatOpen && (
+        <div className="lg:hidden fixed inset-0 z-50 flex flex-col bg-[#141414] animate-in slide-in-from-right duration-300">
+          <DemoAISidebar isMobile={true} onClose={() => setMobileChatOpen(false)} />
+        </div>
+      )}
     </div>
   );
 };
