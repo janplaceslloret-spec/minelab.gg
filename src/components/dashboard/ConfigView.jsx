@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 
 const WEBHOOK = 'https://snack55-n8n1.q7pa8v.easypanel.host/webhook/asistente';
+const VERSION_WEBHOOK = 'https://api.fluxoai.co/webhook/cambiar-version';
 
 /* ─── Version data ─── */
 const ALL_VERSIONS = [
@@ -99,7 +100,7 @@ const VersionModal = ({ server, onClose }) => {
   const confirm = async () => {
     setState('loading');
     try {
-      const res = await fetch(WEBHOOK, {
+      const res = await fetch(VERSION_WEBHOOK, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

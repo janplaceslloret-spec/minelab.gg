@@ -18,17 +18,23 @@ const ConsoleView = ({ server }) => {
 
     socket.onopen = () => {
       setWsStatus('connected');
-      setConsoleLogs(prev => [...prev, '>>> Conexión establecida con la consola segura.']);
     };
 
     socket.onmessage = (event) => {
-      setConsoleLogs(prev => [...prev, event.data]);
+      const raw = event.data;
+      if (raw.startsWith('[HISTORY]\n')) {
+        const lines = raw.slice('[HISTORY]\n'.length).split('\n').filter(Boolean);
+        setConsoleLogs(lines);
+      } else {
+        const lines = raw.split('\n').filter(Boolean);
+        setConsoleLogs(prev => [...prev, ...lines]);
+      }
     };
 
     socket.onclose = () => {
       setWsStatus('disconnected');
-      setConsoleLogs(prev => [...prev, '>>> Conexión cerrada. Reintentando...']);
-      reconnectTimeoutRef.current = setTimeout(connectConsole, 3000);
+      setConsoleLogs(prev => [...prev, '>>> Conexión cerrada. Reintentando en 8s...']);
+      reconnectTimeoutRef.current = setTimeout(connectConsole, 8000);
     };
 
     socket.onerror = (error) => {
@@ -47,6 +53,7 @@ const ConsoleView = ({ server }) => {
         socketRef.current.close();
         socketRef.current = null;
       }
+      setConsoleLogs([]);
     }
     
     return () => {
