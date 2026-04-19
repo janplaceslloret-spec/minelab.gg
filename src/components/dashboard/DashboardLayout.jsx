@@ -26,6 +26,7 @@ const DashboardLayout = () => {
   const [activeTab, setActiveTab] = useState('overview'); // Controls MainContent views
   const [isActionLoading, setIsActionLoading] = useState(false);
   const [mobileChatOpen, setMobileChatOpen] = useState(false);
+  const [paymentFailed, setPaymentFailed] = useState(false);
   const navigate = useNavigate();
 
   const handleCreateServer = async () => {
@@ -347,6 +348,52 @@ const DashboardLayout = () => {
     return () => { supabase.removeChannel(profilesChannel); };
   }, [user, navigate]);
 
+  // Polling fallback for awaiting_payment — fires if realtime missed the event
+  useEffect(() => {
+    if (viewState !== 'awaiting_payment' || !user) return;
+
+    const validPlans = ['pro_4gb', 'pro_6gb', 'pro_8gb', 'pro_12gb', 'admin'];
+    let attempts = 0;
+    const maxAttempts = 40; // 40 × 3 s = 2 minutes max
+
+    const poll = async () => {
+      attempts++;
+      if (attempts > maxAttempts) {
+        setPaymentFailed(true);
+        clearInterval(interval);
+        return;
+      }
+      try {
+        // Use anon client — works regardless of session state
+        const { data } = await supabaseAnon
+          .from('profiles')
+          .select('plan_status')
+          .eq('id', user.id)
+          .maybeSingle();
+        const plan = data?.plan_status || 'none';
+        if (validPlans.includes(plan)) {
+          setPlanStatus(plan);
+          const { data: servers } = await supabase
+            .from('mc_servers')
+            .select('*')
+            .eq('user_id', user.id);
+          if (servers?.length > 0) {
+            const srv = servers.find(s => s.status !== 'draft') || servers[0];
+            setActiveServer(srv);
+          }
+          clearInterval(interval);
+          setViewState('dashboard');
+          navigate('/panel', { replace: true });
+        }
+      } catch (_) {}
+    };
+
+    const interval = setInterval(poll, 3000);
+    poll(); // Run immediately on mount
+
+    return () => clearInterval(interval);
+  }, [viewState, user, navigate]);
+
   useEffect(() => {
     // If we're already established but the URL changes (e.g., clicking Nuevo Servidor), update viewState
     if (user && viewState === 'dashboard' && window.location.search.includes('wizard=true')) {
@@ -373,6 +420,33 @@ const DashboardLayout = () => {
   }
 
   if (viewState === 'awaiting_payment') {
+    if (paymentFailed) {
+      return (
+        <div className="min-h-screen w-full bg-[#0B0B0B] flex flex-col items-center justify-center gap-6 text-center px-6">
+          <div className="text-4xl">⚠️</div>
+          <div className="flex flex-col gap-2">
+            <h2 className="text-white text-2xl font-extrabold uppercase tracking-tight">Algo salió mal</h2>
+            <p className="text-zinc-400 text-sm max-w-sm">
+              No pudimos confirmar tu pago automáticamente. Si realizaste el pago, contacta a soporte y lo activamos manualmente.
+            </p>
+          </div>
+          <a
+            href="https://discord.gg/minelab"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-6 py-3 bg-[#22C55E] text-black font-bold rounded-lg hover:bg-[#16a34a] transition-colors"
+          >
+            Contactar soporte
+          </a>
+          <button
+            onClick={() => { setPaymentFailed(false); window.location.href = '/panel'; }}
+            className="text-zinc-500 text-sm underline hover:text-zinc-300"
+          >
+            Volver al inicio
+          </button>
+        </div>
+      );
+    }
     return (
       <div className="min-h-screen w-full bg-[#0B0B0B] flex flex-col items-center justify-center gap-6 text-center px-6">
         <Loader2 className="animate-spin text-[#22C55E]" size={48} />
