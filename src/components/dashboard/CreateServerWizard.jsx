@@ -80,7 +80,10 @@ const CreateServerWizard = ({ user, onFinish }) => {
   // Sync version to Supabase whenever it changes and serverId is ready
   useEffect(() => {
     if (!serverId || !form.version) return;
-    supabase.from('mc_servers').update({ mc_version: form.version }).eq('id', serverId).catch(() => {});
+    const sync = async () => {
+      try { await supabase.from('mc_servers').update({ mc_version: form.version }).eq('id', serverId); } catch (_) {}
+    };
+    sync();
   }, [form.version, serverId]);
 
   // Initialization: check for 'configuring' server or create one
@@ -173,7 +176,7 @@ const CreateServerWizard = ({ user, onFinish }) => {
       // When type changes, reset version — the useEffect will load new versions
       setForm(prev => ({ ...prev, type: value, version: '' }));
       if (serverId) {
-        await supabase.from('mc_servers').update({ server_type: value }).eq('id', serverId).catch(() => {});
+        try { await supabase.from('mc_servers').update({ server_type: value }).eq('id', serverId); } catch (_) {}
       }
       return;
     }

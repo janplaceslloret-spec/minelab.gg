@@ -277,12 +277,24 @@ const DashboardLayout = () => {
       } else if (event === 'SIGNED_OUT') {
         localStorage.removeItem('minelab-forced-token');
         navigate('/');
+      } else if (event === 'INITIAL_SESSION' && !session) {
+        // No Supabase session on first load — redirect to landing unless a dev forced-token is present
+        const forcedToken = localStorage.getItem('minelab-forced-token');
+        if (!forcedToken) {
+          console.log("[DashboardLayout] INITIAL_SESSION with no session and no forced token — ejecting to landing.");
+          navigate('/');
+        }
+        // If there IS a forced token, checkSessionAndFetch() will handle it
       }
     });
     authSubscription = data.subscription;
 
+    // ── Dev-only bypass (clock-skew workaround for 2026 system date) ──────────
+    // Only inject the test token when there is no real session AND no real OAuth
+    // hash in the URL (i.e. we are NOT in the middle of an OAuth callback).
+    const isOAuthCallback = window.location.hash && window.location.hash.includes('access_token');
     const fallbackTest = { sub: 'dummy', email: 'janplaceslloret@gmail.com' };
-    if (window.location.hostname === 'localhost') {
+    if (window.location.hostname === 'localhost' && !isOAuthCallback && !localStorage.getItem('minelab-forced-token')) {
       localStorage.setItem('minelab-forced-token', 'Header.' + btoa(JSON.stringify(fallbackTest)) + '.Signature');
     }
     checkSessionAndFetch();
