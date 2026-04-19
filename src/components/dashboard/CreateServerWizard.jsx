@@ -170,9 +170,11 @@ const CreateServerWizard = ({ user, onFinish }) => {
       // Pasar server_id como client_reference_id (el webhook lo usará para
       // encontrar al usuario por user_id, sin depender del email).
       // prefilled_email pre-rellena el checkout para reducir errores.
+      const successUrl = `${window.location.origin}/panel?paid=1`;
       const params = new URLSearchParams({
         client_reference_id: serverId,
         prefilled_email: user?.email || '',
+        success_url: successUrl,
       });
 
       window.location.href = `${baseUrl}?${params.toString()}`;

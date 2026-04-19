@@ -19,7 +19,7 @@ const supabaseAnon = createClient(supabaseUrl, supabaseKey, {
 });
 
 const DashboardLayout = () => {
-  const [viewState, setViewState] = useState('loading'); // 'loading', 'empty', 'wizard', 'dashboard'
+  const [viewState, setViewState] = useState('loading'); // 'loading', 'empty', 'wizard', 'dashboard', 'awaiting_payment'
   const [user, setUser] = useState(null);
   const [planStatus, setPlanStatus] = useState('none');
   const [activeServer, setActiveServer] = useState(null);
@@ -236,8 +236,13 @@ const DashboardLayout = () => {
         const isPlanValid = validPlans.includes(normalizedPlan);
 
         if (!isPlanValid) {
-          // Rule: If plan_status is none or invalid -> restrict access, redirect to wizard
-          if (isWizardRequested) {
+          // Check if user is returning from Stripe (paid=1 param)
+          const justPaid = window.location.search.includes('paid=1');
+          if (justPaid) {
+            // Show waiting screen — realtime subscription will move them to dashboard
+            setViewState('awaiting_payment');
+            navigate('/panel?paid=1', { replace: true });
+          } else if (isWizardRequested) {
             setViewState('wizard');
           } else {
             setViewState('wizard');
@@ -290,35 +295,57 @@ const DashboardLayout = () => {
   useEffect(() => {
     if (!user) return;
 
-    console.log("[DashboardLayout] Setting up Supabase realtime subscription for mc_servers");
-
-    const channel = supabase
+    const serversChannel = supabase
       .channel('public:mc_servers')
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'mc_servers', filter: `user_id=eq.${user.id}` },
         (payload) => {
-          console.log("[DashboardLayout] Supabase realtime update received:", payload);
           if (payload.new) {
             setActiveServer(prev => {
-              if (prev && prev.id === payload.new.id) {
-                console.log("[DashboardLayout] Updating active server with new data:", payload.new);
-                return payload.new;
-              }
+              if (prev && prev.id === payload.new.id) return payload.new;
               return prev;
             });
           }
         }
       )
-      .subscribe((status) => {
-        console.log("[DashboardLayout] Supabase subscription status:", status);
-      });
+      .subscribe();
 
-    return () => {
-      console.log("[DashboardLayout] Cleaning up Supabase subscription");
-      supabase.removeChannel(channel);
-    };
+    return () => { supabase.removeChannel(serversChannel); };
   }, [user]);
+
+  // Real-time subscription for plan_status changes (fixes timing after Stripe payment)
+  useEffect(() => {
+    if (!user) return;
+
+    const validPlans = ['pro_4gb', 'pro_6gb', 'pro_8gb', 'pro_12gb', 'admin'];
+
+    const profilesChannel = supabase
+      .channel('public:profiles:plan')
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `id=eq.${user.id}` },
+        (payload) => {
+          const newPlan = payload.new?.plan_status;
+          if (newPlan && validPlans.includes(newPlan)) {
+            console.log("[DashboardLayout] Plan activated via realtime:", newPlan);
+            setPlanStatus(newPlan);
+            // Refresh servers list then go to dashboard
+            supabase.from('mc_servers').select('*').eq('user_id', user.id).then(({ data }) => {
+              if (data && data.length > 0) {
+                const srv = data.find(s => s.status !== 'draft') || data[0];
+                setActiveServer(srv);
+              }
+              setViewState('dashboard');
+              navigate('/panel', { replace: true });
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(profilesChannel); };
+  }, [user, navigate]);
 
   useEffect(() => {
     // If we're already established but the URL changes (e.g., clicking Nuevo Servidor), update viewState
@@ -341,6 +368,23 @@ const DashboardLayout = () => {
     return (
       <div className="min-h-screen w-full bg-[#0B0B0B] flex items-center justify-center">
         <Loader2 className="animate-spin text-accent-green" size={48} />
+      </div>
+    );
+  }
+
+  if (viewState === 'awaiting_payment') {
+    return (
+      <div className="min-h-screen w-full bg-[#0B0B0B] flex flex-col items-center justify-center gap-6 text-center px-6">
+        <Loader2 className="animate-spin text-[#22C55E]" size={48} />
+        <div className="flex flex-col gap-2">
+          <h2 className="text-white text-2xl font-extrabold uppercase tracking-tight">Confirmando tu pago...</h2>
+          <p className="text-zinc-500 text-sm max-w-sm">Estamos activando tu plan. Esto tarda unos segundos. No cierres esta página.</p>
+        </div>
+        <div className="flex gap-1.5 mt-2">
+          <span className="w-2 h-2 rounded-full bg-[#22C55E] animate-bounce" style={{ animationDelay: '0ms' }}></span>
+          <span className="w-2 h-2 rounded-full bg-[#22C55E] animate-bounce" style={{ animationDelay: '150ms' }}></span>
+          <span className="w-2 h-2 rounded-full bg-[#22C55E] animate-bounce" style={{ animationDelay: '300ms' }}></span>
+        </div>
       </div>
     );
   }
