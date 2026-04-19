@@ -158,16 +158,24 @@ const CreateServerWizard = ({ user, onFinish }) => {
   const handleStripeCheckout = async () => {
     if (!serverId) return;
     try {
-      // Redirect logic to Checkout
       const stripeLinks = {
         4: "https://buy.stripe.com/8x228s2LKcZN3lK3As3AY01",
         6: "https://buy.stripe.com/4gM5kE1HG6Bpg8w7QI3AY02",
         8: "https://buy.stripe.com/14AdRa2LK2l99K8gne3AY03",
         12: "https://buy.stripe.com/bJe7sM1HGe3R3lK2wo3AY05"
       };
-      
+
       const baseUrl = stripeLinks[form.ram] || stripeLinks[6];
-      window.location.href = `${baseUrl}?client_reference_id=${serverId}`;
+
+      // Pasar server_id como client_reference_id (el webhook lo usará para
+      // encontrar al usuario por user_id, sin depender del email).
+      // prefilled_email pre-rellena el checkout para reducir errores.
+      const params = new URLSearchParams({
+        client_reference_id: serverId,
+        prefilled_email: user?.email || '',
+      });
+
+      window.location.href = `${baseUrl}?${params.toString()}`;
     } catch (err) {
       console.error('Error proceeding to payment:', err);
     }
