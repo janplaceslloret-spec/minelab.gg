@@ -18,10 +18,15 @@ const customFetch = async (url, options = {}) => {
         newHeaders[key.toLowerCase()] = options.headers[key];
       }
     }
-    
-    newHeaders['authorization'] = `Bearer ${forcedToken}`;
+
+    // Only use the forced token as Bearer if it looks like a real signed JWT
+    // (3 parts, non-trivial signature). Dev/test tokens use anon key as fallback
+    // so Supabase doesn't reject the request with 401 and fire SIGNED_OUT.
+    const parts = forcedToken.split('.');
+    const isRealJwt = parts.length === 3 && parts[2].length > 20 && parts[2] !== 'fake' && parts[2] !== 'Signature';
+    newHeaders['authorization'] = `Bearer ${isRealJwt ? forcedToken : supabaseKey}`;
     newHeaders['apikey'] = supabaseKey;
-    
+
     options.headers = newHeaders;
   }
   return fetch(url, options);
