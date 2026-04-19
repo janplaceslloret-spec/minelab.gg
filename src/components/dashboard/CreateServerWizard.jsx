@@ -2,23 +2,86 @@ import React, { useState, useEffect } from 'react';
 import { Bot, Sparkles, Send, Cpu, Globe, ArrowRight, Loader2 } from 'lucide-react';
 import { supabase } from '../../supabaseClient';
 
+// ── Fetch versions from official APIs per server type ────────────────────────
+const fetchVersions = async (type) => {
+  try {
+    if (type === 'vanilla') {
+      const res = await fetch('https://launchermeta.mojang.com/mc/game/version_manifest.json');
+      const data = await res.json();
+      return data.versions.filter(v => v.type === 'release').map(v => v.id);
+    }
+    if (type === 'paper') {
+      const res = await fetch('https://api.papermc.io/v2/projects/paper');
+      const data = await res.json();
+      return [...data.versions].reverse(); // newest first
+    }
+    if (type === 'fabric') {
+      const res = await fetch('https://meta.fabricmc.net/v2/versions/game');
+      const data = await res.json();
+      return data.filter(v => v.stable).map(v => v.version);
+    }
+    if (type === 'forge') {
+      const res = await fetch('https://files.minecraftforge.net/net/minecraftforge/forge/promotions_slim.json');
+      const data = await res.json();
+      const seen = new Set();
+      const versions = [];
+      Object.keys(data.promos).forEach(key => {
+        const match = key.match(/^(\d+\.\d+(?:\.\d+)?)-(?:recommended|latest)$/);
+        if (match && !seen.has(match[1])) { seen.add(match[1]); versions.push(match[1]); }
+      });
+      // Sort descending by version number
+      return versions.sort((a, b) => {
+        const pa = a.split('.').map(Number), pb = b.split('.').map(Number);
+        for (let i = 0; i < 3; i++) if ((pb[i]||0) !== (pa[i]||0)) return (pb[i]||0) - (pa[i]||0);
+        return 0;
+      });
+    }
+  } catch (e) {
+    console.warn('Version fetch failed for', type, e);
+  }
+  // Fallback list if API fails
+  return ['1.21.4', '1.21.1', '1.20.6', '1.20.4', '1.20.1', '1.19.4', '1.19.2', '1.18.2', '1.17.1', '1.16.5', '1.12.2'];
+};
+
 const CreateServerWizard = ({ user, onFinish }) => {
   const [serverId, setServerId] = useState(null);
   const [loadingConfig, setLoadingConfig] = useState(true);
-  
+  const [versions, setVersions] = useState([]);
+  const [versionsLoading, setVersionsLoading] = useState(true);
+
   const [inputStr, setInputStr] = useState('');
   const [chatMessages, setChatMessages] = useState([
     { type: 'bot', text: '¡Hola! Soy el asistente IA de MineLab. Puedo ayudarte a configurar tu servidor. ¿Qué tienes en mente?' },
   ]);
   const [chatLoading, setChatLoading] = useState(false);
-  
+
   const [form, setForm] = useState({
     name: 'Mi servidor',
     type: 'vanilla',
-    version: '1.21.11',
+    version: '',
     ram: 6,
     location: 'Europa (Frankfurt)'
   });
+
+  // Load versions whenever server type changes
+  useEffect(() => {
+    setVersionsLoading(true);
+    fetchVersions(form.type).then(vers => {
+      setVersions(vers);
+      // Auto-select newest if current version not in list
+      if (vers.length > 0 && !vers.includes(form.version)) {
+        setForm(prev => ({ ...prev, version: vers[0] }));
+        // Will be synced to Supabase when serverId is available via handleUpdateField below
+      }
+      setVersionsLoading(false);
+    });
+  }, [form.type]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Sync version to Supabase whenever it changes and serverId is ready
+  useEffect(() => {
+    if (!serverId || !form.version) return;
+    supabase.from('mc_servers').update({ mc_version: form.version }).eq('id', serverId).catch(() => {});
+  }, [form.version, serverId]);
 
   // Initialization: check for 'configuring' server or create one
   useEffect(() => {
@@ -45,22 +108,27 @@ const CreateServerWizard = ({ user, onFinish }) => {
 
         if (existingList && existingList.length > 0) {
           const existing = existingList[0];
+          const savedType = existing.server_type || 'vanilla';
+          const savedVersion = existing.mc_version || '';
           setServerId(existing.id);
           setForm({
             name: existing.server_name || 'Mi servidor',
-            type: existing.server_type || 'vanilla',
-            version: existing.mc_version || '1.21.11',
+            type: savedType,
+            version: savedVersion,
             ram: existing.ram_gb || 6,
-            location: 'Europa (Frankfurt)' // Static for now per reqs
+            location: 'Europa (Frankfurt)'
           });
         } else {
           // Create new record with unique name to prevent constraint violations
           const uniqueName = `Mi servidor ${Math.floor(Date.now() / 1000)}`;
+          // Fetch latest vanilla version for default
+          const latestVers = await fetchVersions('vanilla');
+          const latestVersion = latestVers[0] || '1.21.4';
           const insertData = {
             user_id: user.id,
             server_name: uniqueName,
             server_type: "vanilla",
-            mc_version: "1.21.11",
+            mc_version: latestVersion,
             ram_gb: 6,
             status: "draft",
             status_server: "offline",
@@ -101,13 +169,18 @@ const CreateServerWizard = ({ user, onFinish }) => {
 
   // Sync individual field changes to Supabase instantly
   const handleUpdateField = async (field, value, dbField) => {
+    if (field === 'type') {
+      // When type changes, reset version — the useEffect will load new versions
+      setForm(prev => ({ ...prev, type: value, version: '' }));
+      if (serverId) {
+        await supabase.from('mc_servers').update({ server_type: value }).eq('id', serverId).catch(() => {});
+      }
+      return;
+    }
     setForm(prev => ({ ...prev, [field]: value }));
     if (!serverId) return;
     try {
-      await supabase
-        .from('mc_servers')
-        .update({ [dbField]: value })
-        .eq('id', serverId);
+      await supabase.from('mc_servers').update({ [dbField]: value }).eq('id', serverId);
     } catch (err) {
       console.error('Failed to update field:', err);
     }
@@ -232,15 +305,19 @@ const CreateServerWizard = ({ user, onFinish }) => {
               </div>
 
               <div className="flex flex-col gap-3">
-                <label className="text-sm font-bold text-[#FFFFFF] uppercase tracking-wider">Versión</label>
-                <select 
+                <label className="text-sm font-bold text-[#FFFFFF] uppercase tracking-wider">
+                  Versión {versionsLoading && <span className="text-[#22C55E] text-xs normal-case font-normal ml-1">cargando...</span>}
+                </label>
+                <select
                   value={form.version}
                   onChange={e => handleUpdateField('version', e.target.value, 'mc_version')}
-                  className="w-full bg-[#171717] border border-[#2A2A2A] rounded-xl py-3 px-4 text-[#FFFFFF] focus:outline-none focus:border-[#22C55E]/50 focus:shadow-[0_0_15px_rgba(34,197,94,0.1)] transition-all appearance-none overflow-y-auto max-h-60"
+                  disabled={versionsLoading}
+                  className="w-full bg-[#171717] border border-[#2A2A2A] rounded-xl py-3 px-4 text-[#FFFFFF] focus:outline-none focus:border-[#22C55E]/50 focus:shadow-[0_0_15px_rgba(34,197,94,0.1)] transition-all appearance-none disabled:opacity-50"
                 >
-                  {['1.21.11', '1.21.10', '1.21.9', '1.21.8', '1.21.7', '1.21.6', '1.21.5', '1.21.4', '1.21.3', '1.21.2', '1.21.1', '1.21', '1.20.6', '1.20.5', '1.20.4', '1.20.3', '1.20.2', '1.20.1', '1.20', '1.19.4', '1.19.3', '1.19.2', '1.19.1', '1.19', '1.18.2', '1.18.1', '1.18', '1.17.1', '1.17', '1.16.5', '1.16.4', '1.16.3', '1.16.2', '1.16.1', '1.16', '1.15.2', '1.15.1', '1.15', '1.14.4', '1.14.3', '1.14.2', '1.14.1', '1.14', '1.13.2', '1.13.1', '1.13', '1.12.2'].map(v => (
-                    <option key={v} value={v}>{v}</option>
-                  ))}
+                  {versionsLoading
+                    ? <option>Cargando versiones...</option>
+                    : versions.map(v => <option key={v} value={v}>{v}</option>)
+                  }
                 </select>
               </div>
             </div>
