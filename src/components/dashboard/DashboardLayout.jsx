@@ -327,6 +327,28 @@ const DashboardLayout = () => {
     return () => { supabase.removeChannel(serversChannel); };
   }, [user]);
 
+  // Polling fallback: refresh status_server every 8s in case Realtime misses an event
+  useEffect(() => {
+    if (!user || viewState !== 'dashboard') return;
+
+    const poll = async () => {
+      if (!activeServer?.id) return;
+      try {
+        const { data } = await supabase
+          .from('mc_servers')
+          .select('status_server, status')
+          .eq('id', activeServer.id)
+          .single();
+        if (data && data.status_server !== activeServer.status_server) {
+          setActiveServer(prev => prev ? { ...prev, status_server: data.status_server, status: data.status } : prev);
+        }
+      } catch (_) {}
+    };
+
+    const interval = setInterval(poll, 8000);
+    return () => clearInterval(interval);
+  }, [user, viewState, activeServer?.id, activeServer?.status_server]);
+
   // Real-time subscription for plan_status changes (fixes timing after Stripe payment)
   useEffect(() => {
     if (!user) return;
