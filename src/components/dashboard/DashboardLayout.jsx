@@ -193,10 +193,11 @@ const DashboardLayout = () => {
           supabase.from('mc_servers').select('*').eq('user_id', userId),
           supabase.from('profiles').select('plan_status').eq('id', userId).limit(1).maybeSingle(),
           // Load servers this user was invited to (active memberships)
+          // Match by user_id OR invited_email to handle UUID mismatches after OAuth login
           supabase
             .from('server_members')
-            .select('server_id, role, mc_servers(*)')
-            .eq('user_id', userId)
+            .select('server_id, role, mc_servers(*), user_id, invited_email')
+            .or(`user_id.eq.${userId}${lowerEmail ? `,invited_email.eq.${lowerEmail}` : ''}`)
             .eq('status', 'active'),
         ]);
 
@@ -205,6 +206,16 @@ const DashboardLayout = () => {
 
         // Collect servers where user is an invited member (with their role)
         const memberships = membershipsResponse?.data || [];
+
+        // Auto-fix UUID mismatch: if a row was found by email but has a different user_id, update it
+        const staleRows = memberships.filter(m => m.user_id !== userId && m.invited_email?.toLowerCase() === lowerEmail);
+        if (staleRows.length > 0) {
+          console.log('[DashboardLayout] Fixing stale user_id in server_members for', staleRows.length, 'row(s)');
+          await Promise.all(staleRows.map(m =>
+            supabase.from('server_members').update({ user_id: userId }).eq('server_id', m.server_id).eq('invited_email', lowerEmail)
+          ));
+        }
+
         const sharedSrvs = memberships
           .map(m => m.mc_servers ? { ...m.mc_servers, _memberRole: m.role } : null)
           .filter(Boolean)
