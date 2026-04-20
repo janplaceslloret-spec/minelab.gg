@@ -20,16 +20,15 @@ const Navbar = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
         <div className="flex justify-between items-center">
           
           {/* Logo */}
-          <div 
+          <div
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="flex items-center gap-3 cursor-pointer group"
+            className="flex items-center cursor-pointer group"
           >
-            <img 
-              src="/favicon.png" 
-              alt="MineLab Logo" 
-              className="w-9 h-9 transform group-hover:rotate-6 transition-transform duration-300"
+            <img
+              src="/logo.png"
+              alt="MineLab Logo"
+              className="h-8 w-auto object-contain"
             />
-            <span className="font-heading font-extrabold text-2xl tracking-tighter text-white uppercase">MINELAB</span>
           </div>
 
           {/* Center Links */}
