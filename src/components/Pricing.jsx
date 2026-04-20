@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Check, Cpu, Zap, Info } from 'lucide-react';
+import { Check, Cpu, Zap, Info, Calendar } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -9,15 +9,14 @@ gsap.registerPlugin(ScrollTrigger);
 const Pricing = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
   const sectionRef = useRef(null);
   const [loading, setLoading] = useState(false);
+  const [billing, setBilling] = useState('monthly'); // 'monthly' | 'annual'
 
   const handleSubscribe = async () => {
     try {
       setLoading(true);
       if (isLoggedIn) {
-        // User is authenticated, redirect to Panel (Wizard opens here)
         onOpenDashboard();
       } else {
-        // User is not authenticated, redirect to Simulated Login
         onLoginDemo();
       }
     } catch (error) {
@@ -27,58 +26,51 @@ const Pricing = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
     }
   };
 
-
   const plans = [
     {
       name: "4GB RAM",
       originalPrice: "8€",
-      price: "5€",
+      monthlyPrice: "5€",
+      annualPrice: "60€",
+      monthlyEquiv: "5€",
       popular: false,
-      stripeLink: "https://buy.stripe.com/8x228s2LKcZN3lK3As3AY01"
+      stripeMonthly: "https://buy.stripe.com/8x228s2LKcZN3lK3As3AY01",
+      stripeAnnual: "https://buy.stripe.com/8x228s2LKcZN3lK3As3AY01", // TODO: replace with annual link
     },
     {
       name: "6GB RAM",
       originalPrice: "10€",
-      price: "7€",
+      monthlyPrice: "7€",
+      annualPrice: "84€",
+      monthlyEquiv: "7€",
       popular: true,
-      stripeLink: "https://buy.stripe.com/4gM5kE1HG6Bpg8w7QI3AY02"
+      stripeMonthly: "https://buy.stripe.com/4gM5kE1HG6Bpg8w7QI3AY02",
+      stripeAnnual: "https://buy.stripe.com/4gM5kE1HG6Bpg8w7QI3AY02", // TODO: replace with annual link
     },
     {
       name: "8GB RAM",
       originalPrice: "13€",
-      price: "10€",
+      monthlyPrice: "10€",
+      annualPrice: "120€",
+      monthlyEquiv: "10€",
       popular: false,
-      stripeLink: "https://buy.stripe.com/14AdRa2LK2l99K8gne3AY03"
+      stripeMonthly: "https://buy.stripe.com/14AdRa2LK2l99K8gne3AY03",
+      stripeAnnual: "https://buy.stripe.com/14AdRa2LK2l99K8gne3AY03", // TODO: replace with annual link
     },
     {
       name: "12GB RAM",
       originalPrice: "18€",
-      price: "15€",
+      monthlyPrice: "15€",
+      annualPrice: "180€",
+      monthlyEquiv: "15€",
       popular: false,
-      stripeLink: "https://buy.stripe.com/bJe7sM1HGe3R3lK2wo3AY05"
+      stripeMonthly: "https://buy.stripe.com/bJe7sM1HGe3R3lK2wo3AY05",
+      stripeAnnual: "https://buy.stripe.com/bJe7sM1HGe3R3lK2wo3AY05", // TODO: replace with annual link
     }
   ];
 
   useEffect(() => {
-    // Disabled GSAP ScrollTrigger temporarily if it's causing opacity:0 traps 
-    // due to pinned scroll elements above.
-    /*
-    const ctx = gsap.context(() => {
-      gsap.from(".pricing-card", {
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top 75%",
-        },
-        y: 60,
-        opacity: 0,
-        duration: 0.8,
-        stagger: 0.15,
-        ease: "power3.out"
-      });
-    }, sectionRef);
-
-    return () => ctx.revert();
-    */
+    // GSAP ScrollTrigger disabled — commented out to avoid opacity traps
   }, []);
 
   return (
@@ -117,15 +109,35 @@ const Pricing = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
               🌐 1 Gbps · Nuremberg 🇩🇪
             </span>
           </div>
+
+          {/* Billing toggle */}
+          <div className="mt-8 inline-flex items-center gap-1 p-1 rounded-full bg-white/5 border border-white/10">
+            <button
+              onClick={() => setBilling('monthly')}
+              className={`px-5 py-2 rounded-full text-sm font-bold transition-all duration-200 ${billing === 'monthly' ? 'bg-white text-gray-900 shadow-md' : 'text-white/60 hover:text-white'}`}
+            >
+              Mensual
+            </button>
+            <button
+              onClick={() => setBilling('annual')}
+              className={`px-5 py-2 rounded-full text-sm font-bold transition-all duration-200 flex items-center gap-2 ${billing === 'annual' ? 'bg-accent-green text-gray-900 shadow-md' : 'text-white/60 hover:text-white'}`}
+            >
+              <Calendar size={14} />
+              Anual
+              <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${billing === 'annual' ? 'bg-gray-900/20 text-gray-900' : 'bg-accent-green/20 text-accent-green'}`}>
+                1 pago
+              </span>
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 items-stretch pt-4">
           {plans.map((plan, idx) => (
-            <div 
+            <div
               key={idx}
               className={`pricing-card relative flex flex-col rounded-[2rem] transition-all duration-500 overflow-visible
-                ${plan.popular 
-                  ? 'bg-[#1a2333] border-2 border-accent-green z-20 shadow-[0_0_50px_rgba(34,197,94,0.15)] transform lg:-translate-y-6 hover:shadow-[0_0_60px_rgba(34,197,94,0.3)] hover:-translate-y-8' 
+                ${plan.popular
+                  ? 'bg-[#1a2333] border-2 border-accent-green z-20 shadow-[0_0_50px_rgba(34,197,94,0.15)] transform lg:-translate-y-6 hover:shadow-[0_0_60px_rgba(34,197,94,0.3)] hover:-translate-y-8'
                   : 'bg-[#0B0F1A] border border-white/10 hover:border-white/20 hover:-translate-y-4 hover:shadow-[0_20px_40px_rgba(255,255,255,0.02)]'
                 } p-8 lg:p-10`}
             >
@@ -142,13 +154,27 @@ const Pricing = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
 
               <div className="mb-8 text-center relative">
                 <div className="flex flex-col items-center justify-center relative">
-                  <span className="text-white/30 font-bold text-xl line-through decoration-red-500/50 block mb-1">
-                    {plan.originalPrice}
-                  </span>
-                  <div className="flex items-end justify-center font-heading text-6xl font-bold text-white tracking-tighter leading-none">
-                    {plan.price}
-                    <span className="text-white/50 text-sm mb-2 ml-1 uppercase font-sans font-medium tracking-wide">/ mes</span>
-                  </div>
+                  {billing === 'monthly' ? (
+                    <>
+                      <span className="text-white/30 font-bold text-xl line-through decoration-red-500/50 block mb-1">
+                        {plan.originalPrice}
+                      </span>
+                      <div className="flex items-end justify-center font-heading text-6xl font-bold text-white tracking-tighter leading-none">
+                        {plan.monthlyPrice}
+                        <span className="text-white/50 text-sm mb-2 ml-1 uppercase font-sans font-medium tracking-wide">/ mes</span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex items-end justify-center font-heading text-6xl font-bold text-white tracking-tighter leading-none">
+                        {plan.annualPrice}
+                        <span className="text-white/50 text-sm mb-2 ml-1 uppercase font-sans font-medium tracking-wide">/ año</span>
+                      </div>
+                      <span className="text-accent-green/80 text-xs font-bold mt-1">
+                        = {plan.monthlyEquiv}/mes · 1 solo pago
+                      </span>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -163,7 +189,7 @@ const Pricing = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
                   "Compatible con Paper, Forge, Fabric y Vanilla"
                 ].map((feat, f_idx) => (
                   <li key={f_idx} className="flex items-start gap-3 justify-start text-white/80 text-[13px] text-left">
-                    <Check size={16} className={`shrink-0 mt-0.5 ${plan.popular ? 'text-accent-green' : 'text-white/40'}`} /> 
+                    <Check size={16} className={`shrink-0 mt-0.5 ${plan.popular ? 'text-accent-green' : 'text-white/40'}`} />
                     <span>{feat}</span>
                   </li>
                 ))}
@@ -176,16 +202,16 @@ const Pricing = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
                 </span>
               </div>
 
-              <button 
-                onClick={() => handleSubscribe(plan.stripeLink)}
+              <button
+                onClick={() => handleSubscribe(billing === 'annual' ? plan.stripeAnnual : plan.stripeMonthly)}
                 disabled={loading}
                 className={`w-full py-4 rounded-xl font-heading font-bold text-sm uppercase tracking-widest transition-all duration-300 mt-auto
-                ${plan.popular 
-                  ? 'bg-accent-green text-gray-900 hover:bg-[#1faa50] shadow-[0_10px_20px_rgba(34,197,94,0.2)] hover:-translate-y-1' 
+                ${plan.popular
+                  ? 'bg-accent-green text-gray-900 hover:bg-[#1faa50] shadow-[0_10px_20px_rgba(34,197,94,0.2)] hover:-translate-y-1'
                   : 'bg-white/5 text-white hover:bg-white/10 border border-white/10 hover:border-white/20 hover:-translate-y-1'
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
-                Crear servidor
+                {billing === 'annual' ? 'Pagar anualmente' : 'Crear servidor'}
               </button>
             </div>
           ))}
@@ -194,7 +220,7 @@ const Pricing = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
         {/* FAQ Section specifically for plugins + mods */}
         <div className="mt-20 max-w-4xl mx-auto p-8 rounded-[2rem] bg-[#1a2333]/30 border border-white/10 relative overflow-hidden backdrop-blur-sm">
           <div className="absolute top-0 right-0 w-64 h-64 bg-accent-green/10 rounded-full blur-[80px] -z-10"></div>
-          
+
           <div className="flex flex-col md:flex-row gap-8 items-start md:items-center">
             <div className="flex-1">
               <h3 className="text-xl font-heading font-bold uppercase tracking-wide text-white mb-4 flex items-center gap-3">
@@ -218,10 +244,10 @@ const Pricing = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
             </div>
             <div className="w-full md:w-auto flex flex-col items-start md:items-end justify-center md:pl-8 md:border-l border-white/10 pt-6 md:pt-0">
               <p className="text-white/80 text-sm mb-4 font-medium">¿Necesitas mods + plugins?</p>
-              <a 
-                href="https://discord.gg/TS49z4yr" 
-                target="_blank" 
-                rel="noreferrer" 
+              <a
+                href="https://discord.gg/TS49z4yr"
+                target="_blank"
+                rel="noreferrer"
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-accent-green/50 text-white font-medium text-sm transition-all text-center"
               >
                 Consulta compatibilidad

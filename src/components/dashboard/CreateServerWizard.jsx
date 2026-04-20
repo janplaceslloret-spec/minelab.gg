@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Bot, Sparkles, Send, Cpu, Globe, ArrowRight, Loader2 } from 'lucide-react';
+import { Bot, Sparkles, Send, Cpu, Globe, ArrowRight, Loader2, Calendar } from 'lucide-react';
 import { supabase } from '../../supabaseClient';
 
 // ── Fetch versions from official APIs per server type ────────────────────────
@@ -231,17 +231,34 @@ const CreateServerWizard = ({ user, onFinish }) => {
     }
   };
 
+  const [billingPeriod, setBillingPeriod] = useState('monthly'); // 'monthly' | 'annual'
+
+  const STRIPE_LINKS = {
+    monthly: {
+      4:  "https://buy.stripe.com/8x228s2LKcZN3lK3As3AY01",
+      6:  "https://buy.stripe.com/4gM5kE1HG6Bpg8w7QI3AY02",
+      8:  "https://buy.stripe.com/14AdRa2LK2l99K8gne3AY03",
+      12: "https://buy.stripe.com/bJe7sM1HGe3R3lK2wo3AY05"
+    },
+    annual: {
+      // TODO: replace with real annual Stripe payment links once created
+      4:  "https://buy.stripe.com/8x228s2LKcZN3lK3As3AY01",
+      6:  "https://buy.stripe.com/4gM5kE1HG6Bpg8w7QI3AY02",
+      8:  "https://buy.stripe.com/14AdRa2LK2l99K8gne3AY03",
+      12: "https://buy.stripe.com/bJe7sM1HGe3R3lK2wo3AY05"
+    }
+  };
+
+  const PLAN_PRICES = {
+    monthly: { 4: '5€/mes', 6: '7€/mes', 8: '10€/mes', 12: '15€/mes' },
+    annual:  { 4: '60€/año', 6: '84€/año', 8: '120€/año', 12: '180€/año' }
+  };
+
   const handleStripeCheckout = async () => {
     if (!serverId) return;
     try {
-      const stripeLinks = {
-        4: "https://buy.stripe.com/8x228s2LKcZN3lK3As3AY01",
-        6: "https://buy.stripe.com/4gM5kE1HG6Bpg8w7QI3AY02",
-        8: "https://buy.stripe.com/14AdRa2LK2l99K8gne3AY03",
-        12: "https://buy.stripe.com/bJe7sM1HGe3R3lK2wo3AY05"
-      };
-
-      const baseUrl = stripeLinks[form.ram] || stripeLinks[6];
+      const links = STRIPE_LINKS[billingPeriod];
+      const baseUrl = links[form.ram] || links[6];
 
       // Pasar server_id como client_reference_id (el webhook lo usará para
       // encontrar al usuario por user_id, sin depender del email).
@@ -251,6 +268,7 @@ const CreateServerWizard = ({ user, onFinish }) => {
         client_reference_id: serverId,
         prefilled_email: user?.email || '',
         success_url: successUrl,
+        metadata_billing_period: billingPeriod,
       });
 
       window.location.href = `${baseUrl}?${params.toString()}`;
@@ -362,13 +380,38 @@ const CreateServerWizard = ({ user, onFinish }) => {
             
           </div>
 
-          <div className="pt-6 border-t border-[#2A2A2A] flex justify-end">
-            <button 
-              onClick={handleStripeCheckout}
-              className="px-8 py-4 bg-[#FFFFFF] hover:bg-[#E5E5E5] text-[#0B0B0B] rounded-xl flex items-center gap-2 text-sm font-bold uppercase tracking-wider transition-colors shadow-xl group"
-            >
-              Continuar al pago <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-            </button>
+          <div className="pt-6 border-t border-[#2A2A2A] flex flex-col gap-4">
+            {/* Billing period toggle */}
+            <div className="flex flex-col gap-3">
+              <label className="text-sm font-bold text-[#FFFFFF] uppercase tracking-wider flex items-center gap-2">
+                <Calendar size={16} className="text-[#6B6B6B]" /> Periodo de facturación
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => setBillingPeriod('monthly')}
+                  className={`py-3 px-4 rounded-xl border font-bold text-sm transition-all text-left ${billingPeriod === 'monthly' ? 'bg-[#22C55E]/10 border-[#22C55E] text-[#22C55E] shadow-[0_0_15px_rgba(34,197,94,0.1)]' : 'bg-[#171717] border-[#2A2A2A] text-[#B3B3B3] hover:border-[#6B6B6B]'}`}
+                >
+                  <div className="font-bold">Mensual</div>
+                  <div className="text-xs opacity-70 font-normal mt-0.5">{PLAN_PRICES.monthly[form.ram] || PLAN_PRICES.monthly[6]}</div>
+                </button>
+                <button
+                  onClick={() => setBillingPeriod('annual')}
+                  className={`py-3 px-4 rounded-xl border font-bold text-sm transition-all text-left ${billingPeriod === 'annual' ? 'bg-[#22C55E]/10 border-[#22C55E] text-[#22C55E] shadow-[0_0_15px_rgba(34,197,94,0.1)]' : 'bg-[#171717] border-[#2A2A2A] text-[#B3B3B3] hover:border-[#6B6B6B]'}`}
+                >
+                  <div className="font-bold flex items-center gap-1.5">Anual <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[#22C55E]/20 text-[#22C55E] font-bold">1 pago</span></div>
+                  <div className="text-xs opacity-70 font-normal mt-0.5">{PLAN_PRICES.annual[form.ram] || PLAN_PRICES.annual[6]}</div>
+                </button>
+              </div>
+            </div>
+
+            <div className="flex justify-end">
+              <button
+                onClick={handleStripeCheckout}
+                className="px-8 py-4 bg-[#FFFFFF] hover:bg-[#E5E5E5] text-[#0B0B0B] rounded-xl flex items-center gap-2 text-sm font-bold uppercase tracking-wider transition-colors shadow-xl group"
+              >
+                Continuar al pago <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+              </button>
+            </div>
           </div>
 
         </div>
