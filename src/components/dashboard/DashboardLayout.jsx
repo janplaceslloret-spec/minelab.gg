@@ -192,17 +192,17 @@ const DashboardLayout = () => {
         const [serversResponse, profileResponse1, membersByIdResp, membersByEmailResp] = await Promise.all([
           supabase.from('mc_servers').select('*').eq('user_id', userId),
           supabase.from('profiles').select('plan_status').eq('id', userId).limit(1).maybeSingle(),
-          // Query 1: memberships found by UUID
+          // Query 1: memberships found by UUID (no nested join — avoids RLS block on mc_servers)
           supabase
             .from('server_members')
-            .select('server_id, role, mc_servers(*), user_id, invited_email')
+            .select('server_id, role, user_id, invited_email')
             .eq('user_id', userId)
             .eq('status', 'active'),
           // Query 2: memberships found by email (catches UUID-mismatch cases after OAuth)
           lowerEmail
             ? supabase
                 .from('server_members')
-                .select('server_id, role, mc_servers(*), user_id, invited_email')
+                .select('server_id, role, user_id, invited_email')
                 .eq('invited_email', lowerEmail)
                 .eq('status', 'active')
             : Promise.resolve({ data: [] }),
@@ -212,7 +212,22 @@ const DashboardLayout = () => {
         const byId    = membersByIdResp?.data    || [];
         const byEmail = membersByEmailResp?.data  || [];
         const seenServerIds = new Set(byId.map(m => m.server_id));
-        const membershipsResponse = { data: [...byId, ...byEmail.filter(m => !seenServerIds.has(m.server_id))] };
+        const rawMemberships = [...byId, ...byEmail.filter(m => !seenServerIds.has(m.server_id))];
+
+        // Fetch the actual server data for shared memberships separately
+        // (avoids nested-join RLS block — mc_servers RLS requires allow_all SELECT policy)
+        let membershipsWithServers = rawMemberships;
+        const sharedServerIds = rawMemberships.map(m => m.server_id);
+        if (sharedServerIds.length > 0) {
+          const { data: sharedServerRows } = await supabaseAnon
+            .from('mc_servers')
+            .select('*')
+            .in('id', sharedServerIds);
+          const serverMap = Object.fromEntries((sharedServerRows || []).map(s => [s.id, s]));
+          membershipsWithServers = rawMemberships.map(m => ({ ...m, mc_servers: serverMap[m.server_id] || null }));
+        }
+
+        const membershipsResponse = { data: membershipsWithServers };
 
         const { data: servers, error: serversError } = serversResponse;
         let profile = profileResponse1.data;
