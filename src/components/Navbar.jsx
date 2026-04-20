@@ -15,8 +15,8 @@ const Navbar = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
   }, []);
 
   return (
-    <nav className={`fixed top-12 left-0 right-0 z-40 transition-all duration-300 ${scrolled ? 'py-3' : 'py-6 md:py-8 mt-2'}`}>
-      <div className={`container mx-auto px-6 max-w-7xl transition-all duration-300 ${scrolled ? 'glass-panel mx-4 py-3' : ''}`}>
+    <nav className={`fixed top-[48px] left-0 right-0 z-40 transition-all duration-300 ${scrolled ? 'py-2' : 'py-4'}`}>
+      <div className={`container mx-auto px-6 max-w-7xl transition-all duration-300 ${scrolled ? 'glass-panel mx-4 py-3' : 'glass-panel py-3'}`}>
         <div className="flex justify-between items-center">
           
           {/* Logo */}

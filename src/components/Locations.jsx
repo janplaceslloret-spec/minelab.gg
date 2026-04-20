@@ -39,34 +39,18 @@ const Locations = () => {
               </div>
               
               <div className="space-y-4">
-                <div className="flex items-center justify-between border-b border-white/5 pb-4">
+                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="relative">
                       <div className="w-2.5 h-2.5 rounded-full bg-accent-green z-10 relative"></div>
                       <div className="absolute inset-0 bg-accent-green animate-ping rounded-full opacity-75"></div>
                     </div>
                     <div>
-                      <h4 className="text-white font-bold text-sm">Alemania — Frankfurt</h4>
-                      <p className="text-white/50 text-xs">Ryzen 9 7950X3D / NVMe Gen4</p>
+                      <h4 className="text-white font-bold text-sm">Alemania — Núremberg 🇩🇪</h4>
+                      <p className="text-white/50 text-xs">AMD EPYC · 16 vCPU / NVMe SSD 320 GB</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-1 text-accent-green text-xs font-bold uppercase tracking-wider bg-accent-green/10 px-2 py-1 rounded-md">
-                    <Activity size={12} /> Alta
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="relative">
-                      <div className="w-2.5 h-2.5 rounded-full bg-accent-green z-10 relative"></div>
-                      <div className="absolute inset-0 bg-accent-green animate-ping rounded-full opacity-75" style={{animationDelay: '1s'}}></div>
-                    </div>
-                    <div>
-                      <h4 className="text-white font-bold text-sm">Alemania — Nuremberg</h4>
-                      <p className="text-white/50 text-xs">Latencia estimada baja</p>
-                    </div>
-                  </div>
-                   <div className="flex items-center gap-1 text-accent-green text-xs font-bold uppercase tracking-wider bg-accent-green/10 px-2 py-1 rounded-md">
                     <Activity size={12} /> Alta
                   </div>
                 </div>

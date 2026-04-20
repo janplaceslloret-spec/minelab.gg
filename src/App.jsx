@@ -39,7 +39,7 @@ function LandingPage({ isLoggedIn, onAuthAction, showToast }) {
       <Topbar onLoginDemo={onAuthAction} isLoggedIn={isLoggedIn} onOpenDashboard={onAuthAction} />
       <Navbar onLoginDemo={onAuthAction} isLoggedIn={isLoggedIn} onOpenDashboard={onAuthAction} />
       
-      <main className="pt-32">
+      <main className="pt-[120px]">
         <Hero onLoginDemo={onAuthAction} isLoggedIn={isLoggedIn} onOpenDashboard={onAuthAction} />
         <AIFeaturesCarousel />
         <AIFeature />

@@ -26,8 +26,8 @@ const Topbar = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
   }, []);
 
   return (
-    <div className="top-bar" style={{ background: '#0B0F1A', borderBottom: '1px solid rgba(34,197,94,0.15)', position: 'fixed', top: 0, left: 0, right: 0, width: '100%', zIndex: 50 }}>
-      <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '8px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '20px' }}>
+    <div className="top-bar" style={{ background: '#0B0F1A', borderBottom: '1px solid rgba(34,197,94,0.15)', position: 'fixed', top: 0, left: 0, right: 0, width: '100%', zIndex: 50, height: '48px' }}>
+      <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 20px', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '20px' }}>
 
         {/* Left Side: Counter & Promotional Text */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
