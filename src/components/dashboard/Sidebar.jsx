@@ -1,10 +1,15 @@
-import React from 'react';
-import { LayoutDashboard, Terminal, FolderOpen, Blocks, Users, DatabaseBackup, Settings, LogOut, Star } from 'lucide-react';
+import React, { useState } from 'react';
+import { LayoutDashboard, Terminal, FolderOpen, Blocks, Users, DatabaseBackup, Settings, LogOut, Star, ChevronDown, Share2 } from 'lucide-react';
 import { supabase } from '../../supabaseClient';
 import { useNavigate } from 'react-router-dom';
 
-const Sidebar = ({ viewState = 'dashboard', planStatus = 'none', onCreateServer, activeTab = 'overview', onTabChange, user, server, onServerAction, isActionLoading }) => {
+const Sidebar = ({ viewState = 'dashboard', planStatus = 'none', onCreateServer, activeTab = 'overview', onTabChange, user, server, sharedServers = [], onSwitchServer, onServerAction, isActionLoading }) => {
+  const [serverPickerOpen, setServerPickerOpen] = useState(false);
   const status = server?.status_server || 'offline';
+  const allServers = [
+    ...(server ? [{ ...server, _own: true }] : []),
+    ...sharedServers.filter(s => s.id !== server?.id).map(s => ({ ...s, _own: false })),
+  ];
   const canStart = status === 'stopped' || status === 'error' || status === 'offline';
   const canStop = status === 'running';
   const canRestart = status === 'running';
@@ -42,9 +47,40 @@ const Sidebar = ({ viewState = 'dashboard', planStatus = 'none', onCreateServer,
 
       {!isLimited && server && (
          <div className="px-6 flex flex-col gap-3 mb-8">
-            <div className="flex flex-col gap-0.5">
-               <span className="text-white text-sm font-bold truncate uppercase tracking-tight">{server.server_name || "Servidor"}</span>
-               <span className="text-[#6B6B6B] font-mono text-[10px] tracking-widest">{server.ip ? `${server.ip}:${server.port}` : "IP PENDIENTE"}</span>
+            {/* Server name + switcher */}
+            <div className="relative">
+              <button
+                onClick={() => allServers.length > 1 && setServerPickerOpen(o => !o)}
+                className={`w-full flex items-center justify-between gap-2 text-left ${allServers.length > 1 ? 'cursor-pointer hover:opacity-80' : 'cursor-default'}`}
+              >
+                <div className="flex flex-col gap-0.5 min-w-0">
+                  <span className="text-white text-sm font-bold truncate uppercase tracking-tight">{server.server_name || "Servidor"}</span>
+                  <span className="text-[#6B6B6B] font-mono text-[10px] tracking-widest">{server.ip ? `${server.ip}:${server.port}` : "IP PENDIENTE"}</span>
+                </div>
+                {allServers.length > 1 && (
+                  <ChevronDown size={14} className={`text-[#6B6B6B] shrink-0 transition-transform ${serverPickerOpen ? 'rotate-180' : ''}`} />
+                )}
+              </button>
+
+              {/* Server picker dropdown */}
+              {serverPickerOpen && allServers.length > 1 && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-[#1A1A1A] border border-[#2A2A2A] rounded-xl shadow-2xl z-30 overflow-hidden">
+                  {allServers.map(s => (
+                    <button
+                      key={s.id}
+                      onClick={() => { onSwitchServer?.(s); setServerPickerOpen(false); }}
+                      className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-[#2A2A2A] transition-colors ${s.id === server.id ? 'bg-[#22C55E]/5' : ''}`}
+                    >
+                      {!s._own && <Share2 size={12} className="text-[#22C55E] shrink-0" title="Compartido contigo" />}
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-white text-xs font-bold truncate uppercase">{s.server_name || 'Servidor'}</span>
+                        {!s._own && <span className="text-[#6B6B6B] text-[9px]">Compartido</span>}
+                      </div>
+                      {s.id === server.id && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-[#22C55E] shrink-0" />}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             
             <div className="flex items-center gap-1.5 w-full grid grid-cols-3">

@@ -6,6 +6,7 @@ import MainContent from './MainContent';
 import AIAssistantSidebar from './AIAssistantSidebar';
 import EmptyServerState from './EmptyServerState';
 import CreateServerWizard from './CreateServerWizard';
+import InviteAcceptModal from './InviteAcceptModal';
 import { Loader2, MessageCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import DiscordWidget from '../DiscordWidget';
@@ -27,6 +28,8 @@ const DashboardLayout = () => {
   const [isActionLoading, setIsActionLoading] = useState(false);
   const [mobileChatOpen, setMobileChatOpen] = useState(false);
   const [paymentFailed, setPaymentFailed] = useState(false);
+  const [sharedServers, setSharedServers] = useState([]); // servers the user was invited to
+  const [pendingInviteToken, setPendingInviteToken] = useState(null); // ?invite= URL param
   const navigate = useNavigate();
 
   const handleCreateServer = async () => {
@@ -186,13 +189,27 @@ const DashboardLayout = () => {
       console.log("[DashboardLayout] Fetching servers for user:", userId);
       try {
         const lowerEmail = userEmail ? String(userEmail).toLowerCase() : '';
-        const [serversResponse, profileResponse1] = await Promise.all([
+        const [serversResponse, profileResponse1, membershipsResponse] = await Promise.all([
           supabase.from('mc_servers').select('*').eq('user_id', userId),
-          supabase.from('profiles').select('plan_status').eq('id', userId).limit(1).maybeSingle()
+          supabase.from('profiles').select('plan_status').eq('id', userId).limit(1).maybeSingle(),
+          // Load servers this user was invited to (active memberships)
+          supabase
+            .from('server_members')
+            .select('server_id, role, mc_servers(*)')
+            .eq('user_id', userId)
+            .eq('status', 'active'),
         ]);
 
         const { data: servers, error: serversError } = serversResponse;
         let profile = profileResponse1.data;
+
+        // Collect servers where user is an invited member
+        const memberships = membershipsResponse?.data || [];
+        const sharedSrvs = memberships
+          .map(m => m.mc_servers)
+          .filter(Boolean)
+          .filter(s => !servers?.some(own => own.id === s.id)); // exclude own servers
+        setSharedServers(sharedSrvs);
 
         // If ID didn't find a valid plan, try by email as a fallback
         let currentPlanStatus = profile?.plan_status || 'none';
@@ -229,6 +246,11 @@ const DashboardLayout = () => {
         }
 
         console.log("[DashboardLayout] Profile plan status:", currentPlanStatus);
+
+        // Detect invite token in URL — show modal after dashboard resolves
+        const urlParams = new URLSearchParams(window.location.search);
+        const inviteToken = urlParams.get('invite');
+        if (inviteToken) setPendingInviteToken(inviteToken);
 
         const isWizardRequested = window.location.search.includes('wizard=true');
 
@@ -497,8 +519,35 @@ const DashboardLayout = () => {
     );
   }
 
+  /* ── Invite accepted: add shared server and switch to it ── */
+  const handleInviteAccepted = (srv) => {
+    setPendingInviteToken(null);
+    navigate('/panel', { replace: true });
+    if (srv) {
+      setSharedServers(prev => {
+        if (prev.some(s => s.id === srv.id)) return prev;
+        return [...prev, srv];
+      });
+      setActiveServer(srv);
+      setViewState('dashboard');
+    }
+  };
+
   return (
     <div className="min-h-screen w-full bg-[#0B0B0B] flex font-sans">
+      {/* Invite accept modal — shown when ?invite=<token> is in the URL */}
+      {pendingInviteToken && user && (
+        <InviteAcceptModal
+          token={pendingInviteToken}
+          user={user}
+          onAccepted={handleInviteAccepted}
+          onDismiss={() => {
+            setPendingInviteToken(null);
+            navigate('/panel', { replace: true });
+          }}
+        />
+      )}
+
       <Sidebar
         viewState={viewState}
         planStatus={planStatus}
@@ -507,6 +556,8 @@ const DashboardLayout = () => {
         onTabChange={setActiveTab}
         user={user}
         server={activeServer}
+        sharedServers={sharedServers}
+        onSwitchServer={setActiveServer}
         isActionLoading={isActionLoading}
         onServerAction={handleServerAction}
       />

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { User, Shield, Zap, Settings, FolderSync, Copy, Check, RefreshCw, Loader2, Eye, EyeOff, Plug } from 'lucide-react';
 import { supabase } from '../../supabaseClient';
+import MembersCard from './MembersCard';
 
 const API_URL = import.meta.env.VITE_API_URL;
 const API_KEY = import.meta.env.VITE_MC_API_KEY || 'minelab_k3y_Xp9mR7_2026';
@@ -171,6 +172,11 @@ const SettingsView = ({ planStatus, user, server, onServerUpdate }) => {
             </button>
           </div>
         </div>
+
+        {/* Members / Invite Card — only for server owner */}
+        {server && server.user_id === user?.id && (
+          <MembersCard server={server} user={user} />
+        )}
 
         {/* SFTP / FileZilla Card */}
         {server && (
