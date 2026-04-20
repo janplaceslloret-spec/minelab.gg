@@ -114,7 +114,7 @@ const Pricing = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
               💾 NVMe SSD · 320 GB
             </span>
             <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
-              🌐 10 Gbps · Nuremberg 🇩🇪
+              🌐 1 Gbps · Nuremberg 🇩🇪
             </span>
           </div>
         </div>
@@ -156,7 +156,7 @@ const Pricing = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
                 {[
                   `${plan.name} RAM dedicada`,
                   "Procesador AMD EPYC (Hetzner CX53)",
-                  "10 Gbps de ancho de banda",
+                  "1 Gbps de ancho de banda",
                   "Almacenamiento NVMe SSD local",
                   "Datacenter Nuremberg, Alemania 🇩🇪",
                   "Backups disponibles",
