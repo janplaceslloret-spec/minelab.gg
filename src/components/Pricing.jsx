@@ -100,6 +100,23 @@ const Pricing = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
           <p className="text-white/60 text-lg">
             Planes con especificaciones técnicas claras y máximo rendimiento para tu servidor.
           </p>
+
+          {/* Real infrastructure badge */}
+          <div className="mt-6 inline-flex flex-wrap justify-center gap-3 text-xs font-mono text-white/50">
+            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
+              <span className="w-1.5 h-1.5 rounded-full bg-accent-green animate-pulse"></span>
+              Hetzner CX53
+            </span>
+            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
+              ⚡ AMD EPYC · 16 vCPU
+            </span>
+            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
+              💾 NVMe SSD · 320 GB
+            </span>
+            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
+              🌐 10 Gbps · Nuremberg 🇩🇪
+            </span>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 items-stretch pt-4">
@@ -137,12 +154,12 @@ const Pricing = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
 
               <ul className="space-y-4 mb-8 flex-1">
                 {[
-                  `${plan.name} asignada`,
-                  "Ubicado en Nuremberg, Alemania",
-                  "Red eu-central",
-                  "Almacenamiento SSD/NVMe",
+                  `${plan.name} RAM dedicada`,
+                  "Procesador AMD EPYC (Hetzner CX53)",
+                  "10 Gbps de ancho de banda",
+                  "Almacenamiento NVMe SSD local",
+                  "Datacenter Nuremberg, Alemania 🇩🇪",
                   "Backups disponibles",
-                  "Infraestructura de alto rendimiento",
                   "Compatible con Paper, Forge, Fabric y Vanilla"
                 ].map((feat, f_idx) => (
                   <li key={f_idx} className="flex items-start gap-3 justify-start text-white/80 text-[13px] text-left">

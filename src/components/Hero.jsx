@@ -53,7 +53,10 @@ const Hero = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
               >
                 {isLoggedIn ? 'IR AL PANEL' : 'EMPEZAR AHORA'}
               </button>
-              <button className="bg-white/5 border border-white/10 hover:bg-white/10 text-white px-8 py-4 rounded-xl font-heading font-bold text-lg transition-all backdrop-blur-sm uppercase tracking-tight">
+              <button
+                onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}
+                className="bg-white/5 border border-white/10 hover:bg-white/10 text-white px-8 py-4 rounded-xl font-heading font-bold text-lg transition-all backdrop-blur-sm uppercase tracking-tight"
+              >
                 VER DEMO
               </button>
             </div>

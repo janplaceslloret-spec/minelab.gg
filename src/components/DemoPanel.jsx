@@ -103,6 +103,13 @@ const generateInitialHistory = () => {
 // ═══════════════════════════════════════════════════════════
 
 const DemoSidebar = ({ activeTab, onTabChange }) => {
+  const [serverStatus, setServerStatus] = useState('running'); // 'running' | 'stopped' | 'restarting'
+
+  const handleRestart = () => {
+    setServerStatus('restarting');
+    setTimeout(() => setServerStatus('running'), 2500);
+  };
+
   const generalItems = [
     { icon: <LayoutDashboard size={20} />, label: 'Dashboard', id: 'overview' },
     { icon: <Terminal size={20} />, label: 'Consola', id: 'console' },
@@ -148,13 +155,25 @@ const DemoSidebar = ({ activeTab, onTabChange }) => {
         </div>
 
         <div className="flex items-center gap-1.5 w-full grid grid-cols-3">
-          <button className="w-full py-1.5 rounded text-[9px] font-bold tracking-wider transition-all duration-300 flex items-center justify-center gap-1 uppercase bg-[rgba(255,255,255,0.02)] text-white/30 cursor-not-allowed">
+          <button
+            onClick={() => setServerStatus('running')}
+            disabled={serverStatus === 'running' || serverStatus === 'restarting'}
+            className={`w-full py-1.5 rounded text-[9px] font-bold tracking-wider transition-all duration-300 flex items-center justify-center gap-1 uppercase ${serverStatus === 'stopped' ? 'bg-[rgba(34,197,94,0.15)] text-[#22C55E] hover:bg-[rgba(34,197,94,0.25)]' : 'bg-[rgba(255,255,255,0.02)] text-white/30 cursor-not-allowed'}`}
+          >
             START
           </button>
-          <button className="w-full py-1.5 rounded text-[9px] font-bold tracking-wider transition-all duration-300 flex items-center justify-center gap-1 uppercase bg-[rgba(234,179,8,0.1)] text-[#EAB308] hover:bg-[rgba(234,179,8,0.2)] shadow-[0_4px_10px_rgba(234,179,8,0.05)]">
-            RESTART
+          <button
+            onClick={handleRestart}
+            disabled={serverStatus === 'stopped' || serverStatus === 'restarting'}
+            className={`w-full py-1.5 rounded text-[9px] font-bold tracking-wider transition-all duration-300 flex items-center justify-center gap-1 uppercase ${serverStatus === 'restarting' ? 'bg-[rgba(234,179,8,0.2)] text-[#EAB308] animate-pulse cursor-not-allowed' : serverStatus === 'running' ? 'bg-[rgba(234,179,8,0.1)] text-[#EAB308] hover:bg-[rgba(234,179,8,0.2)]' : 'bg-[rgba(255,255,255,0.02)] text-white/30 cursor-not-allowed'} shadow-[0_4px_10px_rgba(234,179,8,0.05)]`}
+          >
+            {serverStatus === 'restarting' ? '...' : 'RESTART'}
           </button>
-          <button className="w-full py-1.5 rounded text-[9px] font-bold tracking-wider transition-all duration-300 flex items-center justify-center gap-1 uppercase bg-[rgba(239,68,68,0.1)] text-[#EF4444] hover:bg-[rgba(239,68,68,0.2)] shadow-[0_4px_10px_rgba(239,68,68,0.05)]">
+          <button
+            onClick={() => setServerStatus('stopped')}
+            disabled={serverStatus === 'stopped' || serverStatus === 'restarting'}
+            className={`w-full py-1.5 rounded text-[9px] font-bold tracking-wider transition-all duration-300 flex items-center justify-center gap-1 uppercase ${serverStatus === 'stopped' ? 'bg-[rgba(255,255,255,0.02)] text-white/30 cursor-not-allowed' : 'bg-[rgba(239,68,68,0.1)] text-[#EF4444] hover:bg-[rgba(239,68,68,0.2)]'} shadow-[0_4px_10px_rgba(239,68,68,0.05)]`}
+          >
             STOP
           </button>
         </div>
@@ -189,7 +208,10 @@ const DemoSidebar = ({ activeTab, onTabChange }) => {
               <span className="text-[#6B6B6B] text-[10px] uppercase tracking-wider font-bold">PRO 6GB</span>
             </div>
           </div>
-          <button className="w-full text-xs text-center py-2 rounded-lg bg-[#2A2A2A] hover:bg-red-500/20 hover:text-red-400 text-[#B3B3B3] transition-colors">
+          <button
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="w-full text-xs text-center py-2 rounded-lg bg-[#2A2A2A] hover:bg-red-500/20 hover:text-red-400 text-[#B3B3B3] transition-colors"
+          >
             Cerrar Sesión
           </button>
         </div>
