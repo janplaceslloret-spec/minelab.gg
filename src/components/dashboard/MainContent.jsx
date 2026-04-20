@@ -6,6 +6,7 @@ import FileManagerView from './FileManagerView';
 import SettingsView from './SettingsView';
 import PlayersView from './PlayersView';
 import ConfigView from './ConfigView';
+import ReviewView from './ReviewView';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip } from 'recharts';
 
 const MainContent = ({ planStatus, server, activeTab = 'overview', user, onServerUpdate, isActionLoading, onServerAction }) => {
@@ -408,6 +409,10 @@ const MainContent = ({ planStatus, server, activeTab = 'overview', user, onServe
 
         {activeTab === 'configuracion' && (
            <ConfigView server={server} />
+        )}
+
+        {activeTab === 'review' && (
+           <ReviewView user={user} planStatus={planStatus} />
         )}
 
       </div>

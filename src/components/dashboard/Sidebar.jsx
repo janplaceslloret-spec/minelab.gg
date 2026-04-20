@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, Terminal, FolderOpen, Blocks, Users, DatabaseBackup, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, Terminal, FolderOpen, Blocks, Users, DatabaseBackup, Settings, LogOut, Star } from 'lucide-react';
 import { supabase } from '../../supabaseClient';
 import { useNavigate } from 'react-router-dom';
 
@@ -24,8 +24,8 @@ const Sidebar = ({ viewState = 'dashboard', planStatus = 'none', onCreateServer,
   ];
 
   const accountItems = [
-    // Plan info is mostly visual, but let's make a Settings tab for the account as requested
     { icon: <Settings size={20} />, label: 'Ajustes', active: activeTab === 'settings', id: 'settings' },
+    { icon: <Star size={20} />, label: 'Dejar reseña', active: activeTab === 'review', id: 'review' },
   ];
 
   // If viewState is wizard or there is no plan, limit the exposed items.

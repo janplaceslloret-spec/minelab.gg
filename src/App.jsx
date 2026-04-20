@@ -13,6 +13,7 @@ import FAQ from './components/FAQ';
 import LegalSections from './components/LegalSections';
 import Footer from './components/Footer';
 import DiscordWidget from './components/DiscordWidget';
+import Testimonials from './components/Testimonials';
 import DashboardLayout from './components/dashboard/DashboardLayout';
 
 function LandingPage({ isLoggedIn, onAuthAction, showToast }) {
@@ -45,6 +46,7 @@ function LandingPage({ isLoggedIn, onAuthAction, showToast }) {
         <AIFeature />
         <About />
         <Locations />
+        <Testimonials />
         <Pricing onLoginDemo={onAuthAction} isLoggedIn={isLoggedIn} onOpenDashboard={onAuthAction} />
         <FAQ />
       </main>
