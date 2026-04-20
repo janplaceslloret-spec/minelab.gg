@@ -108,11 +108,21 @@ const AIAssistantSidebar = ({ activeServer, user, isMobile = false, onClose = nu
         })
       });
 
-      if (!response.ok) throw new Error("Webhook failure");
-      const data = await response.json();
+      // Try to parse the body regardless of status code — n8n sometimes returns
+      // non-2xx even when the action succeeded.
+      let data = {};
+      try { data = await response.json(); } catch (_) {}
 
-      const assistantText = data.response || data.output || data.message || data.reply || "He procesado tu solicitud.";
-      setMessages(prev => [...prev, { role: 'assistant', text: assistantText }]);
+      const assistantText =
+        data.response || data.output || data.message || data.reply ||
+        (response.ok ? "He procesado tu solicitud." : null);
+
+      if (assistantText) {
+        setMessages(prev => [...prev, { role: 'assistant', text: assistantText }]);
+      } else {
+        // Non-200 and no parseable body — genuine connectivity error
+        throw new Error(`HTTP ${response.status}`);
+      }
     } catch (err) {
       console.error("Chat error:", err);
       setMessages(prev => [...prev, { role: 'assistant', text: "Lo siento, ha ocurrido un error de conexión con la IA. Inténtalo de nuevo." }]);
