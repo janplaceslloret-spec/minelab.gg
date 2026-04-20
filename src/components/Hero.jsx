@@ -17,14 +17,7 @@ const Hero = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
         delay: 0.2
       });
       
-      // Floating animation for the image
-      gsap.to(".hero-image", {
-        y: 15,
-        duration: 4,
-        repeat: -1,
-        yoyo: true,
-        ease: "sine.inOut"
-      });
+      // NOTE: .hero-image removed (background image is now a CSS div, not a floating element)
     }, heroRef);
 
     return () => ctx.revert();
