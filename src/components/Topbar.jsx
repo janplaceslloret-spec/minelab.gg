@@ -55,7 +55,7 @@ const Topbar = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', whiteSpace: 'nowrap' }}>
             <span style={{ color: 'white', fontWeight: 700, fontSize: '16px', lineHeight: 1 }}>→</span>
             <span style={{ color: 'white' }}>
-              <strong style={{ color: '#4ADE80' }}>193</strong> jugadores en <strong style={{ color: '#4ADE80' }}>58</strong> servidores 📦
+              <strong style={{ color: '#4ADE80' }}>97</strong> jugadores en <strong style={{ color: '#4ADE80' }}>29</strong> servidores 📦
             </span>
           </div>
 
