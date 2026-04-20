@@ -35,7 +35,7 @@ const Pricing = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
       monthlyEquiv: "5€",
       popular: false,
       stripeMonthly: "https://buy.stripe.com/8x228s2LKcZN3lK3As3AY01",
-      stripeAnnual: "https://buy.stripe.com/8x228s2LKcZN3lK3As3AY01", // TODO: replace with annual link
+      stripeAnnual: "https://buy.stripe.com/fZu28s8641h54pOdb23AY0a",
     },
     {
       name: "6GB RAM",
@@ -45,7 +45,7 @@ const Pricing = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
       monthlyEquiv: "7€",
       popular: true,
       stripeMonthly: "https://buy.stripe.com/4gM5kE1HG6Bpg8w7QI3AY02",
-      stripeAnnual: "https://buy.stripe.com/4gM5kE1HG6Bpg8w7QI3AY02", // TODO: replace with annual link
+      stripeAnnual: "https://buy.stripe.com/4gMaEY4TS0d1e0ogne3AY0b",
     },
     {
       name: "8GB RAM",
@@ -55,7 +55,7 @@ const Pricing = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
       monthlyEquiv: "10€",
       popular: false,
       stripeMonthly: "https://buy.stripe.com/14AdRa2LK2l99K8gne3AY03",
-      stripeAnnual: "https://buy.stripe.com/14AdRa2LK2l99K8gne3AY03", // TODO: replace with annual link
+      stripeAnnual: "https://buy.stripe.com/eVq7sM9a8aRF4pOc6Y3AY0c",
     },
     {
       name: "12GB RAM",
@@ -65,7 +65,7 @@ const Pricing = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
       monthlyEquiv: "15€",
       popular: false,
       stripeMonthly: "https://buy.stripe.com/bJe7sM1HGe3R3lK2wo3AY05",
-      stripeAnnual: "https://buy.stripe.com/bJe7sM1HGe3R3lK2wo3AY05", // TODO: replace with annual link
+      stripeAnnual: "https://buy.stripe.com/8x28wQ864f7V3lKfja3AY0d",
     }
   ];
 

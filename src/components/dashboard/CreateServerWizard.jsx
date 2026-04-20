@@ -241,11 +241,10 @@ const CreateServerWizard = ({ user, onFinish }) => {
       12: "https://buy.stripe.com/bJe7sM1HGe3R3lK2wo3AY05"
     },
     annual: {
-      // TODO: replace with real annual Stripe payment links once created
-      4:  "https://buy.stripe.com/8x228s2LKcZN3lK3As3AY01",
-      6:  "https://buy.stripe.com/4gM5kE1HG6Bpg8w7QI3AY02",
-      8:  "https://buy.stripe.com/14AdRa2LK2l99K8gne3AY03",
-      12: "https://buy.stripe.com/bJe7sM1HGe3R3lK2wo3AY05"
+      4:  "https://buy.stripe.com/fZu28s8641h54pOdb23AY0a",
+      6:  "https://buy.stripe.com/4gMaEY4TS0d1e0ogne3AY0b",
+      8:  "https://buy.stripe.com/eVq7sM9a8aRF4pOc6Y3AY0c",
+      12: "https://buy.stripe.com/8x28wQ864f7V3lKfja3AY0d"
     }
   };
 
