@@ -25,7 +25,7 @@ const Navbar = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
             className="flex items-center gap-3 cursor-pointer group"
           >
             <img
-              src="/favicon.png"
+              src="/favicon.png?v=3"
               alt="MineLab Logo"
               className="w-9 h-9 transform group-hover:rotate-6 transition-transform duration-300"
             />
