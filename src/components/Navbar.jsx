@@ -25,7 +25,7 @@ const Navbar = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
             className="flex items-center cursor-pointer group"
           >
             <img
-              src="/logo.png"
+              src="/logo2.png"
               alt="MineLab Logo"
               className="h-14 w-auto object-contain"
             />

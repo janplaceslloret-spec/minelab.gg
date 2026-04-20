@@ -37,7 +37,7 @@ const Sidebar = ({ viewState = 'dashboard', planStatus = 'none', onCreateServer,
         onClick={() => navigate('/')}
         className="px-6 mb-2 mt-2 flex items-center cursor-pointer hover:opacity-80 transition-opacity"
       >
-        <img src="/logo.png" alt="MineLab" className="h-7 w-auto object-contain" />
+        <img src="/logo2.png" alt="MineLab" className="h-7 w-auto object-contain" />
       </div>
 
       {!isLimited && server && (
