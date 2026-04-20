@@ -189,17 +189,30 @@ const DashboardLayout = () => {
       console.log("[DashboardLayout] Fetching servers for user:", userId);
       try {
         const lowerEmail = userEmail ? String(userEmail).toLowerCase() : '';
-        const [serversResponse, profileResponse1, membershipsResponse] = await Promise.all([
+        const [serversResponse, profileResponse1, membersByIdResp, membersByEmailResp] = await Promise.all([
           supabase.from('mc_servers').select('*').eq('user_id', userId),
           supabase.from('profiles').select('plan_status').eq('id', userId).limit(1).maybeSingle(),
-          // Load servers this user was invited to (active memberships)
-          // Match by user_id OR invited_email to handle UUID mismatches after OAuth login
+          // Query 1: memberships found by UUID
           supabase
             .from('server_members')
             .select('server_id, role, mc_servers(*), user_id, invited_email')
-            .or(`user_id.eq.${userId}${lowerEmail ? `,invited_email.eq.${lowerEmail}` : ''}`)
+            .eq('user_id', userId)
             .eq('status', 'active'),
+          // Query 2: memberships found by email (catches UUID-mismatch cases after OAuth)
+          lowerEmail
+            ? supabase
+                .from('server_members')
+                .select('server_id, role, mc_servers(*), user_id, invited_email')
+                .eq('invited_email', lowerEmail)
+                .eq('status', 'active')
+            : Promise.resolve({ data: [] }),
         ]);
+
+        // Merge both result sets, deduplicating by server_id
+        const byId    = membersByIdResp?.data    || [];
+        const byEmail = membersByEmailResp?.data  || [];
+        const seenServerIds = new Set(byId.map(m => m.server_id));
+        const membershipsResponse = { data: [...byId, ...byEmail.filter(m => !seenServerIds.has(m.server_id))] };
 
         const { data: servers, error: serversError } = serversResponse;
         let profile = profileResponse1.data;
