@@ -265,6 +265,14 @@ const DashboardLayout = () => {
             // Show waiting screen — realtime subscription will move them to dashboard
             setViewState('awaiting_payment');
             navigate('/panel?paid=1', { replace: true });
+          } else if (inviteToken) {
+            // User arrived via invite link — show the modal, do NOT redirect to wizard
+            // The modal's onAccepted handler will set viewState to 'dashboard'
+            setViewState('dashboard');
+          } else if (sharedSrvs.length > 0) {
+            // User has accepted invites before — give them dashboard access
+            setActiveServer(sharedSrvs[0]);
+            setViewState('dashboard');
           } else if (isWizardRequested) {
             setViewState('wizard');
           } else {
@@ -458,14 +466,15 @@ const DashboardLayout = () => {
       // Evaluate immediately on back navigation based on planStatus instead of fetching servers again
       const normalizedPlanCheck = String(planStatus).trim().toLowerCase();
       const validPlansCheck = ['pro_4gb', 'pro_6gb', 'pro_8gb', 'pro_12gb', 'admin'];
-      if (!validPlansCheck.includes(normalizedPlanCheck)) {
+      // Allow dashboard access if user has a valid plan OR is an accepted member of a server
+      if (!validPlansCheck.includes(normalizedPlanCheck) && sharedServers.length === 0) {
         setViewState('wizard');
         navigate('/panel?wizard=true', { replace: true });
       } else {
         setViewState('dashboard');
       }
     }
-  }, [window.location.search, user, viewState]);
+  }, [window.location.search, user, viewState, planStatus, sharedServers, navigate]);
 
   if (viewState === 'loading') {
     return (
@@ -585,13 +594,13 @@ const DashboardLayout = () => {
               isActionLoading={isActionLoading}
               onServerAction={handleServerAction}
             />
-            {planStatus !== 'none' && <AIAssistantSidebar activeServer={activeServer} user={user} />}
+            {(planStatus !== 'none' || sharedServers.length > 0) && <AIAssistantSidebar activeServer={activeServer} user={user} />}
             <DiscordWidget className="bottom-6 right-[380px]" />
           </>
         )}
 
         {/* Mobile AI Chat Toggle Tab */}
-        {viewState === 'dashboard' && planStatus !== 'none' && !mobileChatOpen && (
+        {viewState === 'dashboard' && (planStatus !== 'none' || sharedServers.length > 0) && !mobileChatOpen && (
           <button
             onClick={() => setMobileChatOpen(true)}
             className="lg:hidden fixed right-0 top-1/2 -translate-y-1/2 z-50 flex items-center gap-1 bg-[#22C55E] text-[#0B0B0B] pl-2.5 pr-2 py-3 rounded-l-xl shadow-[0_0_20px_rgba(34,197,94,0.3)] hover:shadow-[0_0_30px_rgba(34,197,94,0.5)] transition-all group"
@@ -602,7 +611,7 @@ const DashboardLayout = () => {
         )}
 
         {/* Mobile AI Chat Overlay */}
-        {viewState === 'dashboard' && planStatus !== 'none' && mobileChatOpen && (
+        {viewState === 'dashboard' && (planStatus !== 'none' || sharedServers.length > 0) && mobileChatOpen && (
           <div className="lg:hidden fixed inset-0 z-50 flex flex-col bg-[#141414] animate-in slide-in-from-right duration-300">
             <AIAssistantSidebar isMobile={true} onClose={() => setMobileChatOpen(false)} activeServer={activeServer} user={user} />
           </div>

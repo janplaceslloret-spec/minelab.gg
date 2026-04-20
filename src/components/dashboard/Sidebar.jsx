@@ -33,8 +33,8 @@ const Sidebar = ({ viewState = 'dashboard', planStatus = 'none', onCreateServer,
     { icon: <Star size={20} />, label: 'Dejar reseña', active: activeTab === 'review', id: 'review' },
   ];
 
-  // If viewState is wizard or there is no plan, limit the exposed items.
-  const isLimited = viewState !== 'dashboard' || planStatus === 'none';
+  // If viewState is wizard or there is no plan AND no shared servers, limit the exposed items.
+  const isLimited = viewState !== 'dashboard' || (planStatus === 'none' && sharedServers.length === 0);
 
   return (
     <aside className="w-[240px] bg-[#0F0F0F] border-r border-[#2A2A2A] h-screen sticky top-0 flex flex-col pt-6 z-20 shrink-0 hidden md:flex">
