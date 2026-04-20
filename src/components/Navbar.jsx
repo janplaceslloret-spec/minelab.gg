@@ -27,7 +27,7 @@ const Navbar = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
             <img
               src="/logo2.png"
               alt="MineLab Logo"
-              className="h-14 w-auto object-contain"
+              className="h-9 w-auto object-contain"
             />
           </div>
 
