@@ -400,7 +400,7 @@ const MainContent = ({ planStatus, server, activeTab = 'overview', user, onServe
         )}
 
         {activeTab === 'settings' && (
-           <SettingsView planStatus={planStatus} user={user} server={server} />
+           <SettingsView planStatus={planStatus} user={user} server={server} onServerUpdate={onServerUpdate} />
         )}
 
         {activeTab === 'players' && (
