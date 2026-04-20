@@ -9,7 +9,7 @@ import ConfigView from './ConfigView';
 import ReviewView from './ReviewView';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip } from 'recharts';
 
-const MainContent = ({ planStatus, server, activeTab = 'overview', user, onServerUpdate, isActionLoading, onServerAction }) => {
+const MainContent = ({ planStatus, server, activeTab = 'overview', user, onServerUpdate, isActionLoading, onServerAction, memberRole = 'owner' }) => {
   const [copied, setCopied] = useState(false);
   const [isServerDropdownOpen, setIsServerDropdownOpen] = useState(false);
 
@@ -400,7 +400,7 @@ const MainContent = ({ planStatus, server, activeTab = 'overview', user, onServe
         )}
 
         {activeTab === 'settings' && (
-           <SettingsView planStatus={planStatus} user={user} server={server} onServerUpdate={onServerUpdate} />
+           <SettingsView planStatus={planStatus} user={user} server={server} onServerUpdate={onServerUpdate} memberRole={memberRole} />
         )}
 
         {activeTab === 'players' && (

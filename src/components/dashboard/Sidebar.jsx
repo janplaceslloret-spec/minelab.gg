@@ -3,7 +3,7 @@ import { LayoutDashboard, Terminal, FolderOpen, Blocks, Users, DatabaseBackup, S
 import { supabase } from '../../supabaseClient';
 import { useNavigate } from 'react-router-dom';
 
-const Sidebar = ({ viewState = 'dashboard', planStatus = 'none', onCreateServer, activeTab = 'overview', onTabChange, user, server, sharedServers = [], onSwitchServer, onServerAction, isActionLoading }) => {
+const Sidebar = ({ viewState = 'dashboard', planStatus = 'none', onCreateServer, activeTab = 'overview', onTabChange, user, server, sharedServers = [], onSwitchServer, onServerAction, isActionLoading, memberRole = 'owner' }) => {
   const [serverPickerOpen, setServerPickerOpen] = useState(false);
   const status = server?.status_server || 'offline';
   const allServers = [
@@ -13,6 +13,13 @@ const Sidebar = ({ viewState = 'dashboard', planStatus = 'none', onCreateServer,
   const canStart = status === 'stopped' || status === 'error' || status === 'offline';
   const canStop = status === 'running';
   const canRestart = status === 'running';
+
+  // Role-based permissions
+  const canControlServer = memberRole === 'owner' || memberRole === 'admin' || memberRole === 'member';
+  const canAccessFiles    = memberRole === 'owner' || memberRole === 'admin';
+  const canAccessPlayers  = memberRole === 'owner' || memberRole === 'admin';
+  const canAccessConfig   = memberRole === 'owner' || memberRole === 'admin';
+  const canAccessSettings = memberRole === 'owner' || memberRole === 'admin';
   
   const navigate = useNavigate();
 
@@ -22,11 +29,11 @@ const Sidebar = ({ viewState = 'dashboard', planStatus = 'none', onCreateServer,
   ];
 
   const serverItems = [
-    { icon: <FolderOpen size={20} />, label: 'Archivos', active: activeTab === 'files', id: 'files' },
-    { icon: <Users size={20} />, label: 'Jugadores', active: activeTab === 'players', id: 'players' },
-    { icon: <Settings size={20} />, label: 'Configuración', active: activeTab === 'configuracion', id: 'configuracion' },
-    { icon: <DatabaseBackup size={20} />, label: 'Backups', active: activeTab === 'backups', id: 'backups', disabled: true },
-  ];
+    { icon: <FolderOpen size={20} />, label: 'Archivos', active: activeTab === 'files', id: 'files', hidden: !canAccessFiles },
+    { icon: <Users size={20} />, label: 'Jugadores', active: activeTab === 'players', id: 'players', hidden: !canAccessPlayers },
+    { icon: <Settings size={20} />, label: 'Configuración', active: activeTab === 'configuracion', id: 'configuracion', hidden: !canAccessConfig },
+    { icon: <DatabaseBackup size={20} />, label: 'Backups', active: activeTab === 'backups', id: 'backups', disabled: true, hidden: !canAccessFiles },
+  ].filter(i => !i.hidden);
 
   const accountItems = [
     { icon: <Settings size={20} />, label: 'Ajustes', active: activeTab === 'settings', id: 'settings' },
@@ -47,6 +54,16 @@ const Sidebar = ({ viewState = 'dashboard', planStatus = 'none', onCreateServer,
 
       {!isLimited && server && (
          <div className="px-6 flex flex-col gap-3 mb-8">
+            {/* Role badge for invited members */}
+            {memberRole !== 'owner' && (
+              <div className="flex items-center gap-1.5">
+                <span className={`px-2 py-0.5 rounded-full border text-[9px] uppercase font-bold tracking-widest ${
+                  memberRole === 'admin'  ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' :
+                  memberRole === 'member' ? 'bg-blue-500/10  border-blue-500/20  text-blue-400'  :
+                                           'bg-zinc-500/10  border-zinc-500/20  text-zinc-400'
+                }`}>{memberRole === 'admin' ? 'Admin' : memberRole === 'member' ? 'Miembro' : 'Espectador'}</span>
+              </div>
+            )}
             {/* Server name + switcher */}
             <div className="relative">
               <button
@@ -83,6 +100,7 @@ const Sidebar = ({ viewState = 'dashboard', planStatus = 'none', onCreateServer,
               )}
             </div>
             
+            {canControlServer && (
             <div className="flex items-center gap-1.5 w-full grid grid-cols-3">
                  <button
                    onClick={() => onServerAction('start')}
@@ -121,6 +139,7 @@ const Sidebar = ({ viewState = 'dashboard', planStatus = 'none', onCreateServer,
                    STOP
                  </button>
             </div>
+            )}
          </div>
       )}
 

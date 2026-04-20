@@ -75,7 +75,7 @@ const InviteAcceptModal = ({ token, user, onAccepted, onDismiss }) => {
         .single();
 
       setState('done');
-      setTimeout(() => onAccepted(srv), 1200);
+      setTimeout(() => onAccepted(srv, invite.role), 1200);
     } catch (err) {
       setErrMsg(err.message);
       setState('error');

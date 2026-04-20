@@ -203,10 +203,10 @@ const DashboardLayout = () => {
         const { data: servers, error: serversError } = serversResponse;
         let profile = profileResponse1.data;
 
-        // Collect servers where user is an invited member
+        // Collect servers where user is an invited member (with their role)
         const memberships = membershipsResponse?.data || [];
         const sharedSrvs = memberships
-          .map(m => m.mc_servers)
+          .map(m => m.mc_servers ? { ...m.mc_servers, _memberRole: m.role } : null)
           .filter(Boolean)
           .filter(s => !servers?.some(own => own.id === s.id)); // exclude own servers
         setSharedServers(sharedSrvs);
@@ -529,18 +529,27 @@ const DashboardLayout = () => {
   }
 
   /* ── Invite accepted: add shared server and switch to it ── */
-  const handleInviteAccepted = (srv) => {
+  const handleInviteAccepted = (srv, role = 'member') => {
     setPendingInviteToken(null);
     navigate('/panel', { replace: true });
     if (srv) {
+      const srvWithRole = { ...srv, _memberRole: role };
       setSharedServers(prev => {
         if (prev.some(s => s.id === srv.id)) return prev;
-        return [...prev, srv];
+        return [...prev, srvWithRole];
       });
-      setActiveServer(srv);
+      setActiveServer(srvWithRole);
       setViewState('dashboard');
     }
   };
+
+  // Determine current user's role for the active server
+  const memberRole = (() => {
+    if (!activeServer || !user) return 'owner';
+    if (activeServer.user_id === user.id) return 'owner';
+    const shared = sharedServers.find(s => s.id === activeServer.id);
+    return shared?._memberRole || 'viewer';
+  })();
 
   return (
     <div className="min-h-screen w-full bg-[#0B0B0B] flex font-sans">
@@ -569,6 +578,7 @@ const DashboardLayout = () => {
         onSwitchServer={setActiveServer}
         isActionLoading={isActionLoading}
         onServerAction={handleServerAction}
+        memberRole={memberRole}
       />
 
       <div className="flex-1 flex min-w-0 h-screen overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-800 relative">
@@ -593,6 +603,7 @@ const DashboardLayout = () => {
               onServerUpdate={setActiveServer}
               isActionLoading={isActionLoading}
               onServerAction={handleServerAction}
+              memberRole={memberRole}
             />
             {(planStatus !== 'none' || sharedServers.length > 0) && <AIAssistantSidebar activeServer={activeServer} user={user} />}
             <DiscordWidget className="bottom-6 right-[380px]" />

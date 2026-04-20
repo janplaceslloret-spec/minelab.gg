@@ -47,7 +47,7 @@ const CredRow = ({ label, value, secret = false }) => {
 };
 
 /* ── Main component ────────────────────────────────────────────── */
-const SettingsView = ({ planStatus, user, server, onServerUpdate }) => {
+const SettingsView = ({ planStatus, user, server, onServerUpdate, memberRole = 'owner' }) => {
   const [sftpLoading, setSftpLoading] = useState(false);
   const [sftpError, setSftpError]     = useState('');
 
@@ -174,7 +174,7 @@ const SettingsView = ({ planStatus, user, server, onServerUpdate }) => {
         </div>
 
         {/* Members / Invite Card — only for server owner */}
-        {server && server.user_id === user?.id && (
+        {server && memberRole === 'owner' && (
           <MembersCard server={server} user={user} />
         )}
 
