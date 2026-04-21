@@ -59,7 +59,7 @@ const DashboardLayout = () => {
         user_id: user.id,
         server_name: uniqueName,
         server_type: "vanilla",
-        mc_version: "1.21.11",
+        mc_version: "1.21.1",
         ram_gb: 6,
         status: "draft",
         status_server: "offline",

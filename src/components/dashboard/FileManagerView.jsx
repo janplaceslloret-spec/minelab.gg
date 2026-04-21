@@ -138,20 +138,50 @@ const FileManagerView = ({ server }) => {
     const file = e.target.files?.[0];
     if (!file || !serverId) return;
 
+    // Guard: Cloudflare free tier hard-limits requests to 100 MB
+    const MAX_SIZE = 50 * 1024 * 1024; // 50 MB (matches backend multer limit)
+    if (file.size > MAX_SIZE) {
+      alert(`Archivo demasiado grande. Máximo ${MAX_SIZE / (1024 * 1024)} MB.`);
+      e.target.value = "";
+      return;
+    }
+
     setLoading(true);
+
     const form = new FormData();
     form.append("file", file);
     form.append("server", serverId);
     form.append("path", currentPath);
 
-    await fetch(`${import.meta.env.VITE_API_URL}/api/files/upload`, {
-      method: "POST",
-      headers: { "x-api-key": API_KEY },
-      body: form,
-    });
+    // Abort after 90s (Cloudflare free plan kills connection at 100s)
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 90_000);
 
-    e.target.value = "";
-    loadFiles();
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/files/upload`, {
+        method: "POST",
+        headers: { "x-api-key": API_KEY },
+        body: form,
+        signal: controller.signal,
+      });
+
+      if (!res.ok) {
+        const errText = await res.text().catch(() => "");
+        throw new Error(`HTTP ${res.status}: ${errText || res.statusText}`);
+      }
+    } catch (err) {
+      if (err.name === "AbortError") {
+        alert("La subida ha tardado demasiado y se ha cancelado. Prueba con un archivo más pequeño o revisa tu conexión.");
+      } else {
+        alert(`Error al subir el archivo: ${err.message}`);
+      }
+      console.error("[uploadFile]", err);
+    } finally {
+      clearTimeout(timeoutId);
+      e.target.value = "";
+      setLoading(false);
+      loadFiles();
+    }
   };
 
   const goBack = () => {
