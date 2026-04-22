@@ -32,7 +32,7 @@ const Sidebar = ({ viewState = 'dashboard', planStatus = 'none', onCreateServer,
     { icon: <FolderOpen size={20} />, label: 'Archivos', active: activeTab === 'files', id: 'files', hidden: !canAccessFiles },
     { icon: <Users size={20} />, label: 'Jugadores', active: activeTab === 'players', id: 'players', hidden: !canAccessPlayers },
     { icon: <Settings size={20} />, label: 'Configuración', active: activeTab === 'configuracion', id: 'configuracion', hidden: !canAccessConfig },
-    { icon: <DatabaseBackup size={20} />, label: 'Backups', active: activeTab === 'backups', id: 'backups', disabled: true, hidden: !canAccessFiles },
+    { icon: <DatabaseBackup size={20} />, label: 'Backups', active: activeTab === 'backups', id: 'backups', hidden: !canAccessFiles },
   ].filter(i => !i.hidden);
 
   const accountItems = [

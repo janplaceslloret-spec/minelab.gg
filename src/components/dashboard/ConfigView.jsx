@@ -6,6 +6,12 @@ import {
 } from 'lucide-react';
 
 const WEBHOOK = 'https://snack55-n8n1.q7pa8v.easypanel.host/webhook/asistente';
+// api.fluxoai.co == reverse proxy a mc-api (127.0.0.1:3001) en el VPS.
+// El endpoint /webhook/cambiar-version ejecuta cambiar_version.sh directamente
+// (sin LLM). Responde 200 de forma síncrona pero ejecuta async; el script
+// puede abortar por anti-downgrade o errores y NO se notifica al usuario.
+// TODO: el mc-api debería publicar progreso en workflow_progress para que la
+// UI pueda mostrar errores reales (anti-downgrade, fallo de descarga, etc.).
 const VERSION_WEBHOOK = 'https://api.fluxoai.co/webhook/cambiar-version';
 
 /* ─── Version data ─── */

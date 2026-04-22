@@ -7,6 +7,7 @@ import SettingsView from './SettingsView';
 import PlayersView from './PlayersView';
 import ConfigView from './ConfigView';
 import ReviewView from './ReviewView';
+import BackupsView from './BackupsView';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip } from 'recharts';
 
 const MainContent = ({ planStatus, server, activeTab = 'overview', user, onServerUpdate, isActionLoading, onServerAction, memberRole = 'owner' }) => {
@@ -135,10 +136,15 @@ const MainContent = ({ planStatus, server, activeTab = 'overview', user, onServe
     };
   }, [server?.id]);
 
+  // BUG-A fix: when server is not online, force stats to zero so we don't
+  // display stale cached values from the last time it was running.
+  const statsOnline = server?.status_server === 'online' || server?.status_server === 'running';
+  const liveMetrics = statsOnline ? metrics : { cpu: 0, ram_mb: 0, players_online: 0 };
+
   // Derived values for RAM gauge
-  const maxRamGb = server?.ram_gb || 4; 
+  const maxRamGb = server?.ram_gb || 4;
   const maxRamMb = maxRamGb * 1024;
-  const ramPercent = Math.min(100, (metrics.ram_mb / maxRamMb) * 100);
+  const ramPercent = Math.min(100, (liveMetrics.ram_mb / maxRamMb) * 100);
   
   let ramTextClass = "text-[#22C55E]";
   if (ramPercent > 80) {
@@ -257,7 +263,7 @@ const MainContent = ({ planStatus, server, activeTab = 'overview', user, onServe
                     </div>
                     <div className="flex justify-between items-end mb-3">
                        <span className={`text-3xl font-bold ${ramTextClass}`}>{ramPercent.toFixed(1)}%</span>
-                       <span className="text-[#6B6B6B] text-xs font-medium pb-1">{metrics.ram_mb.toFixed(0)} MB / {maxRamMb} MB</span>
+                       <span className="text-[#6B6B6B] text-xs font-medium pb-1">{liveMetrics.ram_mb.toFixed(0)} MB / {maxRamMb} MB</span>
                     </div>
                     <div className="h-[50px] w-full mt-auto">
                        <ResponsiveContainer width="100%" height="100%">
@@ -288,7 +294,7 @@ const MainContent = ({ planStatus, server, activeTab = 'overview', user, onServe
                        </div>
                     </div>
                     <div className="flex items-end mb-3">
-                      <span className="text-3xl font-bold text-[#E5E5E5]">{metrics.cpu}%</span>
+                      <span className="text-3xl font-bold text-[#E5E5E5]">{liveMetrics.cpu}%</span>
                     </div>
                     <div className="h-[50px] w-full mt-auto">
                        <ResponsiveContainer width="100%" height="100%">
@@ -319,7 +325,7 @@ const MainContent = ({ planStatus, server, activeTab = 'overview', user, onServe
                        </div>
                     </div>
                     <div className="mt-auto flex items-end">
-                       <span className="text-4xl font-bold text-[#E5E5E5]">{metrics.players_online}</span>
+                       <span className="text-4xl font-bold text-[#E5E5E5]">{liveMetrics.players_online}</span>
                     </div>
                  </div>
             </div>
@@ -413,6 +419,10 @@ const MainContent = ({ planStatus, server, activeTab = 'overview', user, onServe
 
         {activeTab === 'review' && (
            <ReviewView user={user} planStatus={planStatus} />
+        )}
+
+        {activeTab === 'backups' && (
+           <BackupsView server={server} />
         )}
 
       </div>
