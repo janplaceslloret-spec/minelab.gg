@@ -111,7 +111,7 @@ const BackupsView = ({ server }) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': 'minelab_k3y_Xp9mR7_2026',
+          'x-api-key': import.meta.env.VITE_MC_API_KEY,
         },
         body: JSON.stringify({ server_id: server.id, backup_id }),
       });

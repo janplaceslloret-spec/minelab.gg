@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { FolderOpen, File, Download, Trash2, Upload, ChevronLeft, Save, Edit3, X, Loader2, AlertTriangle } from 'lucide-react';
 
-const API_KEY = import.meta.env.VITE_MC_API_KEY || 'minelab_k3y_Xp9mR7_2026';
+const API_KEY = import.meta.env.VITE_MC_API_KEY;
 
 /* ── Confirmation Modal ────────────────────────────────────────────── */
 const ConfirmModal = ({ name, onConfirm, onCancel }) => (

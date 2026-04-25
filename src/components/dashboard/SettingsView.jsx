@@ -4,7 +4,7 @@ import { supabase } from '../../supabaseClient';
 import MembersCard from './MembersCard';
 
 const API_URL = import.meta.env.VITE_API_URL;
-const API_KEY = import.meta.env.VITE_MC_API_KEY || 'minelab_k3y_Xp9mR7_2026';
+const API_KEY = import.meta.env.VITE_MC_API_KEY;
 
 const SFTP_HOST = '46.225.115.78';
 const SFTP_PORT = 22;

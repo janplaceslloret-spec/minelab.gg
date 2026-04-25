@@ -314,7 +314,7 @@ const DashboardLayout = () => {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
-                'x-api-key': 'minelab_k3y_Xp9mR7_2026',
+                'x-api-key': import.meta.env.VITE_MC_API_KEY,
               },
               body: JSON.stringify({ email: lowerEmail, user_id: userId }),
             });
