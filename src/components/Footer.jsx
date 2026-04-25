@@ -1,13 +1,14 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Server } from 'lucide-react';
 
 const Footer = () => {
   return (
     <footer className="pt-24 pb-12 border-t border-white/5 bg-[#080B14]">
       <div className="container mx-auto px-6 max-w-7xl">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8 mb-16">
-          
-          <div className="col-span-1 md:col-span-1">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 md:gap-8 mb-16">
+
+          <div className="col-span-1 md:col-span-2 lg:col-span-1">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent-blue to-accent-violet flex items-center justify-center">
                 <Server size={18} className="text-white" />
@@ -36,6 +37,15 @@ const Footer = () => {
               <li><a href="https://discord.gg/TS49z4yr" target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-accent-green transition-colors text-sm">Comunidad Discord</a></li>
               <li><a href="#status" className="text-white/50 hover:text-accent-green transition-colors text-sm">Estado de Nodos</a></li>
               <li><a href="#contact" className="text-white/50 hover:text-accent-green transition-colors text-sm">Contacto Técnico</a></li>
+            </ul>
+          </div>
+
+          <div className="col-span-1">
+            <h4 className="text-white font-semibold mb-6">Recursos</h4>
+            <ul className="space-y-4">
+              <li><Link to="/aternos-vs-minelab" className="text-white/50 hover:text-accent-green transition-colors text-sm">MineLab vs Aternos</Link></li>
+              <li><Link to="/hosting-minecraft-con-mods" className="text-white/50 hover:text-accent-green transition-colors text-sm">Hosting con mods</Link></li>
+              <li><Link to="/migrar-servidor-aternos" className="text-white/50 hover:text-accent-green transition-colors text-sm">Migrar de Aternos</Link></li>
             </ul>
           </div>
 
