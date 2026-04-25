@@ -1,374 +1,431 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Check, Zap, Cpu, Boxes, MessageSquare, Wrench, ArrowRight, Sparkles, AlertTriangle } from 'lucide-react';
+import { Check, Zap, Boxes, MessageSquare, Wrench, ArrowRight, Sparkles, AlertTriangle, Cpu, Layers, Bot } from 'lucide-react';
 import SeoLayout from '../components/seo/SeoLayout';
 import { useDocumentMeta } from '../hooks/useDocumentMeta';
 
 const MODPACKS = [
-  { name: 'All The Mods 10', short: 'ATM10', mods: '400+', ram: '8-12 GB', loader: 'NeoForge', tag: 'kitchen-sink' },
-  { name: 'RLCraft', short: 'RLCraft', mods: '250+', ram: '6-8 GB', loader: 'Forge', tag: 'hardcore' },
-  { name: 'Stoneblock 3', short: 'Stoneblock', mods: '300+', ram: '6-8 GB', loader: 'Forge', tag: 'skyblock' },
-  { name: 'Vault Hunters 3rd', short: 'Vault Hunters', mods: '600+', ram: '10-16 GB', loader: 'Forge', tag: 'roguelike' },
-  { name: 'Pixelmon Reforged', short: 'Pixelmon', mods: '50+', ram: '4-6 GB', loader: 'Forge', tag: 'pokémon' },
-  { name: 'Better Minecraft (BMC)', short: 'BMC', mods: '250+', ram: '6-8 GB', loader: 'Forge', tag: 'aventura' },
-  { name: 'Create: Above & Beyond', short: 'Create A&B', mods: '180+', ram: '6 GB', loader: 'Forge', tag: 'tech' },
-  { name: 'SkyFactory 4 / Prominence II', short: 'SkyFactory', mods: '200+', ram: '6 GB', loader: 'Forge/Fabric', tag: 'skyblock' },
+  { name: 'All The Mods 10', short: 'ATM10', mods: 400, ram: '8-12 GB', loader: 'NeoForge', tag: 'kitchen-sink', accent: 'green' },
+  { name: 'RLCraft', short: 'RLCraft', mods: 250, ram: '6-8 GB', loader: 'Forge', tag: 'hardcore', accent: 'violet' },
+  { name: 'Stoneblock 3', short: 'Stoneblock', mods: 300, ram: '6-8 GB', loader: 'Forge', tag: 'skyblock', accent: 'blue' },
+  { name: 'Vault Hunters 3rd', short: 'Vault Hunters', mods: 600, ram: '10-16 GB', loader: 'Forge', tag: 'roguelike', accent: 'green' },
+  { name: 'Pixelmon Reforged', short: 'Pixelmon', mods: 50, ram: '4-6 GB', loader: 'Forge', tag: 'pokémon', accent: 'violet' },
+  { name: 'Better Minecraft', short: 'BMC', mods: 250, ram: '6-8 GB', loader: 'Forge', tag: 'aventura', accent: 'blue' },
+  { name: 'Create: Above & Beyond', short: 'Create A&B', mods: 180, ram: '6 GB', loader: 'Forge', tag: 'tech', accent: 'green' },
+  { name: 'SkyFactory / Prominence II', short: 'SkyFactory', mods: 200, ram: '6 GB', loader: 'Forge/Fabric', tag: 'skyblock', accent: 'violet' },
 ];
 
 const RAM_TABLE = [
-  { type: 'Vanilla', mods: '0', minRam: '1 GB', recRam: '2 GB', players: '5-10' },
-  { type: 'Paper + plugins ligeros', mods: '0 (10 plugins)', minRam: '2 GB', recRam: '4 GB', players: '10-30' },
-  { type: 'Forge ligero', mods: '30-50', minRam: '4 GB', recRam: '6 GB', players: '5-15' },
-  { type: 'Fabric medio (Create, JEI)', mods: '60-100', minRam: '4 GB', recRam: '6 GB', players: '5-15' },
-  { type: 'RLCraft / BMC', mods: '250+', minRam: '6 GB', recRam: '8 GB', players: '5-10' },
-  { type: 'All The Mods 10', mods: '400+', minRam: '8 GB', recRam: '12 GB', players: '4-8' },
-  { type: 'Vault Hunters 3', mods: '600+', minRam: '10 GB', recRam: '16 GB', players: '3-6' },
+  { type: 'Vanilla', mods: '0', ramN: 2, recRam: '2 GB', players: '5-10' },
+  { type: 'Paper + plugins ligeros', mods: '10 plugins', ramN: 4, recRam: '4 GB', players: '10-30' },
+  { type: 'Forge ligero', mods: '30-50', ramN: 6, recRam: '6 GB', players: '5-15' },
+  { type: 'Fabric medio', mods: '60-100', ramN: 6, recRam: '6 GB', players: '5-15' },
+  { type: 'RLCraft / BMC', mods: '250+', ramN: 8, recRam: '8 GB', players: '5-10' },
+  { type: 'All The Mods 10', mods: '400+', ramN: 12, recRam: '12 GB', players: '4-8' },
+  { type: 'Vault Hunters 3', mods: '600+', ramN: 16, recRam: '16 GB', players: '3-6' },
 ];
 
 const LOADERS = [
-  {
-    name: 'Forge',
-    pros: ['Catálogo enorme (15+ años)', 'Casi todos los modpacks grandes', 'Soporte comunidad masivo'],
-    cons: ['Más pesado en RAM', 'Arranque más lento', 'Menos optimizado en MC 1.21'],
-    when: 'Mods clásicos, modpacks tipo ATM, RLCraft, Vault Hunters.',
-  },
-  {
-    name: 'Fabric',
-    pros: ['Ligero y rápido', 'Mejor en MC 1.20+', 'Ideal para mods de optimización (Lithium, Sodium)'],
-    cons: ['Menos mods grandes que Forge', 'Modpacks más nuevos / pequeños'],
-    when: 'Servidores survival con buen rendimiento, mods Quilt-compatibles.',
-  },
-  {
-    name: 'NeoForge',
-    pros: ['Fork moderno de Forge', 'Fix de problemas históricos', 'Estándar para 1.20.4+ adelante'],
-    cons: ['Muy nuevo, algunos mods aún no migran', 'Documentación inferior'],
-    when: 'Modpacks 2025+, ATM10 y siguientes.',
-  },
+  { name: 'Forge', tag: 'clásico', pros: ['Catálogo enorme (15+ años)', 'Casi todos los modpacks grandes', 'Soporte comunidad masivo'], cons: ['Más pesado en RAM', 'Arranque más lento', 'Menos optimizado en MC 1.21'], when: 'Mods clásicos, modpacks tipo ATM, RLCraft, Vault Hunters.' },
+  { name: 'Fabric', tag: 'ligero', pros: ['Ligero y rápido', 'Mejor en MC 1.20+', 'Ideal para Lithium, Sodium'], cons: ['Menos mods grandes que Forge', 'Modpacks más nuevos / pequeños'], when: 'Servidores survival con buen rendimiento, mods Quilt-compatibles.' },
+  { name: 'NeoForge', tag: 'moderno', pros: ['Fork moderno de Forge', 'Fix de problemas históricos', 'Estándar para 1.20.4+'], cons: ['Muy nuevo, algunos mods no migran', 'Documentación inferior'], when: 'Modpacks 2025+, ATM10 y siguientes.' },
 ];
 
 const FAQ = [
-  {
-    q: '¿Puedo subir mi modpack custom?',
-    a: 'Sí. Sube el .zip exportado desde CurseForge o Modrinth por SFTP a la carpeta del servidor y dile al asistente IA "instala este modpack". Detecta el manifest, descarga las dependencias y configura el JAR automáticamente.'
-  },
-  {
-    q: '¿Soportáis CurseForge y Modrinth?',
-    a: 'Ambos. El agente IA conoce las APIs de CurseForge y Modrinth: pídele cualquier mod por nombre o ID ("instala JEI 1.20.1", "instala Sodium última versión") y se descarga la versión correcta para tu MC + loader.'
-  },
-  {
-    q: '¿Cómo cambio de versión de Forge sin perder el mundo?',
-    a: 'Antes de cualquier cambio de versión MineLab crea un backup automático del world + config. Si algo falla, restaura con un click desde la pestaña Backups. Los mundos vanilla son 100% compatibles entre versiones; los con mods requieren los mismos mods en la nueva versión (el agente lo gestiona).'
-  },
-  {
-    q: '¿Cuántos jugadores soporta un servidor con 200 mods?',
-    a: 'Depende de la RAM y los mods concretos. Como referencia: con 8 GB de RAM y un modpack tipo ATM10 (400 mods), 4-6 jugadores estables. RLCraft (250 mods, complejo) ~5 jugadores con 8 GB. Para más jugadores conviene subir a 12 GB y precargar el mundo.'
-  },
-  {
-    q: '¿Hay límite de mods?',
-    a: 'No hay límite por contrato. El límite real lo pone la RAM de tu plan: cada mod cargado ocupa memoria al arrancar. Servidores con >600 mods (Vault Hunters tier) necesitan 16 GB+ para no crashear al iniciar. El agente IA detecta out-of-memory y te avisa para subir el plan.'
-  },
-  {
-    q: '¿Qué pasa si un mod crashea el servidor?',
-    a: 'El asistente IA lee el latest.log, identifica el mod culpable (por NullPointerException, ConcurrentModification, etc.) y propone solución: actualizar el mod, downgrade, o eliminarlo. Si no sabe arreglarlo, te enseña el stack-trace con explicación en español.'
-  },
+  { q: '¿Puedo subir mi modpack custom?', a: 'Sí. Sube el .zip exportado desde CurseForge o Modrinth por SFTP a la carpeta del servidor y dile al asistente IA "instala este modpack". Detecta el manifest, descarga las dependencias y configura el JAR automáticamente.' },
+  { q: '¿Soportáis CurseForge y Modrinth?', a: 'Ambos. El agente IA conoce las APIs de CurseForge y Modrinth: pídele cualquier mod por nombre o ID ("instala JEI 1.20.1", "instala Sodium última versión") y se descarga la versión correcta para tu MC + loader.' },
+  { q: '¿Cómo cambio de versión de Forge sin perder el mundo?', a: 'Antes de cualquier cambio de versión MineLab crea un backup automático del world + config. Si algo falla, restaura con un click desde la pestaña Backups. Los mundos vanilla son 100% compatibles entre versiones; los con mods requieren los mismos mods en la nueva versión (el agente lo gestiona).' },
+  { q: '¿Cuántos jugadores soporta un servidor con 200 mods?', a: 'Depende de la RAM y los mods concretos. Como referencia: con 8 GB de RAM y un modpack tipo ATM10 (400 mods), 4-6 jugadores estables. RLCraft (250 mods, complejo) ~5 jugadores con 8 GB. Para más jugadores conviene subir a 12 GB y precargar el mundo.' },
+  { q: '¿Hay límite de mods?', a: 'No hay límite por contrato. El límite real lo pone la RAM de tu plan: cada mod cargado ocupa memoria al arrancar. Servidores con >600 mods (Vault Hunters tier) necesitan 16 GB+ para no crashear al iniciar. El agente IA detecta out-of-memory y te avisa para subir el plan.' },
+  { q: '¿Qué pasa si un mod crashea el servidor?', a: 'El asistente IA lee el latest.log, identifica el mod culpable (por NullPointerException, ConcurrentModification, etc.) y propone solución: actualizar el mod, downgrade, o eliminarlo. Si no sabe arreglarlo, te enseña el stack-trace con explicación en español.' },
 ];
 
-const productJsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'Product',
-  name: 'MineLab — Hosting Minecraft con mods',
-  description: 'Hosting Minecraft modded con asistente IA: instala cualquier modpack (Forge, Fabric, NeoForge) en 2 minutos. ATM10, RLCraft, Vault Hunters, Pixelmon. Desde 4,99 €/mes.',
-  image: 'https://minelab.gg/og/hosting-mods.png',
-  brand: { '@type': 'Brand', name: 'MineLab' },
-  aggregateRating: {
-    '@type': 'AggregateRating',
-    ratingValue: '4.9',
-    reviewCount: '127',
-    bestRating: '5',
-  },
-  offers: {
-    '@type': 'AggregateOffer',
-    priceCurrency: 'EUR',
-    lowPrice: '4.99',
-    highPrice: '14.99',
-    offerCount: 4,
-    availability: 'https://schema.org/InStock',
-    url: 'https://minelab.gg/hosting-minecraft-con-mods',
-  },
-};
+function HL({ children, color = 'violet' }) {
+  const cls = { green: 'bg-accent-green text-[#0B1220]', violet: 'bg-accent-violet text-white', blue: 'bg-accent-blue text-white' }[color];
+  return <span className={`inline-block ${cls} px-3 md:px-4 py-0.5 md:py-1 rounded-md align-baseline`}>{children}</span>;
+}
 
-const faqJsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: FAQ.map(({ q, a }) => ({
-    '@type': 'Question',
-    name: q,
-    acceptedAnswer: { '@type': 'Answer', text: a },
-  })),
-};
-
-const breadcrumbJsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'BreadcrumbList',
-  itemListElement: [
-    { '@type': 'ListItem', position: 1, name: 'Inicio', item: 'https://minelab.gg/' },
-    { '@type': 'ListItem', position: 2, name: 'Hosting Minecraft con mods', item: 'https://minelab.gg/hosting-minecraft-con-mods' },
-  ],
-};
+const productJsonLd = { '@context': 'https://schema.org', '@type': 'Product', name: 'MineLab — Hosting Minecraft con mods', description: 'Hosting Minecraft modded con asistente IA: instala cualquier modpack (Forge, Fabric, NeoForge) en 2 minutos. ATM10, RLCraft, Vault Hunters, Pixelmon. Desde 4,99 €/mes.', image: 'https://minelab.gg/og/hosting-mods.png', brand: { '@type': 'Brand', name: 'MineLab' }, aggregateRating: { '@type': 'AggregateRating', ratingValue: '4.9', reviewCount: '127', bestRating: '5' }, offers: { '@type': 'AggregateOffer', priceCurrency: 'EUR', lowPrice: '4.99', highPrice: '14.99', offerCount: 4, availability: 'https://schema.org/InStock', url: 'https://minelab.gg/hosting-minecraft-con-mods' } };
+const faqJsonLd = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: FAQ.map(({ q, a }) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) };
+const breadcrumbJsonLd = { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [{ '@type': 'ListItem', position: 1, name: 'Inicio', item: 'https://minelab.gg/' }, { '@type': 'ListItem', position: 2, name: 'Hosting Minecraft con mods', item: 'https://minelab.gg/hosting-minecraft-con-mods' }] };
 
 export default function HostingConMods() {
+  const [tab, setTab] = useState(0);
   useDocumentMeta({
     title: 'Hosting Minecraft con mods (Forge, Fabric, NeoForge) | MineLab',
     description: 'Hosting Minecraft modded con asistente IA: instala cualquier modpack en 2 minutos. ATM10, RLCraft, Vault Hunters, Pixelmon. Desde 4,99 €/mes.',
     canonical: 'https://minelab.gg/hosting-minecraft-con-mods',
-    og: {
-      type: 'article',
-      title: 'Hosting Minecraft con mods — Forge, Fabric, NeoForge',
-      description: 'Instala cualquier modpack con un mensaje al agente IA. ATM10, RLCraft, Vault Hunters, Pixelmon.',
-      image: 'https://minelab.gg/og/hosting-mods.png',
-      url: 'https://minelab.gg/hosting-minecraft-con-mods',
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: 'Hosting Minecraft con mods — MineLab',
-      description: 'Instala cualquier modpack en 2 minutos con el asistente IA.',
-      image: 'https://minelab.gg/og/hosting-mods.png',
-    },
+    og: { type: 'article', title: 'Hosting Minecraft con mods — Forge, Fabric, NeoForge', description: 'Instala cualquier modpack con un mensaje al agente IA. ATM10, RLCraft, Vault Hunters, Pixelmon.', image: 'https://minelab.gg/og/hosting-mods.png', url: 'https://minelab.gg/hosting-minecraft-con-mods' },
+    twitter: { card: 'summary_large_image', title: 'Hosting Minecraft con mods — MineLab', description: 'Instala cualquier modpack en 2 minutos con el asistente IA.', image: 'https://minelab.gg/og/hosting-mods.png' },
     jsonLd: [productJsonLd, faqJsonLd, breadcrumbJsonLd],
   });
 
   return (
     <SeoLayout>
-      {/* HERO */}
+      {/* HERO ASIMÉTRICO */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 -z-10 opacity-[0.04]" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
-        <div className="container mx-auto px-6 max-w-5xl py-20 md:py-28 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-accent-violet/30 bg-accent-violet/10 px-4 py-1.5 text-xs font-semibold text-accent-violet mb-6">
-            <Sparkles size={14} /> Forge · Fabric · NeoForge — todo soportado
-          </div>
-          <h1 className="font-heading text-4xl md:text-6xl font-extrabold tracking-tight text-white leading-[1.05]">
-            Hosting Minecraft con mods —{' '}
-            <span className="bg-gradient-to-r from-accent-violet via-accent-blue to-accent-green bg-clip-text text-transparent">sin complicarte</span>
-          </h1>
-          <p className="mt-6 text-lg md:text-xl text-white/70 max-w-3xl mx-auto leading-relaxed">
-            Instala cualquier mod o modpack (ATM10, RLCraft, Vault Hunters, Pixelmon...) con un mensaje al asistente IA. Sin descargar JARs, sin configurar manualmente, sin frustración.
-          </p>
-          <div className="mt-10 flex flex-col sm:flex-row gap-3 justify-center">
-            <Link to="/#pricing?utm_source=seo&utm_medium=organic&utm_campaign=mods-hero" className="inline-flex items-center justify-center gap-2 rounded-full bg-accent-green px-7 py-3 text-base font-semibold text-[#0B1220] hover:bg-accent-green/90 transition-colors">
-              Crear servidor con mods <ArrowRight size={16} />
-            </Link>
-            <Link to="/aternos-vs-minelab" className="inline-flex items-center justify-center gap-2 rounded-full border border-white/15 bg-white/5 px-7 py-3 text-base font-semibold text-white hover:bg-white/10 transition-colors">
-              Comparar vs Aternos
-            </Link>
-          </div>
-        </div>
-      </section>
+        <div className="absolute -top-40 -right-32 w-[600px] h-[600px] rounded-full bg-accent-violet/10 blur-[120px] pointer-events-none" />
+        <div className="absolute -bottom-40 -left-32 w-[600px] h-[600px] rounded-full bg-accent-green/10 blur-[120px] pointer-events-none" />
 
-      {/* WHAT IS MODDED */}
-      <section className="container mx-auto px-6 max-w-5xl py-16">
-        <h2 className="font-heading text-3xl md:text-4xl font-bold text-white mb-6">¿Qué es un servidor Minecraft modded?</h2>
-        <p className="text-white/70 leading-relaxed text-lg">
-          Un servidor "modded" es uno que ejecuta mods — modificaciones que añaden mecánicas nuevas (magia, tecnología, mobs, dimensiones) — usando un mod loader. Los más usados son:
-        </p>
-        <ul className="mt-4 space-y-2 text-white/70 leading-relaxed">
-          <li><strong className="text-white">Vanilla:</strong> Minecraft sin modificar.</li>
-          <li><strong className="text-white">Paper / Spigot:</strong> servidor optimizado, soporta plugins (Bukkit) pero no mods de cliente.</li>
-          <li><strong className="text-white">Forge / NeoForge / Fabric:</strong> cargadores de mods reales — instalan código que cambia el juego para servidor + cliente.</li>
-        </ul>
-        <p className="mt-4 text-white/70 leading-relaxed text-lg">
-          Si quieres jugar ATM10, RLCraft o cualquier modpack de CurseForge / Modrinth, necesitas hosting con soporte Forge o Fabric. MineLab los soporta todos sin coste extra.
-        </p>
-      </section>
+        <div className="container mx-auto px-6 max-w-7xl py-16 md:py-24 relative">
+          <div className="grid lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+            <div className="lg:col-span-7">
+              <p className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.25em] font-bold text-accent-violet mb-6">
+                <Sparkles size={14} /> Forge · Fabric · NeoForge
+              </p>
+              <h1 className="font-heading text-5xl md:text-7xl lg:text-[5.5rem] font-black tracking-tighter text-white leading-[0.95] uppercase">
+                Tu modpack <br className="hidden md:block" />
+                instalado en <br className="hidden md:block" />
+                <HL>2 minutos.</HL>
+              </h1>
+              <p className="mt-8 text-lg md:text-xl text-white/70 leading-relaxed max-w-2xl">
+                ATM10, RLCraft, Vault Hunters, Pixelmon… escribes el nombre en el chat y el agente IA descarga, configura y arranca por ti. <strong className="text-white">Cero JARs manuales</strong>.
+              </p>
+              <div className="mt-8 grid sm:grid-cols-2 gap-x-6 gap-y-3 max-w-2xl">
+                {[
+                  ['CurseForge', '+ Modrinth integrados'],
+                  ['Modpacks custom', 'sube tu .zip por SFTP'],
+                  ['Diagnóstico de crashes', 'el agente lee logs por ti'],
+                  ['Sin límite de mods', 'solo lo limita la RAM'],
+                ].map(([k, v]) => (
+                  <div key={k} className="flex items-center gap-3">
+                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-accent-violet flex items-center justify-center"><Check size={13} strokeWidth={3} className="text-white" /></span>
+                    <span className="text-sm text-white/85"><strong className="text-white">{k}</strong> <span className="text-white/55">{v}</span></span>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-10 flex flex-col sm:flex-row gap-3">
+                <Link to="/#pricing?utm_source=seo&utm_medium=organic&utm_campaign=mods-hero" className="group inline-flex items-center justify-between gap-4 rounded-xl bg-accent-green pl-2 pr-5 py-2 text-base font-bold text-[#0B1220] hover:bg-accent-green/90 transition-all hover:translate-x-0.5">
+                  <span className="bg-[#0B1220] text-accent-green px-4 py-2 rounded-lg flex items-center gap-2 text-xs uppercase tracking-wider"><Boxes size={14} /> Crear</span>
+                  Servidor con mods <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                </Link>
+                <Link to="/aternos-vs-minelab" className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 px-6 py-3 text-sm font-semibold text-white hover:bg-white/5 transition-colors">Comparar vs Aternos →</Link>
+              </div>
+            </div>
 
-      {/* MODPACK GRID */}
-      <section className="container mx-auto px-6 max-w-6xl py-16 border-t border-white/5">
-        <h2 className="font-heading text-3xl md:text-4xl font-bold text-white mb-3">Modpacks soportados (con un click)</h2>
-        <p className="text-white/60 mb-10 text-lg">El asistente IA conoce los modpacks más populares y los instala automáticamente. Si no ves el tuyo, pídelo en el chat: descarga desde CurseForge / Modrinth o tu .zip por SFTP.</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {MODPACKS.map((mp) => (
-            <div key={mp.short} className="rounded-2xl border border-white/8 bg-white/[0.02] p-5 hover:border-accent-violet/40 hover:bg-white/[0.04] transition-colors">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-accent-violet/30 to-accent-blue/20 flex items-center justify-center">
-                  <Boxes size={20} className="text-white" />
+            {/* RIGHT: stack visual de modpacks */}
+            <div className="lg:col-span-5 relative">
+              <div className="absolute -inset-4 bg-gradient-to-br from-accent-violet/20 via-transparent to-accent-green/20 rounded-3xl blur-2xl" />
+              <div className="relative">
+                <div className="rounded-3xl border border-white/10 bg-[#0a0e17] p-6 shadow-2xl">
+                  <div className="flex items-center gap-2 mb-5">
+                    <span className="text-[10px] uppercase tracking-[0.25em] font-bold text-accent-violet/90">Top modpacks</span>
+                    <span className="h-px flex-1 bg-gradient-to-r from-accent-violet/40 to-transparent" />
+                    <span className="text-[10px] text-white/40">live</span>
+                  </div>
+                  <div className="space-y-3">
+                    {MODPACKS.slice(0, 5).map((mp, i) => (
+                      <div key={mp.short} className="flex items-center gap-4 group">
+                        <span className="font-mono text-xs text-white/30 w-5">{String(i + 1).padStart(2, '0')}</span>
+                        <div className={`w-10 h-10 rounded-lg bg-gradient-to-br from-accent-${mp.accent}/40 to-accent-${mp.accent}/10 flex items-center justify-center flex-shrink-0`}>
+                          <Boxes size={18} className="text-white" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-heading font-bold text-white truncate">{mp.short}</p>
+                          <p className="text-xs text-white/50">{mp.mods} mods · {mp.loader}</p>
+                        </div>
+                        <span className="text-xs text-accent-green font-mono whitespace-nowrap">{mp.ram}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-5 pt-4 border-t border-white/5 flex items-center justify-between text-xs">
+                    <span className="text-white/50">+ 1.200 mods soportados</span>
+                    <span className="text-accent-green font-bold">2 min de setup</span>
+                  </div>
                 </div>
-                <span className="text-[10px] uppercase tracking-wider font-semibold text-accent-violet/80 bg-accent-violet/10 px-2 py-0.5 rounded-full">{mp.tag}</span>
-              </div>
-              <h3 className="font-heading text-lg font-bold text-white">{mp.name}</h3>
-              <div className="mt-2 text-xs text-white/50 space-y-1">
-                <div><span className="text-white/40">Mods:</span> {mp.mods}</div>
-                <div><span className="text-white/40">RAM:</span> {mp.ram}</div>
-                <div><span className="text-white/40">Loader:</span> {mp.loader}</div>
               </div>
             </div>
-          ))}
+          </div>
         </div>
       </section>
 
-      {/* HOW TO INSTALL */}
-      <section className="container mx-auto px-6 max-w-5xl py-16 border-t border-white/5">
-        <h2 className="font-heading text-3xl md:text-4xl font-bold text-white mb-3">Cómo se instala — 3 pasos, 2 minutos</h2>
-        <p className="text-white/60 mb-10 text-lg">Sin SSH, sin SFTP manual, sin editar JARs. El agente IA lo hace todo:</p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {[
-            { step: '1', icon: <MessageSquare size={22} className="text-accent-green" />, title: 'Abre el chat del agente', text: 'En tu panel MineLab, sección Chat. Disponible 24/7 en español.' },
-            { step: '2', icon: <Zap size={22} className="text-accent-violet" />, title: 'Escribe: "instala ATM10"', text: 'Lenguaje natural. El agente reconoce nombre, versión y dependencias automáticamente.' },
-            { step: '3', icon: <Check size={22} className="text-accent-blue" />, title: 'Espera 2 minutos', text: 'Descarga JAR + mods + libs, configura RAM óptima, arranca el server. Listo para jugar.' },
-          ].map((s) => (
-            <div key={s.step} className="rounded-2xl border border-white/8 bg-white/[0.02] p-6">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">{s.icon}</div>
-                <span className="text-3xl font-heading font-extrabold text-white/15">{s.step}</span>
-              </div>
-              <h3 className="font-heading text-lg font-bold text-white mb-2">{s.title}</h3>
-              <p className="text-sm text-white/60 leading-relaxed">{s.text}</p>
-            </div>
-          ))}
+      {/* STRIP LOADERS */}
+      <section className="border-y border-white/5 bg-white/[0.015] py-6 overflow-hidden">
+        <div className="container mx-auto px-6 max-w-7xl flex flex-wrap items-center justify-around gap-x-10 gap-y-3 text-white/40">
+          <span className="text-xs uppercase tracking-[0.3em] font-bold">Mod loaders</span>
+          <span className="font-heading font-bold">Forge</span>
+          <span className="font-heading font-bold">Fabric</span>
+          <span className="font-heading font-bold">NeoForge</span>
+          <span className="font-heading font-bold">Quilt</span>
+          <span className="font-heading font-bold">Paper</span>
+          <span className="font-heading font-bold">Purpur</span>
+          <span className="font-heading font-bold">Spigot</span>
         </div>
       </section>
 
-      {/* LOADERS COMPARISON */}
-      <section className="container mx-auto px-6 max-w-6xl py-16 border-t border-white/5">
-        <h2 className="font-heading text-3xl md:text-4xl font-bold text-white mb-3">Forge vs Fabric vs NeoForge — ¿cuál elegir?</h2>
-        <p className="text-white/60 mb-10 text-lg">Cada loader tiene su sweet spot. Si dudas, dile al agente IA "qué loader recomiendas para X" y te explica.</p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {LOADERS.map((l) => (
-            <div key={l.name} className="rounded-2xl border border-white/8 bg-white/[0.02] p-6">
-              <h3 className="font-heading text-2xl font-bold text-white mb-4">{l.name}</h3>
-              <div className="mb-4">
-                <p className="text-xs uppercase tracking-wider text-accent-green/80 font-semibold mb-2">A favor</p>
-                <ul className="space-y-1 text-sm text-white/70">
-                  {l.pros.map((p) => (
-                    <li key={p} className="flex gap-2"><Check size={14} className="text-accent-green flex-shrink-0 mt-0.5" />{p}</li>
-                  ))}
-                </ul>
-              </div>
-              <div className="mb-4">
-                <p className="text-xs uppercase tracking-wider text-amber-400/80 font-semibold mb-2">En contra</p>
-                <ul className="space-y-1 text-sm text-white/60">
-                  {l.cons.map((c) => (
-                    <li key={c} className="flex gap-2"><AlertTriangle size={14} className="text-amber-400/80 flex-shrink-0 mt-0.5" />{c}</li>
-                  ))}
-                </ul>
-              </div>
-              <div className="border-t border-white/5 pt-3">
-                <p className="text-xs uppercase tracking-wider text-white/40 font-semibold mb-1">Cuándo usarlo</p>
-                <p className="text-sm text-white/70">{l.when}</p>
+      <article className="container mx-auto px-6 max-w-6xl">
+        {/* QUÉ ES MODDED */}
+        <section className="py-20 md:py-28">
+          <div className="grid lg:grid-cols-12 gap-10 items-start">
+            <div className="lg:col-span-5">
+              <p className="text-[11px] uppercase tracking-[0.3em] font-bold text-accent-violet mb-3">El stack</p>
+              <h2 className="font-heading text-4xl md:text-6xl font-black text-white leading-[1] uppercase">
+                ¿Qué es <br/><HL>"modded"</HL>?
+              </h2>
+            </div>
+            <div className="lg:col-span-7 space-y-4 text-white/70 leading-relaxed">
+              <p className="text-lg">Un servidor "modded" ejecuta mods — modificaciones que añaden mecánicas (magia, tecnología, mobs, dimensiones) — usando un mod loader.</p>
+              <div className="space-y-3 mt-6">
+                <div className="flex gap-4 p-4 rounded-xl border border-white/8 bg-white/[0.02]"><Layers size={20} className="text-white/50 flex-shrink-0 mt-0.5"/><div><strong className="text-white">Vanilla</strong><p className="text-sm text-white/55">Minecraft sin modificar.</p></div></div>
+                <div className="flex gap-4 p-4 rounded-xl border border-white/8 bg-white/[0.02]"><Layers size={20} className="text-accent-blue flex-shrink-0 mt-0.5"/><div><strong className="text-white">Paper / Spigot</strong><p className="text-sm text-white/55">Servidor optimizado, soporta plugins (Bukkit) pero no mods de cliente.</p></div></div>
+                <div className="flex gap-4 p-4 rounded-xl border border-accent-violet/25 bg-accent-violet/5"><Layers size={20} className="text-accent-violet flex-shrink-0 mt-0.5"/><div><strong className="text-white">Forge / NeoForge / Fabric</strong><p className="text-sm text-white/65">Cargadores de mods reales — instalan código que cambia el juego para servidor + cliente. <span className="text-accent-violet">Aquí entran los modpacks de CurseForge.</span></p></div></div>
               </div>
             </div>
-          ))}
-        </div>
-      </section>
+          </div>
+        </section>
 
-      {/* RAM TABLE */}
-      <section className="container mx-auto px-6 max-w-5xl py-16 border-t border-white/5">
-        <h2 className="font-heading text-3xl md:text-4xl font-bold text-white mb-3">Requisitos de RAM por modpack</h2>
-        <p className="text-white/60 mb-8 text-lg">Tabla de referencia. La RAM real depende del número de chunks cargados y jugadores. El agente IA detecta out-of-memory y te avisa para subir el plan.</p>
-        <div className="overflow-x-auto rounded-2xl border border-white/10">
-          <table className="w-full text-sm">
-            <thead className="bg-white/5">
-              <tr>
-                <th className="text-left p-4 font-heading text-white">Tipo de servidor</th>
-                <th className="text-left p-4 font-heading text-white">Mods</th>
-                <th className="text-left p-4 font-heading text-white">RAM mínima</th>
-                <th className="text-left p-4 font-heading text-accent-green">RAM recomendada</th>
-                <th className="text-left p-4 font-heading text-white">Jugadores</th>
-              </tr>
-            </thead>
-            <tbody>
-              {RAM_TABLE.map((row, i) => (
-                <tr key={row.type} className={i % 2 ? 'bg-white/[0.015]' : ''}>
-                  <td className="p-4 font-medium text-white">{row.type}</td>
-                  <td className="p-4 text-white/60">{row.mods}</td>
-                  <td className="p-4 text-white/60">{row.minRam}</td>
-                  <td className="p-4 text-accent-green font-semibold">{row.recRam}</td>
-                  <td className="p-4 text-white/60">{row.players}</td>
-                </tr>
+        {/* MODPACK GRID con números decorativos */}
+        <section className="py-20 border-t border-white/5">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.3em] font-bold text-accent-green mb-3">Catálogo</p>
+              <h2 className="font-heading text-4xl md:text-6xl font-black text-white leading-[1] uppercase">Modpacks <HL>con un click</HL></h2>
+            </div>
+            <p className="text-white/50 text-sm md:max-w-xs">¿No ves el tuyo? Sube el .zip por SFTP y dile al chat "instala este modpack".</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {MODPACKS.map((mp, i) => (
+              <div key={mp.short} className={`group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02] p-6 hover:border-accent-${mp.accent}/40 hover:bg-white/[0.04] transition-all`}>
+                <span className="absolute -top-2 -right-1 font-heading text-[5rem] font-black text-white/[0.04] leading-none select-none">{String(i + 1).padStart(2, '0')}</span>
+                <div className="relative">
+                  <div className={`w-11 h-11 rounded-xl bg-gradient-to-br from-accent-${mp.accent}/40 to-accent-${mp.accent}/10 flex items-center justify-center mb-4`}>
+                    <Boxes size={20} className="text-white" />
+                  </div>
+                  <span className={`inline-block text-[10px] uppercase tracking-wider font-bold text-accent-${mp.accent} bg-accent-${mp.accent}/10 px-2 py-0.5 rounded-full mb-2`}>{mp.tag}</span>
+                  <h3 className="font-heading text-lg font-black text-white">{mp.name}</h3>
+                  <div className="mt-3 flex items-center justify-between text-xs text-white/50 pt-3 border-t border-white/5">
+                    <span><span className="text-white font-bold">{mp.mods}</span> mods</span>
+                    <span className={`text-accent-${mp.accent} font-bold`}>{mp.ram}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* CÓMO SE INSTALA — terminal mockup + steps */}
+        <section className="py-20 border-t border-white/5">
+          <div className="grid lg:grid-cols-12 gap-10 items-center">
+            <div className="lg:col-span-6">
+              <p className="text-[11px] uppercase tracking-[0.3em] font-bold text-accent-green mb-3">Setup</p>
+              <h2 className="font-heading text-4xl md:text-6xl font-black text-white leading-[0.95] uppercase">
+                3 pasos. <br/><HL>2 minutos.</HL>
+              </h2>
+              <p className="mt-6 text-lg text-white/70">Sin SSH, sin SFTP manual, sin editar JARs. Lenguaje natural.</p>
+              <div className="mt-8 space-y-4">
+                {[
+                  { n: '01', i: <MessageSquare size={18} />, t: 'Abre el chat del agente', s: 'En tu panel MineLab. Disponible 24/7 en español.' },
+                  { n: '02', i: <Zap size={18} />, t: 'Escribe: "instala ATM10"', s: 'Reconoce nombre, versión y dependencias.' },
+                  { n: '03', i: <Check size={18} />, t: 'Espera 2 minutos', s: 'Descarga JAR + mods + libs, configura y arranca.' },
+                ].map((s) => (
+                  <div key={s.n} className="flex items-start gap-4 p-4 rounded-xl border border-white/8 bg-white/[0.02] hover:border-accent-green/30 hover:bg-accent-green/5 transition-colors">
+                    <span className="font-heading text-2xl font-black text-accent-green/40">{s.n}</span>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1"><span className="text-accent-green">{s.i}</span><p className="font-heading font-bold text-white">{s.t}</p></div>
+                      <p className="text-sm text-white/55">{s.s}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="lg:col-span-6">
+              <div className="rounded-2xl border border-white/10 bg-[#0a0e17] overflow-hidden shadow-[0_30px_80px_-20px_rgba(168,85,247,0.25)]">
+                <div className="flex items-center gap-2 px-4 py-3 bg-white/[0.03] border-b border-white/5">
+                  <span className="w-3 h-3 rounded-full bg-red-500/70" />
+                  <span className="w-3 h-3 rounded-full bg-yellow-500/70" />
+                  <span className="w-3 h-3 rounded-full bg-green-500/70" />
+                  <span className="ml-3 text-xs text-white/50 font-mono">terminal // installer.log</span>
+                </div>
+                <div className="p-6 font-mono text-sm space-y-1.5">
+                  <p className="text-accent-violet">$ minelab install atm10</p>
+                  <p className="text-white/50">→ resolving manifest from CurseForge…</p>
+                  <p className="text-accent-green">✓ all-the-mods-10@2.41 (398 mods)</p>
+                  <p className="text-white/50">→ downloading mods (parallel x16)</p>
+                  <p className="text-accent-green">✓ neoforge 21.1.74 ready</p>
+                  <p className="text-white/50">→ writing server.properties · 12G heap · view-distance 8</p>
+                  <p className="text-accent-green">✓ mods/ (398) · config/ (412) · scripts/ (24)</p>
+                  <p className="text-white/50">→ starting jvm…</p>
+                  <p className="text-accent-green">✓ Done (94.2s)! For help, type "help"</p>
+                  <p className="text-white">█</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* LOADERS — TABS */}
+        <section className="py-20 border-t border-white/5">
+          <p className="text-[11px] uppercase tracking-[0.3em] font-bold text-accent-blue mb-3">Mod loaders</p>
+          <h2 className="font-heading text-4xl md:text-6xl font-black text-white leading-[1] uppercase mb-3">
+            Forge · Fabric · <HL color="blue">NeoForge</HL>
+          </h2>
+          <p className="text-white/55 text-lg mb-10 max-w-2xl">Cada loader tiene su sweet spot. Si dudas, pregúntale al agente IA.</p>
+
+          <div className="flex gap-2 mb-6 border-b border-white/10">
+            {LOADERS.map((l, i) => (
+              <button key={l.name} onClick={() => setTab(i)} className={`px-5 py-3 font-heading font-bold text-sm uppercase tracking-wider transition-colors relative ${tab === i ? 'text-accent-green' : 'text-white/50 hover:text-white/80'}`}>
+                {l.name}
+                <span className="ml-2 text-[10px] text-white/40">· {l.tag}</span>
+                {tab === i && <span className="absolute bottom-[-1px] left-0 right-0 h-0.5 bg-accent-green" />}
+              </button>
+            ))}
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 md:p-10 grid md:grid-cols-3 gap-8">
+            <div>
+              <p className="text-xs uppercase tracking-wider font-bold text-accent-green mb-3">A favor</p>
+              <ul className="space-y-2">
+                {LOADERS[tab].pros.map((p) => <li key={p} className="flex gap-2 text-sm text-white/80"><Check size={14} className="text-accent-green flex-shrink-0 mt-1" />{p}</li>)}
+              </ul>
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-wider font-bold text-amber-400 mb-3">En contra</p>
+              <ul className="space-y-2">
+                {LOADERS[tab].cons.map((c) => <li key={c} className="flex gap-2 text-sm text-white/65"><AlertTriangle size={14} className="text-amber-400/80 flex-shrink-0 mt-1" />{c}</li>)}
+              </ul>
+            </div>
+            <div className="md:border-l border-white/10 md:pl-8">
+              <p className="text-xs uppercase tracking-wider font-bold text-white/50 mb-3">Cuándo usarlo</p>
+              <p className="text-white/85 leading-relaxed">{LOADERS[tab].when}</p>
+            </div>
+          </div>
+        </section>
+
+        {/* RAM — bar comparison */}
+        <section className="py-20 border-t border-white/5">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.3em] font-bold text-accent-green mb-3">Recursos</p>
+              <h2 className="font-heading text-4xl md:text-6xl font-black text-white leading-[1] uppercase">RAM por <HL>modpack</HL></h2>
+            </div>
+            <p className="text-white/50 text-sm md:max-w-xs">El agente IA detecta out-of-memory y te avisa para subir el plan.</p>
+          </div>
+          <div className="space-y-4">
+            {RAM_TABLE.map((r) => (
+              <div key={r.type} className="rounded-xl border border-white/8 bg-white/[0.02] p-5">
+                <div className="flex flex-wrap items-baseline justify-between gap-4 mb-3">
+                  <div className="flex items-baseline gap-3">
+                    <Cpu size={16} className="text-accent-green/70" />
+                    <span className="font-heading font-bold text-white">{r.type}</span>
+                    <span className="text-xs text-white/40">{r.mods}</span>
+                  </div>
+                  <div className="flex items-baseline gap-4 text-sm">
+                    <span className="text-white/50">{r.players} jugadores</span>
+                    <span className="font-heading font-black text-accent-green text-lg">{r.recRam}</span>
+                  </div>
+                </div>
+                <div className="h-2 rounded-full bg-white/5 overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-accent-green via-accent-violet to-accent-blue transition-all duration-700" style={{ width: `${(r.ramN / 16) * 100}%` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* DIAGNOSTICS split */}
+        <section className="py-20 border-t border-white/5">
+          <p className="text-[11px] uppercase tracking-[0.3em] font-bold text-accent-violet mb-3">Cuando algo falla</p>
+          <h2 className="font-heading text-4xl md:text-6xl font-black text-white leading-[1] uppercase mb-12">
+            Diagnóstico <HL>automático</HL>
+          </h2>
+          <div className="grid md:grid-cols-2 gap-5">
+            <div className="relative rounded-2xl border border-white/10 bg-white/[0.02] p-8">
+              <span className="absolute top-6 right-6 text-[10px] uppercase tracking-wider font-bold text-red-400/70 bg-red-400/10 px-2 py-1 rounded">Tradicional</span>
+              <Wrench size={28} className="text-white/40 mb-4" />
+              <h3 className="font-heading text-2xl font-black text-white mb-3">Hosting normal</h3>
+              <p className="text-white/60 leading-relaxed">Te pasan un latest.log de 5.000 líneas en inglés con NullPointerException sin contexto. Buscas en Google, abres ticket, esperas 24h. La comunidad te dice "skill issue".</p>
+            </div>
+            <div className="relative rounded-2xl border border-accent-green/30 bg-gradient-to-br from-accent-green/10 via-transparent to-accent-violet/5 p-8 overflow-hidden">
+              <span className="absolute top-6 right-6 text-[10px] uppercase tracking-wider font-bold text-accent-green bg-accent-green/15 px-2 py-1 rounded">MineLab + IA</span>
+              <Bot size={28} className="text-accent-green mb-4" />
+              <h3 className="font-heading text-2xl font-black text-white mb-3">Con agente IA</h3>
+              <p className="text-white/85 leading-relaxed">Lee el log, identifica el mod culpable, te explica en español qué pasó, propone solución (downgrade, exclusión, parche). Lo aplica si confirmas. Server arriba en 3 min.</p>
+              <div className="absolute -bottom-12 -right-12 w-48 h-48 rounded-full bg-accent-green/20 blur-2xl" />
+            </div>
+          </div>
+        </section>
+
+        {/* PRICING */}
+        <section className="py-20 border-t border-white/5">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.3em] font-bold text-accent-green mb-3">Pricing</p>
+              <h2 className="font-heading text-4xl md:text-6xl font-black text-white leading-[1] uppercase">Planes para <HL>modders</HL></h2>
+            </div>
+            <p className="text-white/50 text-sm md:max-w-xs">Cancela cuando quieras. Cambio gratuito de plan el primer mes.</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              { ram: '2 GB', price: '4,99', use: 'Vanilla, Paper, mods ligeros', n: '01' },
+              { ram: '4 GB', price: '7,99', use: 'Forge ligero, Pixelmon', n: '02' },
+              { ram: '6 GB', price: '9,99', use: 'RLCraft, BMC, Stoneblock', n: '03' },
+              { ram: '8 GB', price: '14,99', use: 'ATM10, Vault Hunters', n: '04', highlight: true },
+            ].map((p) => (
+              <div key={p.ram} className={`relative overflow-hidden rounded-2xl p-6 ${p.highlight ? 'border-2 border-accent-green/50 bg-gradient-to-br from-accent-green/15 to-transparent' : 'border border-white/10 bg-white/[0.02]'}`}>
+                <span className="absolute -top-2 -right-1 font-heading text-[5rem] font-black text-white/[0.04] leading-none select-none">{p.n}</span>
+                <div className="relative">
+                  <div className="flex items-baseline justify-between mb-3">
+                    <span className="font-heading text-xl font-black text-white">{p.ram}</span>
+                    {p.highlight && <span className="text-[10px] uppercase tracking-wider font-bold text-accent-green bg-accent-green/15 px-2 py-0.5 rounded-full">Top mods</span>}
+                  </div>
+                  <div className="font-heading text-4xl font-black text-white">{p.price}<span className="text-base text-white/40 font-normal"> €</span></div>
+                  <p className="text-xs text-white/40 mb-4">/mes</p>
+                  <p className="text-sm text-white/60 leading-relaxed border-t border-white/5 pt-4">{p.use}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-10 text-center">
+            <Link to="/#pricing?utm_source=seo&utm_medium=organic&utm_campaign=mods-pricing" className="inline-flex items-center justify-center gap-2 rounded-full bg-accent-green px-7 py-3 text-base font-bold text-[#0B1220] hover:bg-accent-green/90 transition-colors">
+              Ver planes completos <ArrowRight size={16} />
+            </Link>
+          </div>
+        </section>
+
+        {/* FAQ */}
+        <section className="py-20 border-t border-white/5">
+          <div className="grid lg:grid-cols-3 gap-12">
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.3em] font-bold text-accent-violet mb-3">FAQ</p>
+              <h2 className="font-heading text-4xl md:text-5xl font-black text-white leading-[1] uppercase">Preguntas <br/><HL>frecuentes</HL></h2>
+            </div>
+            <div className="lg:col-span-2 space-y-3">
+              {FAQ.map(({ q, a }) => (
+                <details key={q} className="group rounded-2xl border border-white/10 bg-white/[0.02] p-5 open:bg-white/[0.04] open:border-accent-violet/20">
+                  <summary className="flex items-center justify-between gap-4 cursor-pointer font-heading font-bold text-white list-none">
+                    <span>{q}</span>
+                    <span className="flex-shrink-0 w-7 h-7 rounded-full border border-accent-violet/40 text-accent-violet flex items-center justify-center text-xl group-open:rotate-45 transition-transform">+</span>
+                  </summary>
+                  <p className="mt-4 text-white/65 leading-relaxed">{a}</p>
+                </details>
               ))}
-            </tbody>
-          </table>
-        </div>
-        <p className="text-xs text-white/40 mt-3">* Datos basados en testing real con 1.20.1+ y población media de jugadores activos.</p>
-      </section>
-
-      {/* DIAGNOSTICS */}
-      <section className="container mx-auto px-6 max-w-5xl py-16 border-t border-white/5">
-        <h2 className="font-heading text-3xl md:text-4xl font-bold text-white mb-3">Diagnóstico automático cuando algo falla</h2>
-        <p className="text-white/60 mb-8 text-lg">Los servidores con mods crashean. Es la realidad. La diferencia es cómo se resuelve.</p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <div className="rounded-2xl border border-white/8 bg-white/[0.02] p-6">
-            <div className="flex items-center gap-3 mb-3">
-              <Wrench size={22} className="text-accent-blue" />
-              <h3 className="font-heading text-lg font-bold text-white">Hosting tradicional</h3>
             </div>
-            <p className="text-sm text-white/60 leading-relaxed">Te pasan un latest.log de 5000 líneas en inglés con NullPointerException sin contexto. Buscas en Google, abres ticket, esperas 24h.</p>
           </div>
-          <div className="rounded-2xl border border-accent-green/30 bg-accent-green/5 p-6">
-            <div className="flex items-center gap-3 mb-3">
-              <Sparkles size={22} className="text-accent-green" />
-              <h3 className="font-heading text-lg font-bold text-white">MineLab + IA</h3>
-            </div>
-            <p className="text-sm text-white/80 leading-relaxed">El agente lee el log, identifica el mod culpable, te explica en español qué pasó, propone solución (downgrade, exclusión, parche). Lo aplica si confirmas. Servidor arriba en 3 minutos.</p>
-          </div>
-        </div>
-      </section>
+        </section>
 
-      {/* PRICING TEASER */}
-      <section className="container mx-auto px-6 max-w-5xl py-16 border-t border-white/5">
-        <h2 className="font-heading text-3xl md:text-4xl font-bold text-white mb-3">Precios para servidores con mods</h2>
-        <p className="text-white/60 mb-8 text-lg">Pago mensual, cancelas cuando quieras, primer mes con cambio gratuito de plan si te quedas corto de RAM.</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[
-            { ram: '2 GB', price: '4,99', use: 'Vanilla, Paper, mods ligeros' },
-            { ram: '4 GB', price: '7,99', use: 'Forge ligero, Pixelmon' },
-            { ram: '6 GB', price: '9,99', use: 'RLCraft, BMC, Stoneblock' },
-            { ram: '8 GB', price: '14,99', use: 'ATM10, Vault Hunters', highlight: true },
-          ].map((p) => (
-            <div key={p.ram} className={`rounded-2xl border p-5 ${p.highlight ? 'border-accent-green/40 bg-accent-green/5' : 'border-white/8 bg-white/[0.02]'}`}>
-              <div className="flex items-baseline justify-between mb-1">
-                <span className="font-heading text-2xl font-extrabold text-white">{p.ram}</span>
-                {p.highlight && <span className="text-[10px] uppercase tracking-wider font-semibold text-accent-green bg-accent-green/15 px-2 py-0.5 rounded-full">Top mods</span>}
+        {/* CTA FINAL */}
+        <section className="py-20">
+          <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-accent-violet/15 via-transparent to-accent-green/15 border border-accent-violet/30 p-10 md:p-16">
+            <div className="absolute -top-32 -right-32 w-96 h-96 rounded-full bg-accent-violet/20 blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-32 -left-32 w-96 h-96 rounded-full bg-accent-green/20 blur-3xl pointer-events-none" />
+            <div className="relative grid md:grid-cols-2 gap-10 items-center">
+              <div>
+                <Sparkles size={32} className="text-accent-violet mb-5" />
+                <h2 className="font-heading text-4xl md:text-6xl font-black text-white leading-[1] uppercase">
+                  Tu modpack, listo en <HL>2 min</HL>
+                </h2>
+                <p className="mt-5 text-white/70 text-lg max-w-md">Crea tu servidor, escribe el nombre del modpack en el chat, y juega.</p>
               </div>
-              <div className="text-3xl font-heading font-extrabold text-white">{p.price}<span className="text-sm text-white/40 font-normal"> €/mes</span></div>
-              <p className="mt-3 text-xs text-white/50 leading-relaxed">{p.use}</p>
+              <div className="flex flex-col gap-3 md:items-end">
+                <Link to="/#pricing?utm_source=seo&utm_medium=organic&utm_campaign=mods-final" className="group inline-flex items-center justify-between gap-4 rounded-xl bg-accent-green pl-2 pr-5 py-2 text-base font-bold text-[#0B1220] hover:bg-accent-green/90 transition-all">
+                  <span className="bg-[#0B1220] text-accent-green px-4 py-2 rounded-lg flex items-center gap-2 text-xs uppercase tracking-wider"><Boxes size={14} /> Crear</span>
+                  Servidor con mods <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                </Link>
+                <Link to="/migrar-servidor-aternos" className="text-sm text-white/60 hover:text-white transition-colors">Vengo de Aternos →</Link>
+              </div>
             </div>
-          ))}
-        </div>
-        <div className="mt-8 text-center">
-          <Link to="/#pricing?utm_source=seo&utm_medium=organic&utm_campaign=mods-pricing" className="inline-flex items-center justify-center gap-2 rounded-full bg-accent-green px-7 py-3 text-base font-semibold text-[#0B1220] hover:bg-accent-green/90 transition-colors">
-            Ver planes completos <ArrowRight size={16} />
-          </Link>
-        </div>
-      </section>
-
-      {/* FAQ */}
-      <section className="container mx-auto px-6 max-w-4xl py-16 border-t border-white/5">
-        <h2 className="font-heading text-3xl md:text-4xl font-bold text-white mb-8">Preguntas frecuentes</h2>
-        <div className="space-y-3">
-          {FAQ.map(({ q, a }) => (
-            <details key={q} className="group rounded-2xl border border-white/8 bg-white/[0.02] p-5 open:bg-white/[0.04]">
-              <summary className="flex items-center justify-between cursor-pointer list-none">
-                <span className="font-heading font-semibold text-white text-base md:text-lg">{q}</span>
-                <span className="text-accent-green text-2xl group-open:rotate-45 transition-transform">+</span>
-              </summary>
-              <p className="mt-3 text-sm md:text-base text-white/70 leading-relaxed">{a}</p>
-            </details>
-          ))}
-        </div>
-      </section>
-
-      {/* FINAL CTA */}
-      <section className="container mx-auto px-6 max-w-4xl py-20 text-center border-t border-white/5">
-        <h2 className="font-heading text-3xl md:text-5xl font-extrabold text-white mb-4">Tu modpack, listo en 2 minutos</h2>
-        <p className="text-white/60 text-lg mb-8 max-w-2xl mx-auto">Crea tu servidor, escribe el nombre del modpack en el chat, y juega. Cancela cuando quieras.</p>
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Link to="/#pricing?utm_source=seo&utm_medium=organic&utm_campaign=mods-final" className="inline-flex items-center justify-center gap-2 rounded-full bg-accent-green px-8 py-4 text-base font-semibold text-[#0B1220] hover:bg-accent-green/90 transition-colors">
-            Crear servidor con mods <ArrowRight size={16} />
-          </Link>
-          <Link to="/migrar-servidor-aternos" className="inline-flex items-center justify-center gap-2 rounded-full border border-white/15 bg-white/5 px-8 py-4 text-base font-semibold text-white hover:bg-white/10 transition-colors">
-            Vengo de Aternos
-          </Link>
-        </div>
-      </section>
+          </div>
+        </section>
+      </article>
     </SeoLayout>
   );
 }

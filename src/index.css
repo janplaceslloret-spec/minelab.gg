@@ -5,9 +5,16 @@
   --color-primary: #FFFFFF;
   --color-accent-green: #22C55E;
   --color-accent-violet: #6366F1;
+  --color-accent-blue: #3B82F6;
   --font-sans: "Montserrat", sans-serif;
   --font-heading: "Montserrat", sans-serif;
 }
+
+/* Safelist para clases dinámicas usadas en /aternos-vs-minelab,
+   /hosting-minecraft-con-mods y /migrar-servidor-aternos donde
+   el color se elige por variable (green | violet | blue). */
+@source inline("{hover:,}{bg,text,border,from,to}-accent-{green,violet,blue}/{5,10,15,20,25,30,40}");
+@source inline("{hover:,}{bg,text,border}-accent-{green,violet,blue}");
 
 @layer base {
   html {
