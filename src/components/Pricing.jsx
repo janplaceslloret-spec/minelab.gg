@@ -11,27 +11,57 @@ const Pricing = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
   const [loading, setLoading] = useState(false);
   const [billing, setBilling] = useState('monthly'); // 'monthly' | 'annual'
 
-  const handleSubscribe = async (stripeUrl) => {
+  // Crea un draft en mc_servers y devuelve el id, o null si falla
+  const createDraftServer = async (userId, ramGb) => {
+    try {
+      const uniqueName = `Mi servidor ${Math.floor(Date.now() / 1000)}`;
+      const { data, error } = await supabase
+        .from('mc_servers')
+        .insert({
+          user_id: userId,
+          server_name: uniqueName,
+          server_type: 'paper',
+          mc_version: '1.21.4',
+          ram_gb: ramGb,
+          status: 'draft',
+          status_server: 'offline',
+          ready: false,
+          mods: false,
+          mod_count: 0,
+        })
+        .select('id')
+        .single();
+      if (error) { console.error('[Pricing] draft insert error:', error); return null; }
+      return data?.id || null;
+    } catch (err) {
+      console.error('[Pricing] createDraftServer failed:', err);
+      return null;
+    }
+  };
+
+  const handleSubscribe = async (stripeUrl, ramGb) => {
     try {
       setLoading(true);
-      // Si tenemos URL de Stripe, intentamos pasar el id del usuario como
-      // client_reference_id para que el webhook pueda asociar el pago.
       if (stripeUrl) {
         let finalUrl = stripeUrl;
         try {
           const { data: { session } } = await supabase.auth.getSession();
           const userId = session?.user?.id;
           if (userId) {
+            // Crear draft en mc_servers para que el webhook tenga un server_id válido
+            const serverId = await createDraftServer(userId, ramGb || 6);
+            const refId = serverId || userId; // fallback a userId si el insert falla
             const sep = stripeUrl.includes('?') ? '&' : '?';
-            finalUrl = `${stripeUrl}${sep}client_reference_id=${encodeURIComponent(userId)}`;
+            finalUrl = `${stripeUrl}${sep}client_reference_id=${encodeURIComponent(refId)}&prefilled_email=${encodeURIComponent(session.user.email || '')}`;
           } else {
             // No logueado: guardamos plan elegido y llevamos a login
             localStorage.setItem('minelab-pending-stripe-url', stripeUrl);
+            localStorage.setItem('minelab-pending-stripe-ram', String(ramGb || 6));
             onLoginDemo();
             return;
           }
         } catch (_) {
-          // Si supabase falla, igual abrimos Stripe
+          // Si supabase falla, igual abrimos Stripe sin client_reference_id
         }
         window.location.href = finalUrl;
         return;
@@ -49,6 +79,7 @@ const Pricing = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
   const plans = [
     {
       name: "4GB RAM",
+      ramGb: 4,
       originalPrice: "8€",
       monthlyPrice: "5€",
       annualPrice: "60€",
@@ -59,6 +90,7 @@ const Pricing = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
     },
     {
       name: "6GB RAM",
+      ramGb: 6,
       originalPrice: "10€",
       monthlyPrice: "7€",
       annualPrice: "84€",
@@ -69,6 +101,7 @@ const Pricing = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
     },
     {
       name: "8GB RAM",
+      ramGb: 8,
       originalPrice: "13€",
       monthlyPrice: "10€",
       annualPrice: "120€",
@@ -79,6 +112,7 @@ const Pricing = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
     },
     {
       name: "12GB RAM",
+      ramGb: 12,
       originalPrice: "18€",
       monthlyPrice: "15€",
       annualPrice: "180€",
@@ -223,7 +257,7 @@ const Pricing = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
               </div>
 
               <button
-                onClick={() => handleSubscribe(billing === 'annual' ? plan.stripeAnnual : plan.stripeMonthly)}
+                onClick={() => handleSubscribe(billing === 'annual' ? plan.stripeAnnual : plan.stripeMonthly, plan.ramGb)}
                 disabled={loading}
                 className={`w-full py-4 rounded-xl font-heading font-black text-sm uppercase tracking-widest transition-all duration-300 mt-auto
                 ${plan.popular

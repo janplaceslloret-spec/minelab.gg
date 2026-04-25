@@ -166,9 +166,31 @@ const DashboardLayout = () => {
           const pendingStripe = localStorage.getItem('minelab-pending-stripe-url');
           if (pendingStripe) {
             localStorage.removeItem('minelab-pending-stripe-url');
+            const pendingRam = parseInt(localStorage.getItem('minelab-pending-stripe-ram') || '6', 10);
+            localStorage.removeItem('minelab-pending-stripe-ram');
             try {
+              // Crear draft server para que el webhook tenga un server_id válido
+              let refId = session.user.id; // fallback
+              const uniqueName = `Mi servidor ${Math.floor(Date.now() / 1000)}`;
+              const { data: draftSrv } = await supabase
+                .from('mc_servers')
+                .insert({
+                  user_id: session.user.id,
+                  server_name: uniqueName,
+                  server_type: 'paper',
+                  mc_version: '1.21.4',
+                  ram_gb: pendingRam,
+                  status: 'draft',
+                  status_server: 'offline',
+                  ready: false,
+                  mods: false,
+                  mod_count: 0,
+                })
+                .select('id')
+                .single();
+              if (draftSrv?.id) refId = draftSrv.id;
               const sep = pendingStripe.includes('?') ? '&' : '?';
-              const finalUrl = `${pendingStripe}${sep}client_reference_id=${encodeURIComponent(session.user.id)}&prefilled_email=${encodeURIComponent(session.user.email || '')}`;
+              const finalUrl = `${pendingStripe}${sep}client_reference_id=${encodeURIComponent(refId)}&prefilled_email=${encodeURIComponent(session.user.email || '')}`;
               window.location.href = finalUrl;
               return; // Don't continue loading dashboard — user is going to Stripe
             } catch (_) {
