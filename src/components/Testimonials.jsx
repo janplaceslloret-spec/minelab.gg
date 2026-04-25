@@ -320,18 +320,18 @@ const Testimonials = () => {
             {/* Stats */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mt-8">
               <div className="flex flex-col items-center">
-                <span className="text-5xl font-heading font-extrabold text-white tracking-tighter">{avgRating}</span>
+                <span className="text-5xl font-heading font-black text-white tracking-tighter">{avgRating}</span>
                 <StarRow rating={5} size={18} />
                 <span className="text-white/40 text-xs mt-1 uppercase tracking-widest font-bold">Puntuación media</span>
               </div>
               <div className="hidden sm:block w-px h-16 bg-white/10"></div>
               <div className="flex flex-col items-center">
-                <span className="text-5xl font-heading font-extrabold text-accent-green tracking-tighter">{fiveStarPct}%</span>
+                <span className="text-5xl font-heading font-black text-accent-green tracking-tighter">{fiveStarPct}%</span>
                 <span className="text-white/40 text-xs mt-1 uppercase tracking-widest font-bold">Puntuaciones 5 ★</span>
               </div>
               <div className="hidden sm:block w-px h-16 bg-white/10"></div>
               <div className="flex flex-col items-center">
-                <span className="text-5xl font-heading font-extrabold text-white tracking-tighter">{total}</span>
+                <span className="text-5xl font-heading font-black text-white tracking-tighter">{total}</span>
                 <span className="text-white/40 text-xs mt-1 uppercase tracking-widest font-bold">Reseñas verificadas</span>
               </div>
             </div>

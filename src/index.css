@@ -32,6 +32,17 @@
   h1, h2, h3, h4, h5, h6, .font-heading {
     text-transform: uppercase;
     letter-spacing: -0.05em; /* tracking-tighter */
+    font-weight: 900;        /* default a Montserrat Black */
+    line-height: 0.95;
+  }
+
+  /* Acento itálica serif — usar con class="font-accent" en un span */
+  .font-accent {
+    font-family: "Playfair Display", Georgia, serif;
+    font-style: italic;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    text-transform: none;
   }
 }
 

@@ -121,7 +121,7 @@ export default function HostingConMods() {
                           <Boxes size={18} className="text-white" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-heading font-bold text-white truncate">{mp.short}</p>
+                          <p className="font-heading font-black text-white truncate">{mp.short}</p>
                           <p className="text-xs text-white/50">{mp.mods} mods · {mp.loader}</p>
                         </div>
                         <span className="text-xs text-accent-green font-mono whitespace-nowrap">{mp.ram}</span>
@@ -143,13 +143,13 @@ export default function HostingConMods() {
       <section className="border-y border-white/5 bg-white/[0.015] py-6 overflow-hidden">
         <div className="container mx-auto px-6 max-w-7xl flex flex-wrap items-center justify-around gap-x-10 gap-y-3 text-white/40">
           <span className="text-xs uppercase tracking-[0.3em] font-bold">Mod loaders</span>
-          <span className="font-heading font-bold">Forge</span>
-          <span className="font-heading font-bold">Fabric</span>
-          <span className="font-heading font-bold">NeoForge</span>
-          <span className="font-heading font-bold">Quilt</span>
-          <span className="font-heading font-bold">Paper</span>
-          <span className="font-heading font-bold">Purpur</span>
-          <span className="font-heading font-bold">Spigot</span>
+          <span className="font-heading font-black">Forge</span>
+          <span className="font-heading font-black">Fabric</span>
+          <span className="font-heading font-black">NeoForge</span>
+          <span className="font-heading font-black">Quilt</span>
+          <span className="font-heading font-black">Paper</span>
+          <span className="font-heading font-black">Purpur</span>
+          <span className="font-heading font-black">Spigot</span>
         </div>
       </section>
 
@@ -221,7 +221,7 @@ export default function HostingConMods() {
                   <div key={s.n} className="flex items-start gap-4 p-4 rounded-xl border border-white/8 bg-white/[0.02] hover:border-accent-green/30 hover:bg-accent-green/5 transition-colors">
                     <span className="font-heading text-2xl font-black text-accent-green/40">{s.n}</span>
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1"><span className="text-accent-green">{s.i}</span><p className="font-heading font-bold text-white">{s.t}</p></div>
+                      <div className="flex items-center gap-2 mb-1"><span className="text-accent-green">{s.i}</span><p className="font-heading font-black text-white">{s.t}</p></div>
                       <p className="text-sm text-white/55">{s.s}</p>
                     </div>
                   </div>
@@ -263,7 +263,7 @@ export default function HostingConMods() {
 
           <div className="flex gap-2 mb-6 border-b border-white/10">
             {LOADERS.map((l, i) => (
-              <button key={l.name} onClick={() => setTab(i)} className={`px-5 py-3 font-heading font-bold text-sm uppercase tracking-wider transition-colors relative ${tab === i ? 'text-accent-green' : 'text-white/50 hover:text-white/80'}`}>
+              <button key={l.name} onClick={() => setTab(i)} className={`px-5 py-3 font-heading font-black text-sm uppercase tracking-wider transition-colors relative ${tab === i ? 'text-accent-green' : 'text-white/50 hover:text-white/80'}`}>
                 {l.name}
                 <span className="ml-2 text-[10px] text-white/40">· {l.tag}</span>
                 {tab === i && <span className="absolute bottom-[-1px] left-0 right-0 h-0.5 bg-accent-green" />}
@@ -305,7 +305,7 @@ export default function HostingConMods() {
                 <div className="flex flex-wrap items-baseline justify-between gap-4 mb-3">
                   <div className="flex items-baseline gap-3">
                     <Cpu size={16} className="text-accent-green/70" />
-                    <span className="font-heading font-bold text-white">{r.type}</span>
+                    <span className="font-heading font-black text-white">{r.type}</span>
                     <span className="text-xs text-white/40">{r.mods}</span>
                   </div>
                   <div className="flex items-baseline gap-4 text-sm">
@@ -391,7 +391,7 @@ export default function HostingConMods() {
             <div className="lg:col-span-2 space-y-3">
               {FAQ.map(({ q, a }) => (
                 <details key={q} className="group rounded-2xl border border-white/10 bg-white/[0.02] p-5 open:bg-white/[0.04] open:border-accent-violet/20">
-                  <summary className="flex items-center justify-between gap-4 cursor-pointer font-heading font-bold text-white list-none">
+                  <summary className="flex items-center justify-between gap-4 cursor-pointer font-heading font-black text-white list-none">
                     <span>{q}</span>
                     <span className="flex-shrink-0 w-7 h-7 rounded-full border border-accent-violet/40 text-accent-violet flex items-center justify-center text-xl group-open:rotate-45 transition-transform">+</span>
                   </summary>

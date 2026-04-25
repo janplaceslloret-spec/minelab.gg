@@ -47,7 +47,7 @@ const Navbar = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
               alt="MineLab Logo"
               className="w-9 h-9 transform group-hover:rotate-6 transition-transform duration-300"
             />
-            <span className="font-heading font-extrabold text-2xl tracking-tighter text-white uppercase">MINELAB</span>
+            <span className="font-heading font-black text-2xl tracking-tighter text-white uppercase">MINELAB</span>
           </div>
 
           {/* Center Links */}
@@ -85,7 +85,7 @@ const Navbar = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="font-heading font-bold text-white uppercase tracking-tight text-sm">Minecraft Hosting</span>
+                        <span className="font-heading font-black text-white uppercase tracking-tight text-sm">Minecraft Hosting</span>
                       </div>
                       <p className="text-[11px] text-white/50 leading-tight mb-2 uppercase tracking-wide">Hosting optimizado para Minecraft</p>
                       <p className="text-accent-green font-semibold text-xs tracking-wider">Desde 6.99€/mes</p>
@@ -107,14 +107,14 @@ const Navbar = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
             {!isLoggedIn && (
               <button 
                 onClick={onLoginDemo}
-                className="text-white/80 hover:text-white font-heading font-bold px-4 py-2 transition-colors uppercase tracking-tight text-sm disabled:opacity-50"
+                className="text-white/80 hover:text-white font-heading font-black px-4 py-2 transition-colors uppercase tracking-tight text-sm disabled:opacity-50"
               >
                 INICIAR SESIÓN
               </button>
             )}
             <button 
               onClick={isLoggedIn ? onOpenDashboard : onLoginDemo}
-              className="bg-accent-green hover:bg-[#1faa50] text-gray-900 px-6 py-2.5 rounded-lg font-heading font-bold transition-all shadow-[0_0_15px_rgba(34,197,94,0.4)] hover:shadow-[0_0_25px_rgba(34,197,94,0.6)] transform hover:-translate-y-0.5 uppercase tracking-tight text-sm disabled:opacity-50"
+              className="bg-accent-green hover:bg-[#1faa50] text-gray-900 px-6 py-2.5 rounded-lg font-heading font-black transition-all shadow-[0_0_15px_rgba(34,197,94,0.4)] hover:shadow-[0_0_25px_rgba(34,197,94,0.6)] transform hover:-translate-y-0.5 uppercase tracking-tight text-sm disabled:opacity-50"
             >
               {isLoggedIn ? 'PANEL' : 'EMPEZAR'}
             </button>

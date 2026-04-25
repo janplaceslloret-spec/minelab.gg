@@ -79,7 +79,7 @@ const Features = () => {
               <div className="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center mb-6 border border-white/5 group-hover:scale-110 transition-transform duration-300 group-hover:shadow-[0_0_20px_rgba(34,197,94,0.3)]">
                 {feat.icon}
               </div>
-              <h3 className="font-heading font-bold text-xl mb-3">{feat.title}</h3>
+              <h3 className="font-heading font-black text-xl mb-3">{feat.title}</h3>
               <p className="text-white/60 leading-relaxed text-sm">
                 {feat.desc}
               </p>

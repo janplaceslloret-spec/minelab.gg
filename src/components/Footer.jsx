@@ -13,7 +13,7 @@ const Footer = () => {
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent-blue to-accent-violet flex items-center justify-center">
                 <Server size={18} className="text-white" />
               </div>
-              <span className="font-heading font-extrabold text-2xl tracking-tight text-white uppercase">MINELAB</span>
+              <span className="font-heading font-black text-2xl tracking-tight text-white uppercase">MINELAB</span>
             </div>
             <p className="text-white/50 text-sm leading-relaxed">
               El primer servicio de hosting global administrado e hiperoptimizado para Minecraft por Inteligencia Artificial.

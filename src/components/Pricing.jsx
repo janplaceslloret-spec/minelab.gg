@@ -225,7 +225,7 @@ const Pricing = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
               <button
                 onClick={() => handleSubscribe(billing === 'annual' ? plan.stripeAnnual : plan.stripeMonthly)}
                 disabled={loading}
-                className={`w-full py-4 rounded-xl font-heading font-bold text-sm uppercase tracking-widest transition-all duration-300 mt-auto
+                className={`w-full py-4 rounded-xl font-heading font-black text-sm uppercase tracking-widest transition-all duration-300 mt-auto
                 ${plan.popular
                   ? 'bg-accent-green text-gray-900 hover:bg-[#1faa50] shadow-[0_10px_20px_rgba(34,197,94,0.2)] hover:-translate-y-1'
                   : 'bg-white/5 text-white hover:bg-white/10 border border-white/10 hover:border-white/20 hover:-translate-y-1'
@@ -243,7 +243,7 @@ const Pricing = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
 
           <div className="flex flex-col md:flex-row gap-8 items-start md:items-center">
             <div className="flex-1">
-              <h3 className="text-xl font-heading font-bold uppercase tracking-wide text-white mb-4 flex items-center gap-3">
+              <h3 className="text-xl font-heading font-black uppercase tracking-wide text-white mb-4 flex items-center gap-3">
                 <Info className="text-accent-green" size={24} />
                 ¿Se pueden usar plugins + mods a la vez?
               </h3>

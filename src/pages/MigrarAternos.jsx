@@ -111,7 +111,7 @@ export default function MigrarAternos() {
                             <span className="font-mono text-[10px] text-white/40">PASO {String(s.n).padStart(2, '0')}</span>
                             <span className={`text-[10px] text-accent-${s.color} font-mono`}>· {s.minutes}</span>
                           </div>
-                          <p className="font-heading font-bold text-white text-sm truncate">{s.title.replace(/—.*$/, '').trim()}</p>
+                          <p className="font-heading font-black text-white text-sm truncate">{s.title.replace(/—.*$/, '').trim()}</p>
                         </div>
                       </div>
                       {i < STEPS.length - 1 && <div className="ml-8 h-3 w-px bg-gradient-to-b from-white/20 to-transparent" />}
@@ -132,12 +132,12 @@ export default function MigrarAternos() {
       <section className="border-y border-white/5 bg-white/[0.015] py-6 overflow-hidden">
         <div className="container mx-auto px-6 max-w-7xl flex flex-wrap items-center justify-around gap-x-10 gap-y-3 text-white/40">
           <span className="text-xs uppercase tracking-[0.3em] font-bold">Conservas</span>
-          <span className="font-heading font-bold">World</span>
-          <span className="font-heading font-bold">Nether · End</span>
-          <span className="font-heading font-bold">Inventarios</span>
-          <span className="font-heading font-bold">Whitelist</span>
-          <span className="font-heading font-bold">Advancements</span>
-          <span className="font-heading font-bold">Plugins</span>
+          <span className="font-heading font-black">World</span>
+          <span className="font-heading font-black">Nether · End</span>
+          <span className="font-heading font-black">Inventarios</span>
+          <span className="font-heading font-black">Whitelist</span>
+          <span className="font-heading font-black">Advancements</span>
+          <span className="font-heading font-black">Plugins</span>
         </div>
       </section>
 
@@ -283,7 +283,7 @@ export default function MigrarAternos() {
             <div className="lg:col-span-2 space-y-3">
               {FAQ.map(({ q, a }) => (
                 <details key={q} className="group rounded-2xl border border-white/10 bg-white/[0.02] p-5 open:bg-white/[0.04] open:border-accent-blue/20">
-                  <summary className="flex items-center justify-between gap-4 cursor-pointer font-heading font-bold text-white list-none">
+                  <summary className="flex items-center justify-between gap-4 cursor-pointer font-heading font-black text-white list-none">
                     <span>{q}</span>
                     <span className="flex-shrink-0 w-7 h-7 rounded-full border border-accent-blue/40 text-accent-blue flex items-center justify-center text-xl group-open:rotate-45 transition-transform">+</span>
                   </summary>

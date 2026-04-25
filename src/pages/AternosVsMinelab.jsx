@@ -185,13 +185,13 @@ function SavingsCalculator() {
         {/* Bar comparison */}
         <div className="space-y-4 mb-6">
           <div>
-            <div className="flex justify-between text-sm mb-2"><span className="text-white/70">Apex Hosting</span><span className="font-heading font-bold text-white">{aternosCost.toFixed(2)} €/mes</span></div>
+            <div className="flex justify-between text-sm mb-2"><span className="text-white/70">Apex Hosting</span><span className="font-heading font-black text-white">{aternosCost.toFixed(2)} €/mes</span></div>
             <div className="h-3 rounded-full bg-white/5 overflow-hidden">
               <div className="h-full bg-gradient-to-r from-red-400/60 to-red-500/60 transition-all duration-700" style={{ width: `${aternosBar}%` }} />
             </div>
           </div>
           <div>
-            <div className="flex justify-between text-sm mb-2"><span className="text-accent-green font-semibold">MineLab</span><span className="font-heading font-bold text-accent-green">{minelabCost.toFixed(2)} €/mes</span></div>
+            <div className="flex justify-between text-sm mb-2"><span className="text-accent-green font-semibold">MineLab</span><span className="font-heading font-black text-accent-green">{minelabCost.toFixed(2)} €/mes</span></div>
             <div className="h-3 rounded-full bg-white/5 overflow-hidden">
               <div className="h-full bg-gradient-to-r from-accent-green to-emerald-300 transition-all duration-700" style={{ width: `${minelabBar}%` }} />
             </div>
@@ -312,13 +312,13 @@ export default function AternosVsMinelab() {
       <section className="border-y border-white/5 bg-white/[0.015] py-6 overflow-hidden">
         <div className="container mx-auto px-6 max-w-7xl flex flex-wrap items-center justify-around gap-x-10 gap-y-4 text-white/40">
           <span className="text-xs uppercase tracking-[0.3em] font-bold">Compatible con</span>
-          <span className="font-heading font-bold">Paper</span>
-          <span className="font-heading font-bold">Forge</span>
-          <span className="font-heading font-bold">Fabric</span>
-          <span className="font-heading font-bold">NeoForge</span>
-          <span className="font-heading font-bold">Spigot</span>
-          <span className="font-heading font-bold">Vanilla</span>
-          <span className="font-heading font-bold">Purpur</span>
+          <span className="font-heading font-black">Paper</span>
+          <span className="font-heading font-black">Forge</span>
+          <span className="font-heading font-black">Fabric</span>
+          <span className="font-heading font-black">NeoForge</span>
+          <span className="font-heading font-black">Spigot</span>
+          <span className="font-heading font-black">Vanilla</span>
+          <span className="font-heading font-black">Purpur</span>
         </div>
       </section>
 
@@ -370,9 +370,9 @@ export default function AternosVsMinelab() {
                   <div className={`p-4 md:p-5 text-center ${i % 2 ? 'bg-accent-green/[0.05]' : 'bg-accent-green/[0.03]'}`}><Cell value={row.minelab} /></div>
                 </React.Fragment>
               ))}
-              <div className="p-4 md:p-5 bg-white/5 font-heading font-bold text-white">Precio (4 GB / mes)</div>
-              <div className="p-4 md:p-5 bg-white/5 text-center font-heading font-bold text-white/60">0 €</div>
-              <div className="p-4 md:p-5 bg-white/5 text-center font-heading font-bold text-white/70 line-through">16,99 €</div>
+              <div className="p-4 md:p-5 bg-white/5 font-heading font-black text-white">Precio (4 GB / mes)</div>
+              <div className="p-4 md:p-5 bg-white/5 text-center font-heading font-black text-white/60">0 €</div>
+              <div className="p-4 md:p-5 bg-white/5 text-center font-heading font-black text-white/70 line-through">16,99 €</div>
               <div className="p-4 md:p-5 bg-accent-green/15 text-center font-heading font-black text-accent-green text-lg">5 €</div>
             </div>
           </div>
@@ -398,7 +398,7 @@ export default function AternosVsMinelab() {
                   <div key={row.t} className="flex items-start gap-4 group">
                     <span className="flex-shrink-0 w-10 h-10 rounded-xl bg-accent-green/10 border border-accent-green/30 flex items-center justify-center text-accent-green group-hover:bg-accent-green group-hover:text-[#0B1220] transition-colors">{row.i}</span>
                     <div>
-                      <p className="font-heading font-bold text-white">{row.t}</p>
+                      <p className="font-heading font-black text-white">{row.t}</p>
                       <p className="text-sm text-white/55">{row.s}</p>
                     </div>
                   </div>
@@ -475,7 +475,7 @@ export default function AternosVsMinelab() {
             <div className="lg:col-span-2 space-y-3">
               {FAQ.map((item) => (
                 <details key={item.q} className="group rounded-2xl border border-white/10 bg-white/[0.02] p-5 open:bg-white/[0.04] open:border-accent-green/20">
-                  <summary className="cursor-pointer font-heading font-bold text-white flex items-center justify-between gap-4 list-none">
+                  <summary className="cursor-pointer font-heading font-black text-white flex items-center justify-between gap-4 list-none">
                     <span>{item.q}</span>
                     <span className="flex-shrink-0 w-7 h-7 rounded-full border border-accent-green/40 text-accent-green flex items-center justify-center text-xl group-open:rotate-45 transition-transform">+</span>
                   </summary>

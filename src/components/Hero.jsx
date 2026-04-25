@@ -34,16 +34,18 @@ const Hero = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
           
           {/* Text Content */}
           <div className="max-w-2xl relative z-20">
-            <h1 className="hero-element font-heading text-5xl md:text-6xl lg:text-[4.5rem] font-bold leading-[1.05] tracking-tight mb-8 text-white uppercase">
-              <span className="block mb-2">LA NUEVA ERA DEL HOSTING</span>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-accent-green to-accent-violet">
-                SERVIDORES INTELIGENTES
+            <h1 className="hero-element font-heading font-black uppercase tracking-tighter text-white leading-[0.95] mb-8
+                           text-4xl sm:text-5xl md:text-[3.5rem] lg:text-[4rem] xl:text-[4.5rem]">
+              <span className="block">La nueva era del hosting</span>
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-white via-accent-green to-accent-violet">
+                Servidores inteligentes
               </span>
             </h1>
-            
-            <p className="hero-element text-lg md:text-xl text-white/70 mb-10 leading-relaxed max-w-xl text-balance">
-              Controla tu servidor de Minecraft con inteligencia artificial.<br className="hidden md:block"/>
-              <span className="text-white/90">Instala plugins, corrige errores y gestiona tu servidor sin tocar archivos.</span>
+
+            <p className="hero-element text-lg md:text-xl text-white/65 mb-10 leading-[1.55] max-w-xl">
+              Controla tu servidor de Minecraft con <span className="text-white font-bold">inteligencia artificial</span>.<br className="hidden md:block"/>
+              Instala <span className="text-white font-bold">plugins y mods</span> en un click.<br className="hidden md:block"/>
+              Corrige <span className="text-white font-bold">errores</span> sin tocar un solo archivo.
             </p>
             
             <div className="hero-element flex flex-wrap gap-4 mb-16">
@@ -64,15 +66,15 @@ const Hero = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
             {/* Metrics Grid */}
             <div className="hero-element grid grid-cols-3 gap-6 pt-8 border-t border-white/10">
               <div>
-                <p className="font-heading text-4xl font-bold text-white mb-1 tracking-tighter">0</p>
+                <p className="font-heading text-4xl font-black text-white mb-1 tracking-tighter">0</p>
                 <p className="text-xs text-white/50 font-medium uppercase tracking-widest leading-relaxed">Archivos YAML que editar</p>
               </div>
               <div>
-                <p className="font-heading text-4xl font-bold text-white mb-1 tracking-tighter">&lt; 60s</p>
+                <p className="font-heading text-4xl font-black text-white mb-1 tracking-tighter">&lt; 60s</p>
                 <p className="text-xs text-white/50 font-medium uppercase tracking-widest leading-relaxed">Para empezar a jugar</p>
               </div>
               <div>
-                <p className="font-heading text-4xl font-bold text-accent-green mb-1 tracking-tighter">99.9%</p>
+                <p className="font-heading text-4xl font-black text-accent-green mb-1 tracking-tighter">99.9%</p>
                 <p className="text-xs text-accent-green/60 font-medium uppercase tracking-widest leading-relaxed">Uptime garantizado</p>
               </div>
             </div>
