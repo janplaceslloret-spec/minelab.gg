@@ -270,16 +270,16 @@ const DashboardLayout = () => {
         // Causes: (a) UUID drift between auth.uid and profile.id (manually inserted profile,
         // OAuth recreated user), (b) clock-skew making Supabase reject the JWT silently
         // and queries fall to anon (RLS blocks). mc-api uses service_role to bypass.
-        if ((!servers || servers.length === 0) && lowerEmail) {
+        if ((!servers || servers.length === 0) && (lowerEmail || userId)) {
           try {
-            console.log('[DashboardLayout] Authenticated mc_servers fetch returned 0 rows. Falling back to mc-api by email…');
+            console.log('[DashboardLayout v2] Authenticated mc_servers fetch returned 0 rows. Falling back to mc-api…', { lowerEmail, userId });
             const resp = await fetch('https://api.fluxoai.co/api/list-my-servers', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
                 'x-api-key': 'minelab_k3y_Xp9mR7_2026',
               },
-              body: JSON.stringify({ email: lowerEmail }),
+              body: JSON.stringify({ email: lowerEmail, user_id: userId }),
             });
             if (resp.ok) {
               const json = await resp.json();
