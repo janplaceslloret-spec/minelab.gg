@@ -1,6 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense, lazy } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
+
+// SEO landings — lazy-loaded to keep main bundle slim
+const AternosVsMinelab = lazy(() => import('./pages/AternosVsMinelab'));
+const HostingConMods = lazy(() => import('./pages/HostingConMods'));
+const MigrarAternos = lazy(() => import('./pages/MigrarAternos'));
+
+function SeoFallback() {
+  return (
+    <div className="min-h-screen bg-background text-primary flex items-center justify-center">
+      <div className="text-white/50 text-sm">Cargando...</div>
+    </div>
+  );
+}
 import Topbar from './components/Topbar';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
@@ -128,6 +141,9 @@ function App() {
     <Routes>
       <Route path="/" element={<LandingPage isLoggedIn={isLoggedIn} onAuthAction={handleAuthAction} showToast={showToast} />} />
       <Route path="/panel" element={<ProtectedPanel />} />
+      <Route path="/aternos-vs-minelab" element={<Suspense fallback={<SeoFallback />}><AternosVsMinelab /></Suspense>} />
+      <Route path="/hosting-minecraft-con-mods" element={<Suspense fallback={<SeoFallback />}><HostingConMods /></Suspense>} />
+      <Route path="/migrar-servidor-aternos" element={<Suspense fallback={<SeoFallback />}><MigrarAternos /></Suspense>} />
     </Routes>
   );
 }
