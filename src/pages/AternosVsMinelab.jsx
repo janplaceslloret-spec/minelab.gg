@@ -214,13 +214,13 @@ function SavingsCalculator() {
 
 export default function AternosVsMinelab() {
   useDocumentMeta({
-    title: 'MineLab vs Aternos: comparativa completa 2026 | Alternativa premium española',
+    title: 'MineLab vs Aternos: comparativa completa 2026 | Alternativa profesional española',
     description: 'Comparativa MineLab vs Aternos: RAM, plugins, asistente IA, sin cola, sin anuncios. Calculadora de ahorro y guía de migración. Desde 5 €/mes.',
     canonical: 'https://minelab.gg/aternos-vs-minelab',
     og: { type: 'article', site_name: 'MineLab', locale: 'es_ES', title: 'MineLab vs Aternos — comparativa 2026', description: 'Tabla detallada, calculadora de ahorro y guía de migración. Desde 5 €/mes.', url: 'https://minelab.gg/aternos-vs-minelab', image: 'https://minelab.gg/og/aternos-vs.png' },
     twitter: { card: 'summary_large_image', title: 'MineLab vs Aternos — comparativa 2026', description: 'Tabla detallada y calculadora de ahorro.', image: 'https://minelab.gg/og/aternos-vs.png' },
     jsonLd: [
-      { '@context': 'https://schema.org', '@type': 'Product', name: 'MineLab — Hosting Minecraft con IA', description: 'Alternativa premium a Aternos: agente IA, sin cola, plugins ilimitados, desde 4,99€/mes', image: 'https://minelab.gg/og/aternos-vs.png', brand: { '@type': 'Brand', name: 'MineLab' }, offers: { '@type': 'AggregateOffer', priceCurrency: 'EUR', lowPrice: '5.00', highPrice: '15.00', offerCount: 4, availability: 'https://schema.org/InStock', url: 'https://minelab.gg/#pricing' }, aggregateRating: { '@type': 'AggregateRating', ratingValue: '4.9', reviewCount: '127' } },
+      { '@context': 'https://schema.org', '@type': 'Product', name: 'MineLab — Hosting Minecraft con IA', description: 'Alternativa profesional a Aternos: agente IA, sin cola, plugins ilimitados, desde 5€/mes', image: 'https://minelab.gg/og/aternos-vs.png', brand: { '@type': 'Brand', name: 'MineLab' }, offers: { '@type': 'AggregateOffer', priceCurrency: 'EUR', lowPrice: '5.00', highPrice: '15.00', offerCount: 4, availability: 'https://schema.org/InStock', url: 'https://minelab.gg/#pricing' }, aggregateRating: { '@type': 'AggregateRating', ratingValue: '4.9', reviewCount: '127' } },
       { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: FAQ.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) },
       { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [{ '@type': 'ListItem', position: 1, name: 'MineLab', item: 'https://minelab.gg/' }, { '@type': 'ListItem', position: 2, name: 'MineLab vs Aternos', item: 'https://minelab.gg/aternos-vs-minelab' }] }
     ]
