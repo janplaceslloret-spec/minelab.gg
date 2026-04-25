@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /panel
+Disallow: /pago/
+Disallow: /admin
+
+Sitemap: https://minelab.gg/sitemap.xml

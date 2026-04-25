@@ -16,6 +16,29 @@ import DiscordWidget from './components/DiscordWidget';
 import Testimonials from './components/Testimonials';
 import DashboardLayout from './components/dashboard/DashboardLayout';
 
+function ProtectedPanel() {
+  const [state, setState] = useState('loading'); // 'loading' | 'auth' | 'guest'
+  const navigate = useNavigate();
+  useEffect(() => {
+    let active = true;
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!active) return;
+      const ok = !!session || !!localStorage.getItem('minelab-forced-token');
+      setState(ok ? 'auth' : 'guest');
+      if (!ok) {
+        // No session: bounce to landing, preserve query params
+        navigate('/' + window.location.search, { replace: true });
+      }
+    });
+    return () => { active = false; };
+  }, [navigate]);
+  if (state === 'loading') {
+    return <div className="min-h-screen bg-background text-primary flex items-center justify-center">Cargando...</div>;
+  }
+  if (state === 'guest') return null;
+  return <DashboardLayout />;
+}
+
 function LandingPage({ isLoggedIn, onAuthAction, showToast }) {
   useEffect(() => {
     // Force scroll to top on every reload as requested for landing UX
@@ -104,7 +127,7 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<LandingPage isLoggedIn={isLoggedIn} onAuthAction={handleAuthAction} showToast={showToast} />} />
-      <Route path="/panel" element={<DashboardLayout />} />
+      <Route path="/panel" element={<ProtectedPanel />} />
     </Routes>
   );
 }
