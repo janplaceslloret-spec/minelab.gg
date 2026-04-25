@@ -45,7 +45,7 @@ function HL({ children, color = 'violet' }) {
   return <span className={`inline-block ${cls} px-3 md:px-4 py-0.5 md:py-1 rounded-md align-baseline`}>{children}</span>;
 }
 
-const productJsonLd = { '@context': 'https://schema.org', '@type': 'Product', name: 'MineLab — Hosting Minecraft con mods', description: 'Hosting Minecraft modded con asistente IA: instala cualquier modpack (Forge, Fabric, NeoForge) en 2 minutos. ATM10, RLCraft, Vault Hunters, Pixelmon. Desde 4,99 €/mes.', image: 'https://minelab.gg/og/hosting-mods.png', brand: { '@type': 'Brand', name: 'MineLab' }, aggregateRating: { '@type': 'AggregateRating', ratingValue: '4.9', reviewCount: '127', bestRating: '5' }, offers: { '@type': 'AggregateOffer', priceCurrency: 'EUR', lowPrice: '4.99', highPrice: '14.99', offerCount: 4, availability: 'https://schema.org/InStock', url: 'https://minelab.gg/hosting-minecraft-con-mods' } };
+const productJsonLd = { '@context': 'https://schema.org', '@type': 'Product', name: 'MineLab — Hosting Minecraft con mods', description: 'Hosting Minecraft modded con asistente IA: instala cualquier modpack (Forge, Fabric, NeoForge) en 2 minutos. ATM10, RLCraft, Vault Hunters, Pixelmon. Desde 5 €/mes.', image: 'https://minelab.gg/og/hosting-mods.png', brand: { '@type': 'Brand', name: 'MineLab' }, aggregateRating: { '@type': 'AggregateRating', ratingValue: '4.9', reviewCount: '127', bestRating: '5' }, offers: { '@type': 'AggregateOffer', priceCurrency: 'EUR', lowPrice: '5.00', highPrice: '15.00', offerCount: 4, availability: 'https://schema.org/InStock', url: 'https://minelab.gg/hosting-minecraft-con-mods' } };
 const faqJsonLd = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: FAQ.map(({ q, a }) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) };
 const breadcrumbJsonLd = { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [{ '@type': 'ListItem', position: 1, name: 'Inicio', item: 'https://minelab.gg/' }, { '@type': 'ListItem', position: 2, name: 'Hosting Minecraft con mods', item: 'https://minelab.gg/hosting-minecraft-con-mods' }] };
 
@@ -53,7 +53,7 @@ export default function HostingConMods() {
   const [tab, setTab] = useState(0);
   useDocumentMeta({
     title: 'Hosting Minecraft con mods (Forge, Fabric, NeoForge) | MineLab',
-    description: 'Hosting Minecraft modded con asistente IA: instala cualquier modpack en 2 minutos. ATM10, RLCraft, Vault Hunters, Pixelmon. Desde 4,99 €/mes.',
+    description: 'Hosting Minecraft modded con asistente IA: instala cualquier modpack en 2 minutos. ATM10, RLCraft, Vault Hunters, Pixelmon. Desde 5 €/mes.',
     canonical: 'https://minelab.gg/hosting-minecraft-con-mods',
     og: { type: 'article', title: 'Hosting Minecraft con mods — Forge, Fabric, NeoForge', description: 'Instala cualquier modpack con un mensaje al agente IA. ATM10, RLCraft, Vault Hunters, Pixelmon.', image: 'https://minelab.gg/og/hosting-mods.png', url: 'https://minelab.gg/hosting-minecraft-con-mods' },
     twitter: { card: 'summary_large_image', title: 'Hosting Minecraft con mods — MineLab', description: 'Instala cualquier modpack en 2 minutos con el asistente IA.', image: 'https://minelab.gg/og/hosting-mods.png' },
@@ -355,10 +355,10 @@ export default function HostingConMods() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { ram: '2 GB', price: '4,99', use: 'Vanilla, Paper, mods ligeros', n: '01' },
-              { ram: '4 GB', price: '7,99', use: 'Forge ligero, Pixelmon', n: '02' },
-              { ram: '6 GB', price: '9,99', use: 'RLCraft, BMC, Stoneblock', n: '03' },
-              { ram: '8 GB', price: '14,99', use: 'ATM10, Vault Hunters', n: '04', highlight: true },
+              { ram: '4 GB', price: '5', use: 'Vanilla, Paper, mods ligeros, Pixelmon', n: '01' },
+              { ram: '6 GB', price: '7', use: 'Forge medio, RLCraft, Stoneblock', n: '02' },
+              { ram: '8 GB', price: '10', use: 'ATM10, Vault Hunters básico, Better MC', n: '03', highlight: true },
+              { ram: '12 GB', price: '15', use: 'Modpacks XL, Vault Hunters 600+', n: '04' },
             ].map((p) => (
               <div key={p.ram} className={`relative overflow-hidden rounded-2xl p-6 ${p.highlight ? 'border-2 border-accent-green/50 bg-gradient-to-br from-accent-green/15 to-transparent' : 'border border-white/10 bg-white/[0.02]'}`}>
                 <span className="absolute -top-2 -right-1 font-heading text-[5rem] font-black text-white/[0.04] leading-none select-none">{p.n}</span>

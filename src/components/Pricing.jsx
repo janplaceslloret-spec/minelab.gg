@@ -11,16 +11,36 @@ const Pricing = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
   const [loading, setLoading] = useState(false);
   const [billing, setBilling] = useState('monthly'); // 'monthly' | 'annual'
 
-  const handleSubscribe = async () => {
+  const handleSubscribe = async (stripeUrl) => {
     try {
       setLoading(true);
-      if (isLoggedIn) {
-        onOpenDashboard();
-      } else {
-        onLoginDemo();
+      // Si tenemos URL de Stripe, intentamos pasar el id del usuario como
+      // client_reference_id para que el webhook pueda asociar el pago.
+      if (stripeUrl) {
+        let finalUrl = stripeUrl;
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          const userId = session?.user?.id;
+          if (userId) {
+            const sep = stripeUrl.includes('?') ? '&' : '?';
+            finalUrl = `${stripeUrl}${sep}client_reference_id=${encodeURIComponent(userId)}`;
+          } else {
+            // No logueado: guardamos plan elegido y llevamos a login
+            localStorage.setItem('minelab-pending-stripe-url', stripeUrl);
+            onLoginDemo();
+            return;
+          }
+        } catch (_) {
+          // Si supabase falla, igual abrimos Stripe
+        }
+        window.location.href = finalUrl;
+        return;
       }
+      // Fallback si no hay URL: comportamiento previo (login/panel)
+      if (isLoggedIn) onOpenDashboard();
+      else onLoginDemo();
     } catch (error) {
-      console.error('Error during authentication routing:', error.message);
+      console.error('Error during checkout routing:', error.message);
     } finally {
       setLoading(false);
     }

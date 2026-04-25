@@ -5,7 +5,7 @@ import SeoLayout from '../components/seo/SeoLayout';
 import { useDocumentMeta } from '../hooks/useDocumentMeta';
 
 const FAQ = [
-  { q: '¿MineLab tiene plan gratis?', a: 'No, no tenemos plan gratuito. Aternos puede ofrecer plan gratis porque apaga tu servidor cada vez que nadie juega y muestra anuncios. En MineLab garantizamos uptime 24/7, sin cola y sin publicidad — eso requiere infraestructura dedicada que cuesta dinero. Pero el plan más barato son 4,99 €/mes (RAM 2 GB, ideal para servidores pequeños).' },
+  { q: '¿MineLab tiene plan gratis?', a: 'No, no tenemos plan gratuito. Aternos puede ofrecer plan gratis porque apaga tu servidor cada vez que nadie juega y muestra anuncios. En MineLab garantizamos uptime 24/7, sin cola y sin publicidad — eso requiere infraestructura dedicada que cuesta dinero. El plan más barato son 5 €/mes (4 GB de RAM dedicada, ideal para servidores Vanilla o Paper con plugins).' },
   { q: '¿Puedo usar mi mundo de Aternos?', a: 'Sí. Aternos te permite descargar el world desde Backups → Download. En MineLab subes ese archivo por SFTP a /world (o /world_nether y /world_the_end si tienes Nether y End). Tenemos un tutorial paso a paso en /migrar-servidor-aternos.' },
   { q: '¿Hay cola de espera para entrar a mi servidor?', a: 'Nunca. Tu servidor MineLab está siempre encendido (a no ser que tú lo apagues manualmente). Aternos free aplica una cola porque comparte recursos entre miles de servidores; MineLab te da RAM dedicada.' },
   { q: '¿Cómo se paga? ¿Tarjeta, PayPal?', a: 'Pasarela de pago Stripe (la misma que usan empresas como Uber o Spotify). Acepta tarjetas Visa, Mastercard, AmEx y métodos bancarios SEPA. Pago mensual cancelable en cualquier momento desde tu panel.' },
@@ -24,15 +24,15 @@ const QUEJAS = [
 const tableRows = [
   { label: 'RAM máxima', free: '2 GB', premium: '8 GB', minelab: '12 GB' },
   { label: 'Servidor siempre online', free: false, premium: true, minelab: true },
-  { label: 'Sin cola al entrar', free: false, premium: 'medio', minelab: true },
-  { label: 'Plugins ilimitados', free: 'medio', premium: 'medio', minelab: true },
+  { label: 'Sin cola al entrar', free: false, premium: true, minelab: true },
+  { label: 'Plugins ilimitados', free: 'medio', premium: true, minelab: true },
   { label: 'Forge / Fabric / NeoForge', free: 'medio', premium: true, minelab: true },
   { label: 'SFTP (subir mundos / configs)', free: false, premium: true, minelab: true },
   { label: 'Backups automáticos diarios', free: false, premium: 'medio', minelab: true },
   { label: 'Asistente IA configurador', free: false, premium: false, minelab: true },
-  { label: 'Consola web tiempo real', free: 'medio', premium: 'medio', minelab: true },
+  { label: 'Consola web tiempo real', free: 'medio', premium: true, minelab: true },
   { label: 'Sin anuncios', free: false, premium: true, minelab: true },
-  { label: 'Soporte en español', free: false, premium: 'medio', minelab: true },
+  { label: 'Soporte en español', free: false, premium: false, minelab: true },
   { label: 'Cancelación 1 click', free: 'n/a', premium: 'medio', minelab: true },
 ];
 
@@ -146,12 +146,14 @@ function SavingsCalculator() {
   const [ram, setRam] = useState(4);
   const [players, setPlayers] = useState(8);
   const { aternosCost, minelabCost, savings } = useMemo(() => {
-    const aternosBase = ram <= 2 ? 9.99 : ram <= 4 ? 12.99 : ram <= 6 ? 16.99 : ram <= 8 ? 19.99 : 24.99;
-    const minelabBase = ram <= 2 ? 4.99 : ram <= 4 ? 7.99 : ram <= 6 ? 10.99 : ram <= 8 ? 13.99 : 17.99;
-    return { aternosCost: aternosBase, minelabCost: minelabBase, savings: Math.max(0, aternosBase - minelabBase) };
+    // Apex Hosting precios reales (USD→EUR aprox, 2026): 4GB ≈ 16,99€, 6GB ≈ 24,99€, 8GB ≈ 32,99€, 12GB ≈ 44,99€
+    const apexBase = ram <= 4 ? 16.99 : ram <= 6 ? 24.99 : ram <= 8 ? 32.99 : 44.99;
+    // MineLab precios reales del pricing del sitio (4GB=5€, 6GB=7€, 8GB=10€, 12GB=15€)
+    const minelabBase = ram <= 4 ? 5 : ram <= 6 ? 7 : ram <= 8 ? 10 : 15;
+    return { aternosCost: apexBase, minelabCost: minelabBase, savings: Math.max(0, apexBase - minelabBase) };
   }, [ram]);
-  const aternosBar = Math.min(100, (aternosCost / 25) * 100);
-  const minelabBar = Math.min(100, (minelabCost / 25) * 100);
+  const aternosBar = Math.min(100, (aternosCost / 45) * 100);
+  const minelabBar = Math.min(100, (minelabCost / 45) * 100);
   return (
     <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/[0.04] via-transparent to-accent-green/[0.05] p-6 md:p-10 my-12 relative overflow-hidden">
       <div className="absolute -top-32 -right-32 w-96 h-96 rounded-full bg-accent-green/10 blur-3xl pointer-events-none" />
@@ -161,7 +163,7 @@ function SavingsCalculator() {
           <span className="h-px flex-1 bg-gradient-to-r from-accent-green/40 to-transparent" />
         </div>
         <h3 className="font-heading text-2xl md:text-4xl font-black text-white mb-2 leading-tight">¿Cuánto te ahorras al mes?</h3>
-        <p className="text-white/60 mb-8 max-w-2xl">Mueve los sliders. Comparativa real entre Aternos premium y MineLab según RAM equivalente.</p>
+        <p className="text-white/60 mb-8 max-w-2xl">Mueve los sliders. Comparativa real entre Apex Hosting y MineLab según RAM equivalente.</p>
 
         <div className="grid md:grid-cols-2 gap-6 mb-8">
           <label className="block">
@@ -169,7 +171,7 @@ function SavingsCalculator() {
               <span className="text-xs uppercase tracking-wider font-semibold text-white/70">RAM</span>
               <span className="font-heading text-2xl font-black text-accent-green">{ram} GB</span>
             </div>
-            <input type="range" min="2" max="12" step="1" value={ram} onChange={(e) => setRam(Number(e.target.value))} className="w-full accent-accent-green" />
+            <input type="range" min="4" max="12" step="1" value={ram} onChange={(e) => setRam(Number(e.target.value))} className="w-full accent-accent-green" />
           </label>
           <label className="block">
             <div className="flex justify-between items-baseline mb-2">
@@ -183,7 +185,7 @@ function SavingsCalculator() {
         {/* Bar comparison */}
         <div className="space-y-4 mb-6">
           <div>
-            <div className="flex justify-between text-sm mb-2"><span className="text-white/70">Aternos premium</span><span className="font-heading font-bold text-white">{aternosCost.toFixed(2)} €/mes</span></div>
+            <div className="flex justify-between text-sm mb-2"><span className="text-white/70">Apex Hosting</span><span className="font-heading font-bold text-white">{aternosCost.toFixed(2)} €/mes</span></div>
             <div className="h-3 rounded-full bg-white/5 overflow-hidden">
               <div className="h-full bg-gradient-to-r from-red-400/60 to-red-500/60 transition-all duration-700" style={{ width: `${aternosBar}%` }} />
             </div>
@@ -213,12 +215,12 @@ function SavingsCalculator() {
 export default function AternosVsMinelab() {
   useDocumentMeta({
     title: 'MineLab vs Aternos: comparativa completa 2026 | Alternativa premium española',
-    description: 'Comparativa MineLab vs Aternos: RAM, plugins, asistente IA, sin cola, sin anuncios. Calculadora de ahorro y guía de migración. Desde 4,99 €/mes.',
+    description: 'Comparativa MineLab vs Aternos: RAM, plugins, asistente IA, sin cola, sin anuncios. Calculadora de ahorro y guía de migración. Desde 5 €/mes.',
     canonical: 'https://minelab.gg/aternos-vs-minelab',
-    og: { type: 'article', site_name: 'MineLab', locale: 'es_ES', title: 'MineLab vs Aternos — comparativa 2026', description: 'Tabla detallada, calculadora de ahorro y guía de migración. Desde 4,99 €/mes.', url: 'https://minelab.gg/aternos-vs-minelab', image: 'https://minelab.gg/og/aternos-vs.png' },
+    og: { type: 'article', site_name: 'MineLab', locale: 'es_ES', title: 'MineLab vs Aternos — comparativa 2026', description: 'Tabla detallada, calculadora de ahorro y guía de migración. Desde 5 €/mes.', url: 'https://minelab.gg/aternos-vs-minelab', image: 'https://minelab.gg/og/aternos-vs.png' },
     twitter: { card: 'summary_large_image', title: 'MineLab vs Aternos — comparativa 2026', description: 'Tabla detallada y calculadora de ahorro.', image: 'https://minelab.gg/og/aternos-vs.png' },
     jsonLd: [
-      { '@context': 'https://schema.org', '@type': 'Product', name: 'MineLab — Hosting Minecraft con IA', description: 'Alternativa premium a Aternos: agente IA, sin cola, plugins ilimitados, desde 4,99€/mes', image: 'https://minelab.gg/og/aternos-vs.png', brand: { '@type': 'Brand', name: 'MineLab' }, offers: { '@type': 'AggregateOffer', priceCurrency: 'EUR', lowPrice: '4.99', highPrice: '17.99', offerCount: 5, availability: 'https://schema.org/InStock', url: 'https://minelab.gg/#pricing' }, aggregateRating: { '@type': 'AggregateRating', ratingValue: '4.9', reviewCount: '127' } },
+      { '@context': 'https://schema.org', '@type': 'Product', name: 'MineLab — Hosting Minecraft con IA', description: 'Alternativa premium a Aternos: agente IA, sin cola, plugins ilimitados, desde 4,99€/mes', image: 'https://minelab.gg/og/aternos-vs.png', brand: { '@type': 'Brand', name: 'MineLab' }, offers: { '@type': 'AggregateOffer', priceCurrency: 'EUR', lowPrice: '5.00', highPrice: '15.00', offerCount: 4, availability: 'https://schema.org/InStock', url: 'https://minelab.gg/#pricing' }, aggregateRating: { '@type': 'AggregateRating', ratingValue: '4.9', reviewCount: '127' } },
       { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: FAQ.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) },
       { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [{ '@type': 'ListItem', position: 1, name: 'MineLab', item: 'https://minelab.gg/' }, { '@type': 'ListItem', position: 2, name: 'MineLab vs Aternos', item: 'https://minelab.gg/aternos-vs-minelab' }] }
     ]
@@ -244,7 +246,7 @@ export default function AternosVsMinelab() {
                 <span className="text-white/40">de tu servidor.</span>
               </h1>
               <p className="mt-8 text-lg md:text-xl text-white/70 leading-relaxed max-w-2xl">
-                Sin cola, sin anuncios, sin apagones de inactividad. Plugins y mods ilimitados. Y un agente IA que configura todo por ti — desde <strong className="text-white">4,99 €/mes</strong>.
+                Sin cola, sin anuncios, sin apagones de inactividad. Plugins y mods ilimitados. Y un agente IA que configura todo por ti — desde <strong className="text-white">5 €/mes</strong>.
               </p>
               {/* Bullet list 2 cols, estilo holy.gg */}
               <div className="mt-8 grid sm:grid-cols-2 gap-x-6 gap-y-3 max-w-2xl">
@@ -293,11 +295,11 @@ export default function AternosVsMinelab() {
                 <div className="col-span-2 rounded-2xl border border-white/10 bg-white/[0.03] p-5 flex items-center justify-between">
                   <div>
                     <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-white/60">Desde</p>
-                    <p className="font-heading text-4xl font-black text-white">4,99€<span className="text-base text-white/40">/mes</span></p>
+                    <p className="font-heading text-4xl font-black text-white">5€<span className="text-base text-white/40">/mes</span></p>
                   </div>
                   <div className="text-right">
-                    <p className="text-xs text-white/50 line-through">Aternos premium 12,99€</p>
-                    <p className="text-sm text-accent-green font-bold">Ahorro 60%</p>
+                    <p className="text-xs text-white/50 line-through">Apex Hosting 16,99€</p>
+                    <p className="text-sm text-accent-green font-bold">Ahorro 70%</p>
                   </div>
                 </div>
               </div>
@@ -358,7 +360,7 @@ export default function AternosVsMinelab() {
             <div className="grid grid-cols-[1.7fr_1fr_1fr_1fr] text-xs md:text-sm">
               <div className="p-4 md:p-5 bg-white/5 font-heading uppercase tracking-wider text-white/70">Característica</div>
               <div className="p-4 md:p-5 bg-white/5 font-heading uppercase tracking-wider text-center text-white/50">Free</div>
-              <div className="p-4 md:p-5 bg-white/5 font-heading uppercase tracking-wider text-center text-white/70">Premium</div>
+              <div className="p-4 md:p-5 bg-white/5 font-heading uppercase tracking-wider text-center text-white/70">Apex Hosting</div>
               <div className="p-4 md:p-5 bg-accent-green/15 font-heading uppercase tracking-wider text-center text-accent-green">MineLab</div>
               {tableRows.map((row, i) => (
                 <React.Fragment key={row.label}>
@@ -370,8 +372,8 @@ export default function AternosVsMinelab() {
               ))}
               <div className="p-4 md:p-5 bg-white/5 font-heading font-bold text-white">Precio (4 GB / mes)</div>
               <div className="p-4 md:p-5 bg-white/5 text-center font-heading font-bold text-white/60">0 €</div>
-              <div className="p-4 md:p-5 bg-white/5 text-center font-heading font-bold text-white/70 line-through">12,99 €</div>
-              <div className="p-4 md:p-5 bg-accent-green/15 text-center font-heading font-black text-accent-green text-lg">7,99 €</div>
+              <div className="p-4 md:p-5 bg-white/5 text-center font-heading font-bold text-white/70 line-through">16,99 €</div>
+              <div className="p-4 md:p-5 bg-accent-green/15 text-center font-heading font-black text-accent-green text-lg">5 €</div>
             </div>
           </div>
         </section>
@@ -385,7 +387,7 @@ export default function AternosVsMinelab() {
                 Un <HL>asistente IA</HL> que <span className="text-white/40">configura por ti.</span>
               </h2>
               <p className="mt-6 text-lg text-white/70 leading-relaxed">
-                Aternos premium es básicamente un panel donde tienes que saber qué hacer: subir el JAR correcto, leer logs en inglés, encontrar plugins compatibles. <strong className="text-white">MineLab incluye un agente IA en español</strong> que hace todo eso por chat.
+                Hostings clásicos como Apex, Shockbyte o BisectHosting son paneles donde tienes que saber qué hacer: subir el JAR correcto, leer logs en inglés, encontrar plugins compatibles. <strong className="text-white">MineLab incluye un agente IA en español</strong> que hace todo eso por chat.
               </p>
               <div className="mt-8 space-y-4">
                 {[
@@ -493,9 +495,9 @@ export default function AternosVsMinelab() {
               <div>
                 <Shield size={32} className="text-accent-green mb-5" />
                 <h2 className="font-heading text-4xl md:text-6xl font-black text-white leading-[1] uppercase">
-                  Empieza desde <HL>4,99€</HL>
+                  Empieza desde <HL>5€</HL>
                 </h2>
-                <p className="mt-5 text-white/70 text-lg max-w-md">Sin compromiso, cancelas cuando quieras y te llevas tu mundo. Más barato que Aternos premium en RAM equivalente.</p>
+                <p className="mt-5 text-white/70 text-lg max-w-md">Sin compromiso, cancelas cuando quieras y te llevas tu mundo. Más barato que Apex Hosting o Shockbyte en RAM equivalente.</p>
               </div>
               <div className="flex flex-col gap-3 md:items-end">
                 <Link to="/#pricing?utm_source=seo&utm_medium=organic&utm_campaign=aternos-vs-cta" className="group inline-flex items-center justify-between gap-4 rounded-xl bg-accent-green pl-2 pr-5 py-2 text-base font-bold text-[#0B1220] hover:bg-accent-green/90 transition-all">

@@ -6,7 +6,7 @@ import { useDocumentMeta } from '../hooks/useDocumentMeta';
 
 const STEPS = [
   { n: 1, color: 'blue', icon: <Download size={22} />, title: 'Exportar el world desde Aternos', minutes: '2 min', text: 'En el panel de Aternos, ve a Backups → busca el último backup → "Download world". Se descarga un .zip con tu mundo. Si tienes Nether o End, asegúrate de que están dentro (Aternos los empaqueta junto al overworld).', tip: 'Si tienes mods o plugins instalados, descarga también /mods, /config y /plugins desde la pestaña Files de Aternos.' },
-  { n: 2, color: 'violet', icon: <Server size={22} />, title: 'Crear servidor MineLab vacío', minutes: '3 min', text: 'Regístrate en minelab.gg con Google. En el wizard elige software (Paper, Forge, Fabric o NeoForge según uses), versión de Minecraft (la misma que tenías en Aternos) y RAM. Paga con Stripe. En 2 minutos el servidor está vacío y arrancado.', tip: '¿Dudas con la RAM? Tabla completa por modpack en /hosting-minecraft-con-mods. Vanilla 2 GB, modpacks tipo ATM10 mínimo 8 GB.' },
+  { n: 2, color: 'violet', icon: <Server size={22} />, title: 'Crear servidor MineLab vacío', minutes: '3 min', text: 'Regístrate en minelab.gg con Google. En el wizard elige software (Paper, Forge, Fabric o NeoForge según uses), versión de Minecraft (la misma que tenías en Aternos) y RAM. Paga con Stripe. En 2 minutos el servidor está vacío y arrancado.', tip: '¿Dudas con la RAM? Tabla completa por modpack en /hosting-minecraft-con-mods. Plan mínimo MineLab 4 GB; modpacks tipo ATM10 recomendado 8-12 GB.' },
   { n: 3, color: 'green', icon: <Upload size={22} />, title: 'Subir tu world por SFTP', minutes: '5 min', text: 'En tu panel MineLab, pestaña Settings → SFTP → activa el acceso. Te genera host, puerto, usuario y contraseña. Conecta con FileZilla. Borra /world creada por defecto, sube tu /world descomprimida del .zip de Aternos. Sube también /world_nether y /world_the_end si los tienes.', tip: 'Si jugabas con plugins (Bukkit/Paper), sube también /plugins. Si jugabas con mods (Forge/Fabric), sube /mods y /config.' },
   { n: 4, color: 'green', icon: <Bot size={22} />, title: 'Pídele al agente IA que termine el setup', minutes: '5 min', text: 'Abre el chat del agente en tu panel y dile algo como: "instala EssentialsX, LuckPerms y WorldGuard. Activa whitelist con estos jugadores: ...". El agente descarga las versiones correctas, edita server.properties, importa whitelist.json y reinicia. Listo para jugar.', tip: 'El agente IA también lee logs y diagnostica crashes. Si un mod falla, te dice cuál es y propone solución.' },
 ];
@@ -33,7 +33,7 @@ function HL({ children, color = 'green' }) {
   return <span className={`inline-block ${cls} px-3 md:px-4 py-0.5 md:py-1 rounded-md align-baseline`}>{children}</span>;
 }
 
-const howToJsonLd = { '@context': 'https://schema.org', '@type': 'HowTo', name: 'Cómo migrar un servidor de Aternos a MineLab', description: 'Tutorial paso a paso para mover un servidor de Minecraft desde Aternos a MineLab conservando mundo, plugins y jugadores.', totalTime: 'PT15M', estimatedCost: { '@type': 'MonetaryAmount', currency: 'EUR', value: '4.99' }, supply: [{ '@type': 'HowToSupply', name: 'Cuenta Aternos con tu servidor actual' }, { '@type': 'HowToSupply', name: 'Cuenta MineLab (Google Sign-In)' }, { '@type': 'HowToSupply', name: 'Cliente SFTP (FileZilla recomendado)' }], step: STEPS.map((s) => ({ '@type': 'HowToStep', position: s.n, name: s.title, text: s.text, url: `https://minelab.gg/migrar-servidor-aternos#paso-${s.n}` })) };
+const howToJsonLd = { '@context': 'https://schema.org', '@type': 'HowTo', name: 'Cómo migrar un servidor de Aternos a MineLab', description: 'Tutorial paso a paso para mover un servidor de Minecraft desde Aternos a MineLab conservando mundo, plugins y jugadores.', totalTime: 'PT15M', estimatedCost: { '@type': 'MonetaryAmount', currency: 'EUR', value: '5.00' }, supply: [{ '@type': 'HowToSupply', name: 'Cuenta Aternos con tu servidor actual' }, { '@type': 'HowToSupply', name: 'Cuenta MineLab (Google Sign-In)' }, { '@type': 'HowToSupply', name: 'Cliente SFTP (FileZilla recomendado)' }], step: STEPS.map((s) => ({ '@type': 'HowToStep', position: s.n, name: s.title, text: s.text, url: `https://minelab.gg/migrar-servidor-aternos#paso-${s.n}` })) };
 const faqJsonLd = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: FAQ.map(({ q, a }) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) };
 const breadcrumbJsonLd = { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [{ '@type': 'ListItem', position: 1, name: 'Inicio', item: 'https://minelab.gg/' }, { '@type': 'ListItem', position: 2, name: 'Migrar servidor de Aternos', item: 'https://minelab.gg/migrar-servidor-aternos' }] };
 
@@ -120,7 +120,7 @@ export default function MigrarAternos() {
                 </div>
                 <div className="mt-5 pt-4 border-t border-white/5 flex items-center justify-between text-xs">
                   <span className="text-white/50">Soporte español 24/7</span>
-                  <span className="text-accent-green font-bold">desde 4,99€/mes</span>
+                  <span className="text-accent-green font-bold">desde 5€/mes</span>
                 </div>
               </div>
             </div>
