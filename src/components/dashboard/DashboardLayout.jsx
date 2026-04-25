@@ -229,7 +229,8 @@ const DashboardLayout = () => {
 
         const membershipsResponse = { data: membershipsWithServers };
 
-        const { data: servers, error: serversError } = serversResponse;
+        const { data: serversFromAuth, error: serversError } = serversResponse;
+        let servers = serversFromAuth;
         let profile = profileResponse1.data;
 
         // Collect servers where user is an invited member (with their role)
@@ -258,10 +259,42 @@ const DashboardLayout = () => {
           // If the user's Auth UUID doesn't match the manually inserted profile's UUID,
           // Supabase's RLS for 'authenticated' users hides the row entirely.
           // But the 'anon' role can read it!
-          const { data: profileResponse2 } = await supabaseAnon.from('profiles').select('plan_status').eq('email', lowerEmail).limit(1).maybeSingle();
+          const { data: profileResponse2 } = await supabaseAnon.from('profiles').select('id, plan_status').eq('email', lowerEmail).limit(1).maybeSingle();
           if (profileResponse2) {
             profile = profileResponse2;
             currentPlanStatus = profile?.plan_status || 'none';
+          }
+        }
+
+        // Server-side rescue for mc_servers when authenticated client returns 0 rows.
+        // Causes: (a) UUID drift between auth.uid and profile.id (manually inserted profile,
+        // OAuth recreated user), (b) clock-skew making Supabase reject the JWT silently
+        // and queries fall to anon (RLS blocks). mc-api uses service_role to bypass.
+        if ((!servers || servers.length === 0) && lowerEmail) {
+          try {
+            console.log('[DashboardLayout] Authenticated mc_servers fetch returned 0 rows. Falling back to mc-api by email…');
+            const resp = await fetch('https://api.fluxoai.co/api/list-my-servers', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': 'minelab_k3y_Xp9mR7_2026',
+              },
+              body: JSON.stringify({ email: lowerEmail }),
+            });
+            if (resp.ok) {
+              const json = await resp.json();
+              const recovered = Array.isArray(json?.servers) ? json.servers : [];
+              if (recovered.length > 0) {
+                console.log('[DashboardLayout] mc-api fallback recovered', recovered.length, 'server(s).');
+                servers = recovered;
+                const recoveredIds = new Set(recovered.map(s => s.id));
+                setSharedServers(prev => prev.filter(s => !recoveredIds.has(s.id)));
+              }
+            } else {
+              console.warn('[DashboardLayout] mc-api fallback HTTP', resp.status);
+            }
+          } catch (fbErr) {
+            console.warn('[DashboardLayout] mc-api fallback failed:', fbErr);
           }
         }
 
