@@ -161,6 +161,21 @@ const DashboardLayout = () => {
 
         if (session) {
           setUser(session.user);
+
+          // If user just logged in with a pending Stripe URL (from Pricing page click while unauth)
+          const pendingStripe = localStorage.getItem('minelab-pending-stripe-url');
+          if (pendingStripe) {
+            localStorage.removeItem('minelab-pending-stripe-url');
+            try {
+              const sep = pendingStripe.includes('?') ? '&' : '?';
+              const finalUrl = `${pendingStripe}${sep}client_reference_id=${encodeURIComponent(session.user.id)}&prefilled_email=${encodeURIComponent(session.user.email || '')}`;
+              window.location.href = finalUrl;
+              return; // Don't continue loading dashboard — user is going to Stripe
+            } catch (_) {
+              // If redirect fails, continue normally
+            }
+          }
+
           fetchServersAndState(session.user.id, session.user.email);
         } else {
           const forcedToken = localStorage.getItem('minelab-forced-token');
