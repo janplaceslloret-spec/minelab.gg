@@ -314,7 +314,13 @@ const DashboardLayout = () => {
             navigate('/', { replace: true });
             return;
           }
-          throw serversError;
+          // If the fallback already recovered servers (e.g. RLS recursion 42P17 / infinite loop),
+          // log and continue rather than throwing — the UI already has the data it needs.
+          if (servers && servers.length > 0) {
+            console.warn('[DashboardLayout] Supabase returned error but fallback has servers — continuing.', serversError.code, serversError.message);
+          } else {
+            throw serversError;
+          }
         }
 
         console.log("[DashboardLayout] Profile plan status:", currentPlanStatus);
