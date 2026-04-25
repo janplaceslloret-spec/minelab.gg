@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Bot, Send, Sparkles, Zap, X } from 'lucide-react';
 import { supabase } from '../../supabaseClient';
+import IncidentBanner from './IncidentBanner';
 
 const AIAssistantSidebar = ({ activeServer, user, isMobile = false, onClose = null }) => {
   const [inputStr, setInputStr] = useState('');
@@ -174,6 +175,12 @@ const AIAssistantSidebar = ({ activeServer, user, isMobile = false, onClose = nu
             </button>
           ))}
         </div>
+
+        {/* Proactive incident banner */}
+        <IncidentBanner
+          activeServer={activeServer}
+          onFixRequest={(msg) => handleSendMessage(null, msg)}
+        />
 
         {/* Chat Area */}
         <div className="flex-1 p-4 flex flex-col gap-4 overflow-y-auto">
