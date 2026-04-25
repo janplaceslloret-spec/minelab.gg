@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { supabase } from '../../supabaseClient';
 
 const ConsoleView = ({ server }) => {
   const [consoleLogs, setConsoleLogs] = useState([]);
@@ -9,11 +10,24 @@ const ConsoleView = ({ server }) => {
   const consoleEndRef = useRef(null);
   const reconnectTimeoutRef = useRef(null);
 
-  const connectConsole = () => {
+  const connectConsole = async () => {
     if (!server || socketRef.current?.readyState === WebSocket.OPEN) return;
 
     setWsStatus('connecting');
-    const wsUrl = `wss://console.fluxoai.co/?server=${server.id}`;
+
+    // Attach JWT token for server ownership validation
+    let token = '';
+    try {
+      const forcedToken = localStorage.getItem('minelab-forced-token');
+      if (forcedToken) {
+        token = forcedToken;
+      } else {
+        const { data } = await supabase.auth.getSession();
+        token = data?.session?.access_token || '';
+      }
+    } catch (_) {}
+
+    const wsUrl = `wss://console.fluxoai.co/?server=${server.id}${token ? `&token=${encodeURIComponent(token)}` : ''}`;
     const socket = new WebSocket(wsUrl);
 
     socket.onopen = () => {
