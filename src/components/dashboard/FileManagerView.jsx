@@ -93,13 +93,18 @@ const FileManagerView = ({ server }) => {
     try {
       setSaving(true);
       const filePath = currentPath ? `${currentPath}/${selectedFile.name}` : selectedFile.name;
-      await fetch(`${import.meta.env.VITE_API_URL}/api/files/write`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/files/write`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-api-key": API_KEY },
         body: JSON.stringify({ server: serverId, file: filePath, content }),
       });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `HTTP ${res.status}`);
+      }
     } catch (err) {
       console.error("Error guardando archivo", err);
+      alert(`Error al guardar: ${err.message}`);
     } finally {
       setSaving(false);
     }
@@ -115,11 +120,20 @@ const FileManagerView = ({ server }) => {
     const { name, path: filePath } = confirmDelete;
     setConfirmDelete(null);
 
-    await fetch(`${import.meta.env.VITE_API_URL}/api/files/delete`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "x-api-key": API_KEY },
-      body: JSON.stringify({ server: serverId, file: filePath }),
-    });
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/files/delete`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-api-key": API_KEY },
+        body: JSON.stringify({ server: serverId, file: filePath }),
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `HTTP ${res.status}`);
+      }
+    } catch (err) {
+      console.error("Error borrando archivo", err);
+      alert(`Error al borrar: ${err.message}`);
+    }
 
     if (selectedFile?.name === name) {
       setSelectedFile(null);
