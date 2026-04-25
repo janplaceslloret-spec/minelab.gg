@@ -1,10 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronDown, Server, Cpu } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 
 const Navbar = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
   const [scrolled, setScrolled] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const isHome = location.pathname === '/';
+
+  // Cross-page anchor: scroll if on home, navigate if elsewhere
+  const goToAnchor = (id) => (e) => {
+    e.preventDefault();
+    if (isHome) {
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      navigate('/#' + id);
+    }
+    setIsDropdownOpen(false);
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -21,7 +36,10 @@ const Navbar = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
           
           {/* Logo */}
           <div
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            onClick={() => {
+              if (isHome) window.scrollTo({ top: 0, behavior: 'smooth' });
+              else navigate('/');
+            }}
             className="flex items-center gap-3 cursor-pointer group"
           >
             <img
@@ -49,13 +67,9 @@ const Navbar = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
                 <div className="w-[300px] bg-[#0B0F1A]/90 backdrop-blur-xl p-2 shadow-[0_20px_50px_rgba(0,0,0,0.8)] border border-white/10 rounded-2xl relative overflow-hidden flex flex-col gap-2">
                   
                   {/* Item 1: Minecraft Hosting */}
-                  <a 
-                    href="#pricing" 
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setIsDropdownOpen(false);
-                      document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
-                    }}
+                  <a
+                    href="/#pricing"
+                    onClick={goToAnchor('pricing')}
                     className="relative z-10 flex items-start gap-4 p-4 rounded-xl bg-white/5 hover:bg-[#111827] transition-all group/card border border-transparent hover:border-accent-green/40 hover:shadow-[0_10px_30px_rgba(34,197,94,0.15)] hover:-translate-y-1 duration-300"
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-accent-green/5 to-transparent opacity-0 group-hover/card:opacity-100 rounded-xl transition-opacity duration-500 pointer-events-none"></div>
@@ -82,10 +96,10 @@ const Navbar = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
               </div>
             </div>
 
-            <a href="#features" className="text-white/80 hover:text-white font-medium transition-colors py-2 uppercase tracking-wide text-sm">Características</a>
-            <a href="#how-it-works" className="text-white/80 hover:text-white font-medium transition-colors py-2 uppercase tracking-wide text-sm">Cómo Funciona</a>
-            <a href="#pricing" className="text-white/80 hover:text-white font-medium transition-colors py-2 uppercase tracking-wide text-sm">Planes</a>
-            <a href="#about" className="text-white/80 hover:text-white font-medium transition-colors py-2 uppercase tracking-wide text-sm">Nosotros</a>
+            <a href="/#features" onClick={goToAnchor('features')} className="text-white/80 hover:text-white font-medium transition-colors py-2 uppercase tracking-wide text-sm">Características</a>
+            <a href="/#how-it-works" onClick={goToAnchor('how-it-works')} className="text-white/80 hover:text-white font-medium transition-colors py-2 uppercase tracking-wide text-sm">Cómo Funciona</a>
+            <a href="/#pricing" onClick={goToAnchor('pricing')} className="text-white/80 hover:text-white font-medium transition-colors py-2 uppercase tracking-wide text-sm">Planes</a>
+            <a href="/#about" onClick={goToAnchor('about')} className="text-white/80 hover:text-white font-medium transition-colors py-2 uppercase tracking-wide text-sm">Nosotros</a>
           </div>
 
           {/* Right Actions */}

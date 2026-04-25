@@ -54,8 +54,18 @@ function ProtectedPanel() {
 
 function LandingPage({ isLoggedIn, onAuthAction, showToast }) {
   useEffect(() => {
-    // Force scroll to top on every reload as requested for landing UX
-    window.scrollTo(0, 0);
+    // Honor hash navigation (e.g. /#pricing from a SEO landing).
+    // Only force-scroll-top when there is no anchor target.
+    const hash = window.location.hash;
+    if (hash) {
+      const id = hash.slice(1);
+      // Wait a tick so anchor target is mounted
+      setTimeout(() => {
+        document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+      }, 50);
+    } else {
+      window.scrollTo(0, 0);
+    }
   }, []);
 
   return (
