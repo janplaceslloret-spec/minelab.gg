@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Settings, RefreshCw, PowerOff, Power, Globe,
   Trash2, Loader2, CheckCircle2, XCircle, X, Search,
@@ -7,34 +7,7 @@ import {
 
 const WEBHOOK = 'https://snack55-n8n1.q7pa8v.easypanel.host/webhook/asistente';
 const VERSION_WEBHOOK = 'https://api.fluxoai.co/webhook/cambiar-version';
-
-/* ─── Version data ─── */
-const ALL_VERSIONS = [
-  '1.21.11','1.21.10','1.21.9','1.21.8','1.21.7','1.21.4','1.21.3','1.21.1','1.21',
-  '1.20.6','1.20.4','1.20.2','1.20.1','1.20',
-  '1.19.4','1.19.3','1.19.2','1.19.1','1.19',
-  '1.18.2','1.18.1','1.18',
-  '1.17.1','1.17',
-  '1.16.5','1.16.4','1.16.3','1.16.2','1.16.1','1.16',
-  '1.15.2','1.15.1','1.15',
-  '1.14.4','1.14.3','1.14.2','1.14.1','1.14',
-  '1.13.2','1.13.1','1.13',
-  '1.12.2',
-];
-
-const versionMinor = (v) => Number(v.split('.')[1] || 0);
-const versionPatch = (v) => Number(v.split('.')[2] || 0);
-
-const SOFTWARE_VERSIONS = {
-  VANILLA: ALL_VERSIONS,
-  PAPER: ALL_VERSIONS.filter(v => versionMinor(v) >= 12),
-  FABRIC: ALL_VERSIONS.filter(v => versionMinor(v) >= 14),
-  FORGE: ALL_VERSIONS.filter(v => versionMinor(v) >= 12),
-  NEOFORGE: ALL_VERSIONS.filter(v => {
-    const m = versionMinor(v), p = versionPatch(v);
-    return (m === 21 && p >= 1) || (m === 20 && p >= 2);
-  }),
-};
+const VERSIONS_API = 'https://api.fluxoai.co/api/versions';
 
 const SOFTWARE = [
   {
@@ -94,18 +67,55 @@ const SOFTWARE = [
   },
 ];
 
+/* ─── Session-level cache shared across modal opens ─── */
+const versionsCache = new Map(); // softwareId -> { versions, fetchedAt }
+const VERSIONS_TTL_MS = 30 * 60 * 1000; // 30 min in browser
+
 /* ─── Version change modal ─── */
 const VersionModal = ({ server, onClose }) => {
   const [selectedSoftware, setSelectedSoftware] = useState(null);
   const [selectedVersion, setSelectedVersion] = useState(null);
   const [search, setSearch] = useState('');
   const [state, setState] = useState('idle');
+  const [versionsBySw, setVersionsBySw] = useState({});  // softwareId -> string[]
+  const [versionsLoading, setVersionsLoading] = useState(false);
+  const [versionsError, setVersionsError] = useState(null);
+  const abortRef = useRef(null);
 
-  const versions = selectedSoftware
-    ? (SOFTWARE_VERSIONS[selectedSoftware] || []).filter(v =>
-        !search || v.includes(search)
-      )
-    : [];
+  // Fetch versions when software changes
+  useEffect(() => {
+    if (!selectedSoftware) return;
+    const swId = selectedSoftware;
+    const cached = versionsCache.get(swId);
+    const now = Date.now();
+    if (cached && (now - cached.fetchedAt) < VERSIONS_TTL_MS) {
+      setVersionsBySw(prev => ({ ...prev, [swId]: cached.versions }));
+      return;
+    }
+    if (abortRef.current) abortRef.current.abort();
+    const ac = new AbortController();
+    abortRef.current = ac;
+    setVersionsLoading(true);
+    setVersionsError(null);
+    fetch(`${VERSIONS_API}?software=${swId.toLowerCase()}`, { signal: ac.signal })
+      .then(r => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
+      .then(j => {
+        const list = Array.isArray(j.versions) ? j.versions : [];
+        versionsCache.set(swId, { versions: list, fetchedAt: now });
+        setVersionsBySw(prev => ({ ...prev, [swId]: list }));
+      })
+      .catch(err => {
+        if (err.name === 'AbortError') return;
+        setVersionsError('No se pudo cargar la lista de versiones. Reintenta en unos segundos.');
+      })
+      .finally(() => {
+        if (!ac.signal.aborted) setVersionsLoading(false);
+      });
+    return () => ac.abort();
+  }, [selectedSoftware]);
+
+  const allVersionsForSw = (selectedSoftware && versionsBySw[selectedSoftware]) || [];
+  const versions = allVersionsForSw.filter(v => !search || v.toLowerCase().includes(search.toLowerCase()));
 
   const sw = SOFTWARE.find(s => s.id === selectedSoftware);
 
@@ -221,27 +231,45 @@ const VersionModal = ({ server, onClose }) => {
                 />
               </div>
 
-              {versions.length === 0 ? (
-                <p className="text-[#6B6B6B] text-sm text-center py-8">No se encontraron versiones.</p>
-              ) : (
-                <div className="grid grid-cols-4 md:grid-cols-6 gap-2 max-h-[240px] overflow-y-auto pr-1">
-                  {versions.map(v => {
-                    const isSelected = selectedVersion === v;
-                    return (
-                      <button
-                        key={v}
-                        onClick={() => setSelectedVersion(v)}
-                        className={`px-2 py-2.5 rounded-lg border text-xs font-black text-center transition-all ${
-                          isSelected
-                            ? `${sw?.border} ${sw?.bg} ${sw?.color} ring-1 ${sw?.ring}`
-                            : 'border-[#1F1F1F] bg-[#111] text-[#B3B3B3] hover:border-[#2A2A2A] hover:text-white'
-                        }`}
-                      >
-                        {v}
-                      </button>
-                    );
-                  })}
+              {versionsLoading && allVersionsForSw.length === 0 ? (
+                <div className="flex items-center justify-center gap-2 py-10 text-[#8B8B8B]">
+                  <Loader2 size={16} className="animate-spin" />
+                  <span className="text-xs uppercase tracking-wider font-bold">Cargando versiones disponibles…</span>
                 </div>
+              ) : versionsError && allVersionsForSw.length === 0 ? (
+                <div className="flex flex-col items-center gap-2 py-8">
+                  <AlertTriangle size={20} className="text-[#EAB308]" />
+                  <p className="text-[#EAB308] text-xs">{versionsError}</p>
+                </div>
+              ) : versions.length === 0 ? (
+                <p className="text-[#6B6B6B] text-sm text-center py-8">
+                  {search ? `Ninguna versión coincide con "${search}".` : 'No hay versiones disponibles.'}
+                </p>
+              ) : (
+                <>
+                  <div className="grid grid-cols-4 md:grid-cols-6 gap-2 max-h-[260px] overflow-y-auto pr-1">
+                    {versions.map(v => {
+                      const isSelected = selectedVersion === v;
+                      return (
+                        <button
+                          key={v}
+                          onClick={() => setSelectedVersion(v)}
+                          className={`px-2 py-2.5 rounded-lg border text-xs font-black text-center transition-all ${
+                            isSelected
+                              ? `${sw?.border} ${sw?.bg} ${sw?.color} ring-1 ${sw?.ring}`
+                              : 'border-[#1F1F1F] bg-[#111] text-[#B3B3B3] hover:border-[#2A2A2A] hover:text-white'
+                          }`}
+                        >
+                          {v}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <p className="text-[10px] text-[#6B6B6B] uppercase tracking-wider mt-3 flex items-center gap-1.5">
+                    <span className="inline-block w-1 h-1 rounded-full bg-[#22C55E]" />
+                    {allVersionsForSw.length} versiones disponibles · datos en vivo desde la fuente oficial
+                  </p>
+                </>
               )}
             </div>
           )}
