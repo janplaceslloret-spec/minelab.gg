@@ -2,21 +2,15 @@ import React, { useState } from 'react';
 import {
   Settings, RefreshCw, PowerOff, Power, Globe,
   Trash2, Loader2, CheckCircle2, XCircle, X, Search,
-  ChevronRight, ChevronDown, Check
+  ChevronRight, Check, ArrowRight, Gamepad2, Sparkles, AlertTriangle
 } from 'lucide-react';
 
 const WEBHOOK = 'https://snack55-n8n1.q7pa8v.easypanel.host/webhook/asistente';
-// api.fluxoai.co == reverse proxy a mc-api (127.0.0.1:3001) en el VPS.
-// El endpoint /webhook/cambiar-version ejecuta cambiar_version.sh directamente
-// (sin LLM). Responde 200 de forma síncrona pero ejecuta async; el script
-// puede abortar por anti-downgrade o errores y NO se notifica al usuario.
-// TODO: el mc-api debería publicar progreso en workflow_progress para que la
-// UI pueda mostrar errores reales (anti-downgrade, fallo de descarga, etc.).
 const VERSION_WEBHOOK = 'https://api.fluxoai.co/webhook/cambiar-version';
 
 /* ─── Version data ─── */
 const ALL_VERSIONS = [
-  '1.21.4','1.21.3','1.21.1','1.21',
+  '1.21.11','1.21.10','1.21.9','1.21.8','1.21.7','1.21.4','1.21.3','1.21.1','1.21',
   '1.20.6','1.20.4','1.20.2','1.20.1','1.20',
   '1.19.4','1.19.3','1.19.2','1.19.1','1.19',
   '1.18.2','1.18.1','1.18',
@@ -28,63 +22,75 @@ const ALL_VERSIONS = [
   '1.12.2',
 ];
 
-// versions supported per software (Paper/Fabric/Forge don't go all the way back equally)
+const versionMinor = (v) => Number(v.split('.')[1] || 0);
+const versionPatch = (v) => Number(v.split('.')[2] || 0);
+
 const SOFTWARE_VERSIONS = {
   VANILLA: ALL_VERSIONS,
-  PAPER: ALL_VERSIONS.filter(v => {
-    const [, minor] = v.split('.').map(Number);
-    return minor >= 12;
-  }),
-  FABRIC: ALL_VERSIONS.filter(v => {
-    const [, minor] = v.split('.').map(Number);
-    return minor >= 14;
-  }),
-  FORGE: ALL_VERSIONS.filter(v => {
-    const [, minor] = v.split('.').map(Number);
-    return minor >= 12;
+  PAPER: ALL_VERSIONS.filter(v => versionMinor(v) >= 12),
+  FABRIC: ALL_VERSIONS.filter(v => versionMinor(v) >= 14),
+  FORGE: ALL_VERSIONS.filter(v => versionMinor(v) >= 12),
+  NEOFORGE: ALL_VERSIONS.filter(v => {
+    const m = versionMinor(v), p = versionPatch(v);
+    return (m === 21 && p >= 1) || (m === 20 && p >= 2);
   }),
 };
 
 const SOFTWARE = [
   {
-    id: 'VANILLA',
-    label: 'Vanilla',
-    description: 'Servidor oficial de Mojang sin modificaciones.',
-    emoji: '🟩',
-    color: 'text-[#22C55E]',
-    border: 'border-[#22C55E]/30',
-    bg: 'bg-[#22C55E]/8',
-    ring: 'ring-[#22C55E]/40',
-  },
-  {
     id: 'PAPER',
     label: 'Paper',
-    description: 'Alto rendimiento, compatible con plugins Bukkit/Spigot.',
+    description: 'Alto rendimiento, soporta plugins Bukkit/Spigot.',
     emoji: '📄',
-    color: 'text-blue-400',
-    border: 'border-blue-500/30',
-    bg: 'bg-blue-500/8',
-    ring: 'ring-blue-400/40',
+    color: 'text-[#22C55E]',
+    border: 'border-[#22C55E]/40',
+    bg: 'bg-[#22C55E]/10',
+    ring: 'ring-[#22C55E]/40',
+    glow: 'shadow-[0_0_24px_rgba(34,197,94,0.18)]',
   },
   {
     id: 'FABRIC',
     label: 'Fabric',
-    description: 'Framework ligero ideal para mods modernos.',
+    description: 'Framework ligero, ideal para mods modernos.',
     emoji: '🧵',
-    color: 'text-purple-400',
-    border: 'border-purple-500/30',
-    bg: 'bg-purple-500/8',
+    color: 'text-purple-300',
+    border: 'border-purple-500/40',
+    bg: 'bg-purple-500/10',
     ring: 'ring-purple-400/40',
+    glow: 'shadow-[0_0_24px_rgba(168,85,247,0.18)]',
   },
   {
     id: 'FORGE',
     label: 'Forge',
-    description: 'El estándar para mods complejos y modpacks.',
+    description: 'Estándar para mods complejos y modpacks.',
     emoji: '⚙️',
-    color: 'text-orange-400',
-    border: 'border-orange-500/30',
-    bg: 'bg-orange-500/8',
+    color: 'text-orange-300',
+    border: 'border-orange-500/40',
+    bg: 'bg-orange-500/10',
     ring: 'ring-orange-400/40',
+    glow: 'shadow-[0_0_24px_rgba(249,115,22,0.18)]',
+  },
+  {
+    id: 'NEOFORGE',
+    label: 'NeoForge',
+    description: 'Fork moderno de Forge, mejor mantenido.',
+    emoji: '🔥',
+    color: 'text-rose-300',
+    border: 'border-rose-500/40',
+    bg: 'bg-rose-500/10',
+    ring: 'ring-rose-400/40',
+    glow: 'shadow-[0_0_24px_rgba(244,63,94,0.18)]',
+  },
+  {
+    id: 'VANILLA',
+    label: 'Vanilla',
+    description: 'Servidor oficial Mojang, sin modificaciones.',
+    emoji: '🟩',
+    color: 'text-emerald-300',
+    border: 'border-emerald-500/40',
+    bg: 'bg-emerald-500/10',
+    ring: 'ring-emerald-400/40',
+    glow: 'shadow-[0_0_24px_rgba(16,185,129,0.18)]',
   },
 ];
 
@@ -93,7 +99,7 @@ const VersionModal = ({ server, onClose }) => {
   const [selectedSoftware, setSelectedSoftware] = useState(null);
   const [selectedVersion, setSelectedVersion] = useState(null);
   const [search, setSearch] = useState('');
-  const [state, setState] = useState('idle'); // idle | loading | ok | err
+  const [state, setState] = useState('idle');
 
   const versions = selectedSoftware
     ? (SOFTWARE_VERSIONS[selectedSoftware] || []).filter(v =>
@@ -125,58 +131,68 @@ const VersionModal = ({ server, onClose }) => {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-6"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-6"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-2xl bg-[#0F0F0F] border border-[#2A2A2A] rounded-2xl flex flex-col overflow-hidden shadow-2xl max-h-[90vh]"
-        style={{ animation: 'fadeScaleIn 0.18s ease-out' }}
+        className="w-full max-w-3xl bg-[#0A0A0A] border border-[#22C55E]/15 rounded-3xl flex flex-col overflow-hidden shadow-[0_30px_80px_-20px_rgba(34,197,94,0.25)] max-h-[92vh]"
+        style={{ animation: 'fadeScaleIn 0.22s cubic-bezier(0.2,0.8,0.2,1)' }}
         onClick={e => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[#2A2A2A]">
-          <div>
-            <h2 className="text-white font-extrabold text-base uppercase tracking-tight">Cambiar versión</h2>
-            <p className="text-[#6B6B6B] text-xs mt-0.5">Elige el software y la versión del servidor</p>
+        {/* Hero header */}
+        <div className="relative px-8 pt-8 pb-6 border-b border-white/5 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-[#22C55E]/8 via-transparent to-transparent pointer-events-none" />
+          <div className="relative flex items-start justify-between">
+            <div>
+              <p className="text-[10px] uppercase font-black text-[#22C55E] tracking-[0.25em] mb-2">
+                ◆ Cambio de versión
+              </p>
+              <h2 className="text-white font-black text-3xl uppercase tracking-tight leading-none">
+                ELIGE TU<br />
+                <span className="text-[#22C55E]">SOFTWARE</span>
+              </h2>
+            </div>
+            <button
+              onClick={onClose}
+              className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 text-[#B3B3B3] hover:text-white transition-colors border border-white/5"
+            >
+              <X size={16} />
+            </button>
           </div>
-          <button
-            onClick={onClose}
-            className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 text-[#6B6B6B] hover:text-white transition-colors"
-          >
-            <X size={14} />
-          </button>
         </div>
 
-        <div className="flex flex-col gap-5 px-6 py-5 overflow-y-auto flex-1">
+        <div className="flex flex-col gap-7 px-8 py-7 overflow-y-auto flex-1">
 
           {/* Step 1: Software */}
           <div>
-            <p className="text-[10px] uppercase font-bold text-[#6B6B6B] tracking-wider mb-3">
-              1. Selecciona el software
-            </p>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="text-[10px] uppercase font-black text-[#22C55E] tracking-[0.2em]">01</span>
+              <span className="text-[10px] uppercase font-black text-[#6B6B6B] tracking-[0.2em]">Software</span>
+              <div className="flex-1 h-px bg-gradient-to-r from-[#2A2A2A] via-[#1A1A1A] to-transparent" />
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {SOFTWARE.map(s => {
                 const isSelected = selectedSoftware === s.id;
                 return (
                   <button
                     key={s.id}
                     onClick={() => { setSelectedSoftware(s.id); setSelectedVersion(null); setSearch(''); }}
-                    className={`relative flex items-start gap-3 p-4 rounded-xl border text-left transition-all ${
+                    className={`relative flex flex-col items-start gap-2 p-4 rounded-2xl border-2 text-left transition-all ${
                       isSelected
-                        ? `${s.border} ${s.bg} ring-1 ${s.ring}`
-                        : 'border-[#2A2A2A] bg-[#171717] hover:border-[#3A3A3A] hover:bg-white/[0.02]'
+                        ? `${s.border} ${s.bg} ${s.glow}`
+                        : 'border-[#1F1F1F] bg-[#111] hover:border-[#2A2A2A] hover:bg-[#141414]'
                     }`}
                   >
-                    <span className="text-2xl leading-none mt-0.5">{s.emoji}</span>
-                    <div className="flex-1 min-w-0">
-                      <p className={`font-bold text-sm ${isSelected ? s.color : 'text-[#E5E5E5]'}`}>{s.label}</p>
-                      <p className="text-[#6B6B6B] text-[10px] mt-0.5 leading-relaxed">{s.description}</p>
+                    <div className="flex items-center justify-between w-full">
+                      <span className="text-3xl leading-none">{s.emoji}</span>
+                      {isSelected && (
+                        <div className={`w-5 h-5 rounded-full flex items-center justify-center ${s.bg} border ${s.border}`}>
+                          <Check size={11} className={s.color} strokeWidth={3} />
+                        </div>
+                      )}
                     </div>
-                    {isSelected && (
-                      <div className={`absolute top-3 right-3 w-4 h-4 rounded-full flex items-center justify-center ${s.bg} border ${s.border}`}>
-                        <Check size={9} className={s.color} />
-                      </div>
-                    )}
+                    <p className={`font-black text-base uppercase tracking-tight ${isSelected ? s.color : 'text-white'}`}>{s.label}</p>
+                    <p className="text-[#6B6B6B] text-[11px] leading-snug">{s.description}</p>
                   </button>
                 );
               })}
@@ -186,37 +202,39 @@ const VersionModal = ({ server, onClose }) => {
           {/* Step 2: Version */}
           {selectedSoftware && (
             <div>
-              <p className="text-[10px] uppercase font-bold text-[#6B6B6B] tracking-wider mb-3">
-                2. Selecciona la versión
-                <span className={`ml-2 font-bold ${sw?.color}`}>{sw?.label}</span>
-              </p>
+              <div className="flex items-center gap-3 mb-4">
+                <span className={`text-[10px] uppercase font-black tracking-[0.2em] ${sw?.color}`}>02</span>
+                <span className="text-[10px] uppercase font-black text-[#6B6B6B] tracking-[0.2em]">
+                  Versión <span className={`ml-1 ${sw?.color}`}>{sw?.label}</span>
+                </span>
+                <div className="flex-1 h-px bg-gradient-to-r from-[#2A2A2A] via-[#1A1A1A] to-transparent" />
+              </div>
 
-              {/* Search */}
               <div className="relative mb-3">
-                <Search size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B6B6B]" />
+                <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#6B6B6B]" />
                 <input
                   type="text"
                   placeholder="Buscar versión..."
                   value={search}
                   onChange={e => setSearch(e.target.value)}
-                  className="w-full bg-[#171717] border border-[#2A2A2A] rounded-lg pl-8 pr-4 py-2 text-sm text-[#E5E5E5] placeholder-[#4B4B4B] focus:outline-none focus:border-[#3A3A3A] transition-colors"
+                  className="w-full bg-[#111] border border-[#1F1F1F] rounded-xl pl-11 pr-4 py-3 text-sm text-white placeholder-[#4B4B4B] focus:outline-none focus:border-[#22C55E]/40 transition-colors"
                 />
               </div>
 
               {versions.length === 0 ? (
-                <p className="text-[#6B6B6B] text-sm text-center py-4">No se encontraron versiones.</p>
+                <p className="text-[#6B6B6B] text-sm text-center py-8">No se encontraron versiones.</p>
               ) : (
-                <div className="grid grid-cols-5 gap-1.5 max-h-[220px] overflow-y-auto pr-1 scrollbar-thin">
+                <div className="grid grid-cols-4 md:grid-cols-6 gap-2 max-h-[240px] overflow-y-auto pr-1">
                   {versions.map(v => {
                     const isSelected = selectedVersion === v;
                     return (
                       <button
                         key={v}
                         onClick={() => setSelectedVersion(v)}
-                        className={`px-3 py-2 rounded-lg border text-xs font-bold text-center transition-all ${
+                        className={`px-2 py-2.5 rounded-lg border text-xs font-black text-center transition-all ${
                           isSelected
                             ? `${sw?.border} ${sw?.bg} ${sw?.color} ring-1 ${sw?.ring}`
-                            : 'border-[#2A2A2A] bg-[#171717] text-[#B3B3B3] hover:border-[#3A3A3A] hover:text-white'
+                            : 'border-[#1F1F1F] bg-[#111] text-[#B3B3B3] hover:border-[#2A2A2A] hover:text-white'
                         }`}
                       >
                         {v}
@@ -230,17 +248,17 @@ const VersionModal = ({ server, onClose }) => {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-6 py-4 border-t border-[#2A2A2A] bg-[#0A0A0A]">
+        <div className="flex items-center justify-between px-8 py-5 border-t border-white/5 bg-[#070707]">
           <div className="text-sm">
             {selectedSoftware && selectedVersion ? (
               <span className="text-[#E5E5E5]">
-                <span className="text-[#6B6B6B]">Instalando: </span>
-                <span className={`font-bold ${sw?.color}`}>{sw?.label}</span>
-                <span className="text-white font-mono ml-1">{selectedVersion}</span>
+                <span className="text-[#6B6B6B] uppercase text-[10px] tracking-wider mr-2">Instalando</span>
+                <span className={`font-black uppercase ${sw?.color}`}>{sw?.label}</span>
+                <span className="text-white font-mono ml-2">{selectedVersion}</span>
               </span>
             ) : (
-              <span className="text-[#4B4B4B] text-xs">
-                {!selectedSoftware ? 'Selecciona un software para continuar' : 'Selecciona una versión'}
+              <span className="text-[#4B4B4B] text-xs uppercase tracking-wider">
+                {!selectedSoftware ? '◆ Selecciona un software' : '◆ Selecciona una versión'}
               </span>
             )}
           </div>
@@ -248,38 +266,40 @@ const VersionModal = ({ server, onClose }) => {
           <button
             onClick={confirm}
             disabled={!selectedSoftware || !selectedVersion || state === 'loading' || state === 'ok'}
-            className={`flex items-center gap-2 px-5 py-2 rounded-lg border text-sm font-bold uppercase tracking-wider transition-all ${
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-black uppercase tracking-[0.15em] transition-all ${
               state === 'ok'
-                ? 'bg-[#22C55E]/15 text-[#22C55E] border-[#22C55E]/30'
+                ? 'bg-[#22C55E] text-[#0A0A0A] shadow-[0_8px_24px_rgba(34,197,94,0.4)]'
                 : state === 'err'
-                  ? 'bg-red-500/15 text-red-400 border-red-500/30'
+                  ? 'bg-red-500 text-white'
                   : (!selectedSoftware || !selectedVersion)
-                    ? 'bg-white/[0.03] text-[#4B4B4B] border-[#2A2A2A] cursor-not-allowed'
-                    : 'bg-[#22C55E]/10 text-[#22C55E] border-[#22C55E]/25 hover:bg-[#22C55E]/20'
+                    ? 'bg-white/[0.03] text-[#4B4B4B] border border-[#1F1F1F] cursor-not-allowed'
+                    : 'bg-[#22C55E] text-[#0A0A0A] hover:bg-[#1eb754] shadow-[0_8px_24px_rgba(34,197,94,0.3)] hover:shadow-[0_12px_32px_rgba(34,197,94,0.45)]'
             }`}
           >
             {state === 'loading' && <Loader2 size={14} className="animate-spin" />}
             {state === 'ok' && <CheckCircle2 size={14} />}
             {state === 'err' && <XCircle size={14} />}
             {state === 'loading' ? 'Ejecutando...' : state === 'ok' ? 'Completado' : state === 'err' ? 'Error, reintenta' : 'Confirmar cambio'}
+            {state === 'idle' && selectedSoftware && selectedVersion && <ArrowRight size={14} />}
           </button>
         </div>
       </div>
 
       <style>{`
         @keyframes fadeScaleIn {
-          from { opacity: 0; transform: scale(0.96); }
-          to { opacity: 1; transform: scale(1); }
+          from { opacity: 0; transform: scale(0.94) translateY(8px); }
+          to { opacity: 1; transform: scale(1) translateY(0); }
         }
       `}</style>
     </div>
   );
 };
 
-/* ─── Action row component ─── */
+/* ─── Action groups ─── */
 const ACTIONS = [
   {
     group: 'Control del servidor',
+    number: '02',
     items: [
       { id: 'encender', label: 'Encender servidor', message: 'ENCENDER SERVIDOR', description: 'Arranca el servidor si está apagado.', icon: Power, variant: 'green' },
       { id: 'reiniciar', label: 'Reiniciar servidor', message: 'REINICIAR SERVIDOR', description: 'Reinicia el servidor para aplicar cambios.', icon: RefreshCw, variant: 'green' },
@@ -288,6 +308,7 @@ const ACTIONS = [
   },
   {
     group: 'Mundo',
+    number: '03',
     items: [
       { id: 'regenerar_mundo', label: 'Regenerar mundo', message: 'REGENERAR MUNDO', description: 'Genera un nuevo mundo manteniendo la configuración.', icon: Globe, variant: 'yellow', confirm: true },
       { id: 'borrar_mundo', label: 'Borrar mundo', message: 'BORRAR MUNDO', description: 'Elimina el mundo permanentemente. No se puede deshacer.', icon: Trash2, variant: 'red', danger: true, confirm: true },
@@ -295,6 +316,8 @@ const ACTIONS = [
   },
   {
     group: 'Zona de peligro',
+    number: '04',
+    danger: true,
     items: [
       { id: 'eliminar_servidor', label: 'Eliminar servidor', message: 'ELIMINAR SERVIDOR', description: 'Borra el servidor y todos sus datos para siempre.', icon: Trash2, variant: 'red', danger: true, confirm: true },
     ],
@@ -303,21 +326,34 @@ const ACTIONS = [
 
 const VARIANT_STYLES = {
   green: {
-    btn: 'bg-[rgba(34,197,94,0.1)] text-[#22C55E] border-[rgba(34,197,94,0.3)] hover:bg-[rgba(34,197,94,0.2)] shadow-[0_4px_10px_rgba(34,197,94,0.05)]',
-    icon: 'bg-[rgba(34,197,94,0.08)] border-[rgba(34,197,94,0.2)] text-[#22C55E]',
-    card: 'border-[#2A2A2A] hover:border-[#3A3A3A]',
+    btn: 'bg-[#22C55E] text-[#0A0A0A] hover:bg-[#1eb754] shadow-[0_8px_20px_rgba(34,197,94,0.25)] hover:shadow-[0_12px_28px_rgba(34,197,94,0.4)]',
+    icon: 'bg-[#22C55E]/10 border-[#22C55E]/30 text-[#22C55E] shadow-[0_0_20px_rgba(34,197,94,0.15)]',
+    card: 'border-[#1F1F1F] hover:border-[#22C55E]/25 hover:bg-[#131313]',
   },
   yellow: {
-    btn: 'bg-[rgba(234,179,8,0.1)] text-[#EAB308] border-[rgba(234,179,8,0.3)] hover:bg-[rgba(234,179,8,0.2)] shadow-[0_4px_10px_rgba(234,179,8,0.05)]',
-    icon: 'bg-[rgba(234,179,8,0.08)] border-[rgba(234,179,8,0.2)] text-[#EAB308]',
-    card: 'border-[#2A2A2A] hover:border-[rgba(234,179,8,0.2)]',
+    btn: 'bg-[#EAB308] text-[#0A0A0A] hover:bg-[#d4a307] shadow-[0_8px_20px_rgba(234,179,8,0.25)] hover:shadow-[0_12px_28px_rgba(234,179,8,0.4)]',
+    icon: 'bg-[#EAB308]/10 border-[#EAB308]/30 text-[#EAB308] shadow-[0_0_20px_rgba(234,179,8,0.15)]',
+    card: 'border-[#1F1F1F] hover:border-[#EAB308]/25 hover:bg-[#131313]',
   },
   red: {
-    btn: 'bg-[rgba(239,68,68,0.1)] text-[#EF4444] border-[rgba(239,68,68,0.3)] hover:bg-[rgba(239,68,68,0.2)] shadow-[0_4px_10px_rgba(239,68,68,0.05)]',
-    icon: 'bg-[rgba(239,68,68,0.08)] border-[rgba(239,68,68,0.2)] text-[#EF4444]',
-    card: 'border-[rgba(239,68,68,0.12)] hover:border-[rgba(239,68,68,0.25)]',
+    btn: 'bg-[#EF4444] text-white hover:bg-[#dc2626] shadow-[0_8px_20px_rgba(239,68,68,0.3)] hover:shadow-[0_12px_28px_rgba(239,68,68,0.5)]',
+    icon: 'bg-[#EF4444]/10 border-[#EF4444]/30 text-[#EF4444] shadow-[0_0_20px_rgba(239,68,68,0.15)]',
+    card: 'border-[#EF4444]/15 hover:border-[#EF4444]/35 hover:bg-[#1a0e0e]',
   },
 };
+
+/* ─── Section header (numbered, holy.gg style) ─── */
+const SectionHeader = ({ number, title, danger = false }) => (
+  <div className="flex items-center gap-4 mb-5">
+    <span className={`text-[11px] uppercase font-black tracking-[0.25em] ${danger ? 'text-[#EF4444]' : 'text-[#22C55E]'}`}>
+      {number}
+    </span>
+    <h3 className="text-white font-black text-lg uppercase tracking-tight">
+      {title}
+    </h3>
+    <div className={`flex-1 h-px ${danger ? 'bg-gradient-to-r from-[#EF4444]/30 via-[#EF4444]/10 to-transparent' : 'bg-gradient-to-r from-[#22C55E]/20 via-[#1A1A1A] to-transparent'}`} />
+  </div>
+);
 
 /* ─── Main view ─── */
 const ConfigView = ({ server }) => {
@@ -349,50 +385,69 @@ const ConfigView = ({ server }) => {
 
   return (
     <>
-      <div className="flex flex-col gap-8">
-        {/* Header */}
-        <div>
-          <h2 className="text-white text-xl font-extrabold uppercase tracking-tight flex items-center gap-2">
-            <Settings size={20} className="text-[#22C55E]" />
-            Configuración del Servidor
-          </h2>
-          <p className="text-[#6B6B6B] text-xs mt-1">
-            Gestiona las opciones avanzadas de <span className="text-[#E5E5E5] font-medium">{server?.server_name || 'tu servidor'}</span>.
-          </p>
+      <div className="flex flex-col gap-10">
+        {/* Hero header — holy.gg style */}
+        <div className="relative">
+          <div className="absolute -inset-x-4 -top-4 h-32 bg-gradient-to-br from-[#22C55E]/8 via-transparent to-transparent blur-3xl pointer-events-none" />
+          <div className="relative">
+            <p className="text-[10px] uppercase font-black text-[#22C55E] tracking-[0.3em] mb-3 flex items-center gap-2">
+              <Sparkles size={11} className="text-[#22C55E]" />
+              Panel de control
+            </p>
+            <h1 className="text-white font-black text-4xl md:text-5xl uppercase tracking-[-0.02em] leading-[0.95]">
+              CONFIGURACIÓN<br />
+              <span className="text-[#22C55E]">DEL SERVIDOR</span>
+            </h1>
+            <p className="text-[#8B8B8B] text-sm mt-4 max-w-xl leading-relaxed">
+              Gestiona las opciones avanzadas de{' '}
+              <span className="text-white font-bold">{server?.server_name || 'tu servidor'}</span>.
+              Cambios aplican en segundos.
+            </p>
+          </div>
         </div>
 
-        {/* Version change – special card */}
+        {/* MEGA CTA — Cambiar versión (holy.gg flagship style) */}
         <div>
-          <div className="flex items-center gap-3 mb-3">
-            <span className="text-[10px] uppercase font-bold text-[#6B6B6B] tracking-wider">Versión</span>
-            <div className="flex-1 h-px bg-[#2A2A2A]" />
-          </div>
-          <div className="bg-[#171717] border border-[#2A2A2A] hover:border-[#3A3A3A] rounded-xl p-4 flex items-center gap-4 transition-colors">
-            <div className="w-9 h-9 rounded-lg border bg-white/[0.03] border-[#2A2A2A] flex items-center justify-center text-xl shrink-0">
-              🎮
+          <SectionHeader number="01" title="Versión & Software" />
+          <button
+            onClick={() => setShowVersionModal(true)}
+            className="group relative w-full text-left bg-gradient-to-br from-[#0F0F0F] via-[#0F0F0F] to-[#0A1A0F] border-2 border-[#22C55E]/20 hover:border-[#22C55E]/50 rounded-2xl p-6 md:p-7 flex items-center gap-5 transition-all overflow-hidden hover:shadow-[0_20px_50px_-15px_rgba(34,197,94,0.35)]"
+          >
+            {/* Glow accent */}
+            <div className="absolute -right-20 -top-20 w-64 h-64 bg-[#22C55E]/10 rounded-full blur-3xl pointer-events-none group-hover:bg-[#22C55E]/15 transition-colors" />
+
+            <div className="relative w-16 h-16 rounded-2xl bg-[#22C55E]/15 border border-[#22C55E]/40 flex items-center justify-center shrink-0 shadow-[0_0_30px_rgba(34,197,94,0.2)] group-hover:shadow-[0_0_40px_rgba(34,197,94,0.35)] transition-shadow">
+              <Gamepad2 size={28} className="text-[#22C55E]" strokeWidth={2.2} />
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[#E5E5E5] font-bold text-sm">Cambiar versión</p>
-              <p className="text-[#6B6B6B] text-xs mt-0.5">Elige el software (Vanilla, Paper, Fabric, Forge) y la versión del servidor.</p>
+
+            <div className="relative flex-1 min-w-0">
+              <p className="text-[10px] uppercase font-black text-[#22C55E] tracking-[0.25em] mb-1">
+                Cambiar versión
+              </p>
+              <p className="text-white font-black text-xl md:text-2xl uppercase tracking-tight leading-tight mb-2">
+                Vanilla · Paper · Fabric · Forge · NeoForge
+              </p>
+              <p className="text-[#8B8B8B] text-sm leading-relaxed">
+                Cualquier software, cualquier versión moderna (1.12 → 1.21.11). Cambio en 1-2 minutos.
+              </p>
             </div>
-            <button
-              onClick={() => setShowVersionModal(true)}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg border text-xs font-bold uppercase tracking-wider transition-all bg-[rgba(34,197,94,0.1)] text-[#22C55E] border-[rgba(34,197,94,0.3)] hover:bg-[rgba(34,197,94,0.2)] shadow-[0_4px_10px_rgba(34,197,94,0.05)]"
-            >
-              Cambiar versión
-              <ChevronRight size={11} />
-            </button>
-          </div>
+
+            <div className="relative shrink-0 hidden md:flex items-center gap-2 px-5 py-3 rounded-xl bg-[#22C55E] text-[#0A0A0A] text-xs font-black uppercase tracking-[0.15em] shadow-[0_8px_24px_rgba(34,197,94,0.3)] group-hover:shadow-[0_12px_32px_rgba(34,197,94,0.45)] transition-shadow">
+              Configurar
+              <ArrowRight size={14} strokeWidth={3} className="group-hover:translate-x-1 transition-transform" />
+            </div>
+
+            <div className="relative md:hidden shrink-0">
+              <ChevronRight size={20} className="text-[#22C55E]" />
+            </div>
+          </button>
         </div>
 
         {/* Action groups */}
         {ACTIONS.map(group => (
           <div key={group.group}>
-            <div className="flex items-center gap-3 mb-3">
-              <span className="text-[10px] uppercase font-bold text-[#6B6B6B] tracking-wider">{group.group}</span>
-              <div className="flex-1 h-px bg-[#2A2A2A]" />
-            </div>
-            <div className="flex flex-col gap-2">
+            <SectionHeader number={group.number} title={group.group} danger={group.danger} />
+            <div className="flex flex-col gap-3">
               {group.items.map(action => {
                 const state = actionState[action.id];
                 const isPending = confirmPending === action.id;
@@ -402,20 +457,20 @@ const ConfigView = ({ server }) => {
                 return (
                   <div
                     key={action.id}
-                    className={`bg-[#171717] border rounded-xl p-4 flex items-center gap-4 transition-colors ${styles.card}`}
+                    className={`bg-[#0F0F0F] border-2 rounded-2xl p-5 flex items-center gap-5 transition-all ${styles.card}`}
                   >
-                    <div className={`w-9 h-9 rounded-lg border flex items-center justify-center shrink-0 ${styles.icon}`}>
-                      <Icon size={16} />
+                    <div className={`w-12 h-12 rounded-xl border flex items-center justify-center shrink-0 ${styles.icon}`}>
+                      <Icon size={20} strokeWidth={2.2} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[#E5E5E5] font-bold text-sm">{action.label}</p>
-                      <p className="text-[#6B6B6B] text-xs mt-0.5 leading-relaxed">{action.description}</p>
+                      <p className="text-white font-black text-base uppercase tracking-tight">{action.label}</p>
+                      <p className="text-[#8B8B8B] text-sm mt-1 leading-relaxed">{action.description}</p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       {isPending && (
                         <button
                           onClick={() => setConfirmPending(null)}
-                          className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-[#B3B3B3] text-xs font-bold hover:bg-white/10 transition-colors"
+                          className="px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-[#B3B3B3] text-xs font-black uppercase tracking-[0.15em] hover:bg-white/10 transition-colors"
                         >
                           Cancelar
                         </button>
@@ -423,25 +478,35 @@ const ConfigView = ({ server }) => {
                       <button
                         onClick={() => runAction(action)}
                         disabled={state === 'loading'}
-                        className={`flex items-center gap-1.5 px-4 py-2 rounded-lg border text-xs font-bold uppercase tracking-wider transition-all ${
+                        className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-[0.15em] transition-all ${
                           state === 'ok'
-                            ? 'bg-[rgba(34,197,94,0.1)] text-[#22C55E] border-[rgba(34,197,94,0.3)]'
+                            ? 'bg-[#22C55E] text-[#0A0A0A] shadow-[0_8px_20px_rgba(34,197,94,0.35)]'
                             : state === 'err'
-                              ? 'bg-[rgba(239,68,68,0.1)] text-[#EF4444] border-[rgba(239,68,68,0.3)]'
+                              ? 'bg-[#EF4444] text-white shadow-[0_8px_20px_rgba(239,68,68,0.35)]'
                               : isPending
-                                ? 'bg-[rgba(239,68,68,0.18)] text-[#EF4444] border-[rgba(239,68,68,0.4)] ring-1 ring-[rgba(239,68,68,0.3)] animate-pulse'
+                                ? 'bg-[#EF4444] text-white animate-pulse shadow-[0_0_24px_rgba(239,68,68,0.5)]'
                                 : styles.btn
                         }`}
                       >
-                        {state === 'loading' && <Loader2 size={11} className="animate-spin" />}
-                        {state === 'ok' && <CheckCircle2 size={11} />}
-                        {state === 'err' && <XCircle size={11} />}
+                        {state === 'loading' && <Loader2 size={12} className="animate-spin" />}
+                        {state === 'ok' && <CheckCircle2 size={12} />}
+                        {state === 'err' && <XCircle size={12} />}
+                        {!state && !isPending && <ArrowRight size={12} strokeWidth={3} />}
                         {state === 'loading' ? 'Ejecutando...' : state === 'ok' ? 'Ejecutado' : state === 'err' ? 'Error' : isPending ? '¿Confirmar?' : action.label}
                       </button>
                     </div>
                   </div>
                 );
               })}
+
+              {group.danger && (
+                <div className="flex items-start gap-2.5 mt-1 px-4 py-3 rounded-xl bg-[#EF4444]/5 border border-[#EF4444]/15">
+                  <AlertTriangle size={14} className="text-[#EF4444] mt-0.5 shrink-0" />
+                  <p className="text-[#FCA5A5] text-xs leading-relaxed">
+                    Las acciones de esta zona son <span className="font-black">irreversibles</span>. Asegúrate de tener un backup antes de continuar.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         ))}
