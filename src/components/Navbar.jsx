@@ -112,11 +112,11 @@ const Navbar = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
                 INICIAR SESIÓN
               </button>
             )}
-            <button 
-              onClick={isLoggedIn ? onOpenDashboard : onLoginDemo}
+            <button
+              onClick={isLoggedIn ? onOpenDashboard : () => window.location.assign('/configurar?plan=6gb&billing=monthly')}
               className="bg-accent-green hover:bg-[#1faa50] text-gray-900 px-6 py-2.5 rounded-lg font-heading font-black transition-all shadow-[0_0_15px_rgba(34,197,94,0.4)] hover:shadow-[0_0_25px_rgba(34,197,94,0.6)] transform hover:-translate-y-0.5 uppercase tracking-tight text-sm disabled:opacity-50"
             >
-              {isLoggedIn ? 'PANEL' : 'EMPEZAR'}
+              {isLoggedIn ? 'PANEL' : 'CREAR SERVIDOR'}
             </button>
           </div>
         </div>

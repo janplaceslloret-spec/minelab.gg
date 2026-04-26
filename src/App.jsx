@@ -6,6 +6,7 @@ import { supabase } from './supabaseClient';
 const AternosVsMinelab = lazy(() => import('./pages/AternosVsMinelab'));
 const HostingConMods = lazy(() => import('./pages/HostingConMods'));
 const MigrarAternos = lazy(() => import('./pages/MigrarAternos'));
+const OrderConfigPage = lazy(() => import('./pages/OrderConfigPage'));
 
 function SeoFallback() {
   return (
@@ -154,6 +155,7 @@ function App() {
       <Route path="/aternos-vs-minelab" element={<Suspense fallback={<SeoFallback />}><AternosVsMinelab /></Suspense>} />
       <Route path="/hosting-minecraft-con-mods" element={<Suspense fallback={<SeoFallback />}><HostingConMods /></Suspense>} />
       <Route path="/migrar-servidor-aternos" element={<Suspense fallback={<SeoFallback />}><MigrarAternos /></Suspense>} />
+      <Route path="/configurar" element={<Suspense fallback={<SeoFallback />}><OrderConfigPage /></Suspense>} />
     </Routes>
   );
 }

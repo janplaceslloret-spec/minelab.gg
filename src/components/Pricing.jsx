@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Check, Cpu, Zap, Info, Calendar } from 'lucide-react';
@@ -8,72 +9,16 @@ gsap.registerPlugin(ScrollTrigger);
 
 const Pricing = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
   const sectionRef = useRef(null);
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [billing, setBilling] = useState('monthly'); // 'monthly' | 'annual'
 
-  // Crea un draft en mc_servers y devuelve el id, o null si falla
-  const createDraftServer = async (userId, ramGb) => {
-    try {
-      const uniqueName = `Mi servidor ${Math.floor(Date.now() / 1000)}`;
-      const { data, error } = await supabase
-        .from('mc_servers')
-        .insert({
-          user_id: userId,
-          server_name: uniqueName,
-          server_type: 'paper',
-          mc_version: '1.21.4',
-          ram_gb: ramGb,
-          status: 'draft',
-          status_server: 'offline',
-          ready: false,
-          mods: false,
-          mod_count: 0,
-        })
-        .select('id')
-        .single();
-      if (error) { console.error('[Pricing] draft insert error:', error); return null; }
-      return data?.id || null;
-    } catch (err) {
-      console.error('[Pricing] createDraftServer failed:', err);
-      return null;
-    }
-  };
-
-  const handleSubscribe = async (stripeUrl, ramGb) => {
-    try {
-      setLoading(true);
-      if (stripeUrl) {
-        let finalUrl = stripeUrl;
-        try {
-          const { data: { session } } = await supabase.auth.getSession();
-          const userId = session?.user?.id;
-          if (userId) {
-            // Crear draft en mc_servers para que el webhook tenga un server_id válido
-            const serverId = await createDraftServer(userId, ramGb || 6);
-            const refId = serverId || userId; // fallback a userId si el insert falla
-            const sep = stripeUrl.includes('?') ? '&' : '?';
-            finalUrl = `${stripeUrl}${sep}client_reference_id=${encodeURIComponent(refId)}&prefilled_email=${encodeURIComponent(session.user.email || '')}`;
-          } else {
-            // No logueado: guardamos plan elegido y llevamos a login
-            localStorage.setItem('minelab-pending-stripe-url', stripeUrl);
-            localStorage.setItem('minelab-pending-stripe-ram', String(ramGb || 6));
-            onLoginDemo();
-            return;
-          }
-        } catch (_) {
-          // Si supabase falla, igual abrimos Stripe sin client_reference_id
-        }
-        window.location.href = finalUrl;
-        return;
-      }
-      // Fallback si no hay URL: comportamiento previo (login/panel)
-      if (isLoggedIn) onOpenDashboard();
-      else onLoginDemo();
-    } catch (error) {
-      console.error('Error during checkout routing:', error.message);
-    } finally {
-      setLoading(false);
-    }
+  // Click en COMPRAR → navega a /configurar con el plan + ciclo preseleccionados.
+  // El usuario rellena el form y luego desde allí salta a Stripe (con auth si hace falta).
+  const handleSubscribe = (_stripeUrl, ramGb) => {
+    const planMap = { 4: '4gb', 6: '6gb', 8: '8gb', 12: '12gb' };
+    const planId = planMap[ramGb] || '6gb';
+    navigate(`/configurar?plan=${planId}&billing=${billing}`);
   };
 
   const plans = [

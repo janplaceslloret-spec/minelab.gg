@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
 import { supabase } from '../supabaseClient';
 
 const Hero = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
   const heroRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -49,17 +51,17 @@ const Hero = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
             </p>
             
             <div className="hero-element flex flex-wrap gap-4 mb-16">
-              <button 
-                onClick={isLoggedIn ? onOpenDashboard : onLoginDemo}
+              <button
+                onClick={isLoggedIn ? onOpenDashboard : () => navigate('/configurar?plan=6gb&billing=monthly')}
                 className="bg-accent-green hover:bg-[#1faa50] text-gray-900 px-8 py-4 rounded-xl font-heading font-bold text-lg transition-all shadow-[0_0_20px_rgba(34,197,94,0.3)] hover:shadow-[0_0_30px_rgba(34,197,94,0.5)] transform hover:-translate-y-1 uppercase tracking-tight disabled:opacity-50"
               >
-                {isLoggedIn ? 'IR AL PANEL' : 'EMPEZAR AHORA'}
+                {isLoggedIn ? 'IR AL PANEL' : 'CREAR SERVIDOR'}
               </button>
               <button
-                onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}
+                onClick={isLoggedIn ? onOpenDashboard : onLoginDemo}
                 className="bg-white/5 border border-white/10 hover:bg-white/10 text-white px-8 py-4 rounded-xl font-heading font-bold text-lg transition-all backdrop-blur-sm uppercase tracking-tight"
               >
-                VER DEMO
+                {isLoggedIn ? 'PANEL' : 'INICIAR SESIÓN'}
               </button>
             </div>
 
