@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronDown, Server, Cpu } from 'lucide-react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { ChevronDown, Server, Cpu, Swords, Package, ArrowLeftRight } from 'lucide-react';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 
 const Navbar = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
@@ -64,33 +64,79 @@ const Navbar = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
               
               {/* Animated Dropdown HolyHosting Style */}
               <div className={`absolute top-full left-1/2 -translate-x-1/2 pt-4 transition-all duration-300 ${isDropdownOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible translate-y-4 pointer-events-none'}`}>
-                <div className="w-[300px] bg-[#0B0F1A]/90 backdrop-blur-xl p-2 shadow-[0_20px_50px_rgba(0,0,0,0.8)] border border-white/10 rounded-2xl relative overflow-hidden flex flex-col gap-2">
-                  
+                <div className="w-[340px] bg-[#0B0F1A]/95 backdrop-blur-xl p-2 shadow-[0_20px_50px_rgba(0,0,0,0.8)] border border-white/10 rounded-2xl relative overflow-hidden flex flex-col gap-1.5">
+
                   {/* Item 1: Minecraft Hosting */}
                   <a
                     href="/#pricing"
                     onClick={goToAnchor('pricing')}
-                    className="relative z-10 flex items-start gap-4 p-4 rounded-xl bg-white/5 hover:bg-[#111827] transition-all group/card border border-transparent hover:border-accent-green/40 hover:shadow-[0_10px_30px_rgba(34,197,94,0.15)] hover:-translate-y-1 duration-300"
+                    className="relative z-10 flex items-start gap-3 p-3 rounded-xl bg-white/5 hover:bg-[#111827] transition-all group/card border border-transparent hover:border-accent-green/40 hover:shadow-[0_10px_30px_rgba(34,197,94,0.15)] duration-300"
                   >
-                    <div className="absolute inset-0 bg-gradient-to-r from-accent-green/5 to-transparent opacity-0 group-hover/card:opacity-100 rounded-xl transition-opacity duration-500 pointer-events-none"></div>
-                    <div className="w-12 h-12 rounded-lg bg-[#1F2937] flex items-center justify-center flex-shrink-0 group-hover/card:shadow-[0_0_20px_rgba(34,197,94,0.3)] duration-300 border border-white/5 group-hover/card:border-accent-green/30">
-                      
-                      {/* CSS/SVG Voxel Cube fallback */}
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="transform group-hover/card:scale-110 transition-transform duration-300">
+                    <div className="w-10 h-10 rounded-lg bg-[#1F2937] flex items-center justify-center flex-shrink-0 group-hover/card:shadow-[0_0_20px_rgba(34,197,94,0.3)] duration-300 border border-white/5 group-hover/card:border-accent-green/30">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#7CB342" stroke="#558B2F" strokeWidth="1" strokeLinejoin="round"/>
                         <path d="M2 7V17L12 22V12L2 7Z" fill="#5D4037" stroke="#4E342E" strokeWidth="1" strokeLinejoin="round"/>
                         <path d="M22 7V17L12 22V12L22 7Z" fill="#795548" stroke="#5D4037" strokeWidth="1" strokeLinejoin="round"/>
                       </svg>
-                      
                     </div>
                     <div className="flex-1">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="font-heading font-black text-white uppercase tracking-tight text-sm">Minecraft Hosting</span>
-                      </div>
-                      <p className="text-[11px] text-white/50 leading-tight mb-2 uppercase tracking-wide">Hosting optimizado para Minecraft</p>
-                      <p className="text-accent-green font-semibold text-xs tracking-wider">Desde 6.99€/mes</p>
+                      <p className="font-heading font-black text-white uppercase tracking-tight text-sm">Minecraft Hosting</p>
+                      <p className="text-[10px] text-white/50 leading-tight mt-0.5 uppercase tracking-wide">Planes desde 5€/mes</p>
                     </div>
                   </a>
+
+                  {/* Divider */}
+                  <div className="px-3 py-1">
+                    <p className="text-[9px] uppercase font-black text-white/30 tracking-[0.2em]">¿Vienes de otro hosting?</p>
+                  </div>
+
+                  {/* Item 2: vs Aternos */}
+                  <Link
+                    to="/aternos-vs-minelab"
+                    onClick={() => setIsDropdownOpen(false)}
+                    className="relative z-10 flex items-start gap-3 p-3 rounded-xl bg-white/5 hover:bg-[#111827] transition-all group/card border border-transparent hover:border-accent-green/40 duration-300"
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-[#1F2937] flex items-center justify-center flex-shrink-0 border border-white/5 group-hover/card:border-accent-green/30">
+                      <Swords size={18} className="text-accent-green" strokeWidth={2.4} />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="font-heading font-black text-white uppercase tracking-tight text-sm">MineLab vs Aternos</p>
+                        <span className="text-[8px] uppercase font-black tracking-wider px-1.5 py-0.5 rounded bg-accent-green/20 text-accent-green border border-accent-green/30">Nuevo</span>
+                      </div>
+                      <p className="text-[10px] text-white/50 leading-tight mt-0.5 uppercase tracking-wide">Comparativa + calculadora ahorro</p>
+                    </div>
+                  </Link>
+
+                  {/* Item 3: Migrar de Aternos */}
+                  <Link
+                    to="/migrar-servidor-aternos"
+                    onClick={() => setIsDropdownOpen(false)}
+                    className="relative z-10 flex items-start gap-3 p-3 rounded-xl bg-white/5 hover:bg-[#111827] transition-all group/card border border-transparent hover:border-accent-green/40 duration-300"
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-[#1F2937] flex items-center justify-center flex-shrink-0 border border-white/5 group-hover/card:border-accent-green/30">
+                      <ArrowLeftRight size={18} className="text-white/80" strokeWidth={2.4} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-heading font-black text-white uppercase tracking-tight text-sm">Migrar desde Aternos</p>
+                      <p className="text-[10px] text-white/50 leading-tight mt-0.5 uppercase tracking-wide">Guía paso a paso · 15 min</p>
+                    </div>
+                  </Link>
+
+                  {/* Item 4: Hosting con mods */}
+                  <Link
+                    to="/hosting-minecraft-con-mods"
+                    onClick={() => setIsDropdownOpen(false)}
+                    className="relative z-10 flex items-start gap-3 p-3 rounded-xl bg-white/5 hover:bg-[#111827] transition-all group/card border border-transparent hover:border-accent-green/40 duration-300"
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-[#1F2937] flex items-center justify-center flex-shrink-0 border border-white/5 group-hover/card:border-accent-green/30">
+                      <Package size={18} className="text-white/80" strokeWidth={2.4} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-heading font-black text-white uppercase tracking-tight text-sm">Hosting con mods</p>
+                      <p className="text-[10px] text-white/50 leading-tight mt-0.5 uppercase tracking-wide">Forge · Fabric · NeoForge · 1-click modpacks</p>
+                    </div>
+                  </Link>
 
                 </div>
               </div>
@@ -99,6 +145,17 @@ const Navbar = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
             <a href="/#features" onClick={goToAnchor('features')} className="text-white/80 hover:text-white font-medium transition-colors py-2 uppercase tracking-wide text-sm">Características</a>
             <a href="/#how-it-works" onClick={goToAnchor('how-it-works')} className="text-white/80 hover:text-white font-medium transition-colors py-2 uppercase tracking-wide text-sm">Cómo Funciona</a>
             <a href="/#pricing" onClick={goToAnchor('pricing')} className="text-white/80 hover:text-white font-medium transition-colors py-2 uppercase tracking-wide text-sm">Planes</a>
+            <Link
+              to="/aternos-vs-minelab"
+              className="relative flex items-center gap-1.5 text-white/80 hover:text-white font-medium transition-colors py-2 uppercase tracking-wide text-sm group"
+            >
+              <Swords size={14} className="text-accent-green" strokeWidth={2.4} />
+              <span>Vs Aternos</span>
+              <span className="relative flex w-1.5 h-1.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-green opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-accent-green"></span>
+              </span>
+            </Link>
             <a href="/#about" onClick={goToAnchor('about')} className="text-white/80 hover:text-white font-medium transition-colors py-2 uppercase tracking-wide text-sm">Nosotros</a>
           </div>
 
