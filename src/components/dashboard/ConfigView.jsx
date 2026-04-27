@@ -124,7 +124,7 @@ const VersionModal = ({ server, onClose }) => {
     try {
       const res = await fetch(VERSION_WEBHOOK, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-api-key': import.meta.env.VITE_MC_API_KEY },
         body: JSON.stringify({
           message: `CAMBIAR VERSION A ${selectedSoftware} ${selectedVersion}`,
           server_id: server?.id,

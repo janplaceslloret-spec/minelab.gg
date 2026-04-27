@@ -68,7 +68,7 @@ const BackupsView = ({ server }) => {
     try {
       const r = await fetch(`${API}/webhook/backup/create`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-api-key': import.meta.env.VITE_MC_API_KEY },
         body: JSON.stringify({ server_id: server.id }),
       });
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
@@ -90,7 +90,7 @@ const BackupsView = ({ server }) => {
     try {
       const r = await fetch(`${API}/webhook/backup/restore`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-api-key': import.meta.env.VITE_MC_API_KEY },
         body: JSON.stringify({ server_id: server.id, backup_id }),
       });
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
