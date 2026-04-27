@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../../supabaseClient';
-import { DatabaseBackup, Plus, RotateCcw, Trash2, Loader2, AlertTriangle, Shield } from 'lucide-react';
+import { DatabaseBackup, Plus, RotateCcw, Trash2, Loader2, AlertTriangle, Shield, Download } from 'lucide-react';
 
 const API = import.meta.env.VITE_API_URL || 'https://api.fluxoai.co';
 
@@ -198,6 +198,15 @@ const BackupsView = ({ server }) => {
                   </td>
                   <td className="px-4 py-3 text-right">
                     <div className="inline-flex gap-2">
+                      <a
+                        href={`${API}/api/backups/download?server_id=${server.id}&backup_id=${b.backup_id}`}
+                        download
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#22C55E]/10 text-[#22C55E] text-xs font-bold hover:bg-[#22C55E]/20 transition-colors"
+                        title="Descargar .tar.gz"
+                      >
+                        <Download size={12} />
+                        Descargar
+                      </a>
                       <button
                         onClick={() => restore(b.backup_id)}
                         disabled={!!busy}

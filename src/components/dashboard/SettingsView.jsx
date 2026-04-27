@@ -164,12 +164,17 @@ const SettingsView = ({ planStatus, user, server, onServerUpdate, memberRole = '
               <span className="text-[#6B6B6B] text-[10px] uppercase font-bold tracking-widest">Servidores Activos</span>
               <span className="text-[#E5E5E5] font-medium">{server ? '1 / 1' : '0 / 1'} servidor(es) en uso</span>
             </div>
-            <button
-              className="mt-2 w-full bg-[#1F2937]/50 hover:bg-[#1F2937] border border-[#374151] text-[#E5E5E5] py-2.5 rounded-lg text-sm font-bold transition-colors"
-              onClick={() => alert('La gestión de suscripción estará disponible próximamente en el portal de Stripe.')}
+            <a
+              href="https://billing.stripe.com/p/login/eVadRua7ygSU6kU288"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 w-full bg-[#22C55E] hover:bg-[#1eb754] text-[#0A0A0A] py-2.5 rounded-lg text-sm font-black uppercase tracking-wider transition-colors text-center inline-flex items-center justify-center gap-2 shadow-[0_4px_12px_rgba(34,197,94,0.25)]"
             >
-              Gestionar Suscripción
-            </button>
+              Gestionar facturación →
+            </a>
+            <p className="text-[#6B6B6B] text-[10px] mt-2 text-center">
+              Cancela, cambia tarjeta o descarga facturas. Te enviaremos un link a {user?.email || 'tu email'}.
+            </p>
           </div>
         </div>
 

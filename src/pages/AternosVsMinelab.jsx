@@ -143,7 +143,7 @@ function ChatMockup() {
 }
 
 // Regla aproximada para servidores Paper/Spigot: ~1 GB por cada 8-10 jugadores activos + 2 GB base
-// (más conservador con plugins/mods comunes).
+// (más conservador con plugins/mods comunes). Usado por SavingsCalculator local.
 function recommendedRam(players) {
   if (players <= 10) return 4;
   if (players <= 20) return 6;
@@ -151,6 +151,8 @@ function recommendedRam(players) {
   return 12;
 }
 
+// SavingsCalculator interno — el componente compartido vive en /components/SavingsCalculator.jsx
+// (usado en la landing). Aquí dejamos el inline para no tocar la página detallada.
 function SavingsCalculator() {
   const [ram, setRam] = useState(4);
   const [players, setPlayers] = useState(8);

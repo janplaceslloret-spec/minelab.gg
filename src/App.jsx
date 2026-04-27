@@ -24,6 +24,8 @@ import About from './components/About';
 import Pricing from './components/Pricing';
 import Locations from './components/Locations';
 import FAQ from './components/FAQ';
+import SavingsCalculator from './components/SavingsCalculator';
+import CookieBanner from './components/CookieBanner';
 import LegalSections from './components/LegalSections';
 import Footer from './components/Footer';
 import DiscordWidget from './components/DiscordWidget';
@@ -95,6 +97,17 @@ function LandingPage({ isLoggedIn, onAuthAction, showToast }) {
         <Locations />
         <Testimonials />
         <Pricing onLoginDemo={onAuthAction} isLoggedIn={isLoggedIn} onOpenDashboard={onAuthAction} />
+        <section id="ahorro" className="py-16 relative z-10 bg-[#0A0D14]">
+          <div className="container mx-auto px-6 max-w-5xl">
+            <div className="text-center mb-8 max-w-2xl mx-auto">
+              <p className="text-accent-green text-xs font-bold uppercase tracking-[0.25em] mb-3">Compara tu ahorro</p>
+              <h2 className="font-heading text-3xl md:text-4xl font-black tracking-tight uppercase text-white leading-tight">
+                ¿Cuánto te ahorras vs <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-red-500">Apex Hosting</span>?
+              </h2>
+            </div>
+            <SavingsCalculator />
+          </div>
+        </section>
         <FAQ />
       </main>
 
@@ -149,14 +162,17 @@ function App() {
   };
 
   return (
-    <Routes>
-      <Route path="/" element={<LandingPage isLoggedIn={isLoggedIn} onAuthAction={handleAuthAction} showToast={showToast} />} />
-      <Route path="/panel" element={<ProtectedPanel />} />
-      <Route path="/aternos-vs-minelab" element={<Suspense fallback={<SeoFallback />}><AternosVsMinelab /></Suspense>} />
-      <Route path="/hosting-minecraft-con-mods" element={<Suspense fallback={<SeoFallback />}><HostingConMods /></Suspense>} />
-      <Route path="/migrar-servidor-aternos" element={<Suspense fallback={<SeoFallback />}><MigrarAternos /></Suspense>} />
-      <Route path="/configurar" element={<Suspense fallback={<SeoFallback />}><OrderConfigPage /></Suspense>} />
-    </Routes>
+    <>
+      <Routes>
+        <Route path="/" element={<LandingPage isLoggedIn={isLoggedIn} onAuthAction={handleAuthAction} showToast={showToast} />} />
+        <Route path="/panel" element={<ProtectedPanel />} />
+        <Route path="/aternos-vs-minelab" element={<Suspense fallback={<SeoFallback />}><AternosVsMinelab /></Suspense>} />
+        <Route path="/hosting-minecraft-con-mods" element={<Suspense fallback={<SeoFallback />}><HostingConMods /></Suspense>} />
+        <Route path="/migrar-servidor-aternos" element={<Suspense fallback={<SeoFallback />}><MigrarAternos /></Suspense>} />
+        <Route path="/configurar" element={<Suspense fallback={<SeoFallback />}><OrderConfigPage /></Suspense>} />
+      </Routes>
+      <CookieBanner />
+    </>
   );
 }
 

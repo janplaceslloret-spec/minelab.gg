@@ -89,11 +89,23 @@ const AIAssistantSidebar = ({ activeServer, user, isMobile = false, onClose = nu
     };
   }, [activeServer?.id]);
 
+  const lastSentRef = React.useRef(0);
+
   const handleSendMessage = async (e, forcedText = null) => {
     if (e) e.preventDefault();
 
     const textToSend = forcedText || inputStr.trim();
     if (!textToSend || isTyping || !activeServer?.id) return;
+
+    // Rate limit: 3 segundos entre mensajes para evitar spam y costes runaway de OpenAI
+    const now = Date.now();
+    const elapsed = now - lastSentRef.current;
+    if (elapsed < 3000) {
+      const wait = Math.ceil((3000 - elapsed) / 1000);
+      setMessages(prev => [...prev, { role: 'assistant', text: `⏱️ Espera ${wait}s para enviar otro mensaje.` }]);
+      return;
+    }
+    lastSentRef.current = now;
 
     setInputStr('');
     setMessages(prev => [...prev, { role: 'user', text: textToSend }]);
