@@ -226,7 +226,7 @@ const Sidebar = ({ viewState = 'dashboard', planStatus = 'none', onCreateServer,
         {viewState === 'dashboard' && (
           <div className="pt-4 mt-2 border-t border-[#2A2A2A]">
             <button
-               onClick={onCreateServer ? onCreateServer : () => navigate('/panel?wizard=true')}
+               onClick={onCreateServer ? onCreateServer : () => navigate('/configurar?plan=6gb&billing=monthly')}
                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl transition-all font-bold text-sm bg-white hover:bg-white/90 text-black shadow-lg"
             >
               Nuevo Servidor

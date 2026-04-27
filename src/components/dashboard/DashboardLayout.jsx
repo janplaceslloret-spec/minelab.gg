@@ -33,57 +33,10 @@ const DashboardLayout = () => {
   const [pendingInviteToken, setPendingInviteToken] = useState(null); // ?invite= URL param
   const navigate = useNavigate();
 
-  const handleCreateServer = async () => {
-    try {
-      setViewState('loading');
-
-      // First check if user already has any valid server
-      const { data: existingDraft, error: fetchErr } = await supabase
-        .from('mc_servers')
-        .select('id')
-        .eq('user_id', user.id)
-        .in('status', ['draft', 'ready', 'paid'])
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (existingDraft) {
-        // Draft already exists, just navigate
-        navigate('/panel?wizard=true', { replace: true });
-        setViewState('wizard');
-        return;
-      }
-
-      // If no draft exists, create a new one with a unique name
-      const uniqueName = `Mi servidor ${Math.floor(Date.now() / 1000)}`;
-      const insertData = {
-        user_id: user.id,
-        server_name: uniqueName,
-        server_type: "vanilla",
-        mc_version: "1.21.11",
-        ram_gb: 6,
-        status: "draft",
-        status_server: "offline",
-        ready: false,
-        mods: false,
-        mod_count: 0
-      };
-      const { data: newSrv, error } = await supabase
-        .from('mc_servers')
-        .insert(insertData)
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      navigate('/panel?wizard=true', { replace: true });
-      setViewState('wizard');
-    } catch (err) {
-      console.error('Error in creating server on click:', err);
-      // Ensure we still navigate so they aren't stuck, the wizard will try again or handle it
-      navigate('/panel?wizard=true', { replace: true });
-      setViewState('wizard');
-    }
+  // Crear nuevo servidor → redirige al wizard moderno /configurar
+  // (que ya tiene templates, plan picker, carrito en vivo, etc.)
+  const handleCreateServer = () => {
+    navigate('/configurar?plan=6gb&billing=monthly');
   };
 
   const handleServerAction = async (action) => {
@@ -389,19 +342,19 @@ const DashboardLayout = () => {
             // User has accepted invites before — give them dashboard access
             setActiveServer(sharedSrvs[0]);
             setViewState('dashboard');
-          } else if (isWizardRequested) {
-            setViewState('wizard');
           } else {
-            setViewState('wizard');
-            navigate('/panel?wizard=true', { replace: true });
+            // Sin plan, sin invitación → al nuevo flow /configurar (wizard moderno)
+            navigate('/configurar?plan=6gb&billing=monthly', { replace: true });
+            return;
           }
         } else {
-          // Rule: If plan_status is valid -> allow dashboard access
+          // Plan valid → dashboard. Si vino con ?wizard=true (legacy), también
+          // redirigimos al nuevo /configurar para añadir un servidor extra.
           if (isWizardRequested) {
-            setViewState('wizard');
-          } else {
-            setViewState('dashboard');
+            navigate('/configurar?plan=6gb&billing=monthly', { replace: true });
+            return;
           }
+          setViewState('dashboard');
         }
       } catch (err) {
         console.error('[DashboardLayout] Error fetching servers:', err);
@@ -575,22 +528,11 @@ const DashboardLayout = () => {
   }, [viewState, user, navigate]);
 
   useEffect(() => {
-    // If we're already established but the URL changes (e.g., clicking Nuevo Servidor), update viewState
-    if (user && viewState === 'dashboard' && window.location.search.includes('wizard=true')) {
-      setViewState('wizard');
-    } else if (user && viewState === 'wizard' && !window.location.search.includes('wizard=true')) {
-      // Evaluate immediately on back navigation based on planStatus instead of fetching servers again
-      const normalizedPlanCheck = String(planStatus).trim().toLowerCase();
-      const validPlansCheck = ['pro_4gb', 'pro_6gb', 'pro_8gb', 'pro_12gb', 'admin'];
-      // Allow dashboard access if user has a valid plan OR is an accepted member of a server
-      if (!validPlansCheck.includes(normalizedPlanCheck) && sharedServers.length === 0) {
-        setViewState('wizard');
-        navigate('/panel?wizard=true', { replace: true });
-      } else {
-        setViewState('dashboard');
-      }
+    // Si llegan con ?wizard=true (legacy), redirigir al nuevo flow /configurar
+    if (user && window.location.search.includes('wizard=true')) {
+      navigate('/configurar?plan=6gb&billing=monthly', { replace: true });
     }
-  }, [window.location.search, user, viewState, planStatus, sharedServers, navigate]);
+  }, [window.location.search, user, navigate]);
 
   if (viewState === 'loading') {
     return (
