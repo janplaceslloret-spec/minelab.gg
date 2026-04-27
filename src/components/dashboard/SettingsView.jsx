@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Shield, Zap, Settings, FolderSync, Copy, Check, RefreshCw, Loader2, Eye, EyeOff, Plug } from 'lucide-react';
+import { User, Shield, Zap, Settings, FolderSync, Copy, Check, RefreshCw, Loader2, Eye, EyeOff, Plug, ArrowUpRight, TrendingUp } from 'lucide-react';
 import { supabase } from '../../supabaseClient';
 import MembersCard from './MembersCard';
 
@@ -164,6 +164,34 @@ const SettingsView = ({ planStatus, user, server, onServerUpdate, memberRole = '
               <span className="text-[#6B6B6B] text-[10px] uppercase font-bold tracking-widest">Servidores Activos</span>
               <span className="text-[#E5E5E5] font-medium">{server ? '1 / 1' : '0 / 1'} servidor(es) en uso</span>
             </div>
+
+            {/* Upgrade plan suggestion */}
+            {planStatus && planStatus !== 'none' && planStatus !== 'pro_12gb' && (
+              <div className="rounded-xl border-2 border-[#22C55E]/25 bg-gradient-to-br from-[#22C55E]/[0.06] via-transparent to-transparent p-4 mb-2">
+                <div className="flex items-start gap-3 mb-3">
+                  <div className="w-9 h-9 rounded-lg bg-[#22C55E]/15 border border-[#22C55E]/40 flex items-center justify-center shrink-0">
+                    <TrendingUp size={16} className="text-[#22C55E]" strokeWidth={2.5} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white font-black text-sm uppercase tracking-tight mb-0.5">
+                      ¿Necesitas más RAM?
+                    </p>
+                    <p className="text-[#8B8B8B] text-xs leading-relaxed">
+                      Sube de plan en cualquier momento. Stripe ajusta el cobro automáticamente (proration) y la RAM se aplica en el siguiente reinicio.
+                    </p>
+                  </div>
+                </div>
+                <a
+                  href="https://billing.stripe.com/p/login/eVadRua7ygSU6kU288"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full bg-[#22C55E]/15 hover:bg-[#22C55E]/25 border border-[#22C55E]/40 text-[#22C55E] py-2 rounded-lg text-xs font-black uppercase tracking-[0.15em] transition-colors text-center inline-flex items-center justify-center gap-1.5"
+                >
+                  Cambiar de plan <ArrowUpRight size={11} strokeWidth={3} />
+                </a>
+              </div>
+            )}
+
             <a
               href="https://billing.stripe.com/p/login/eVadRua7ygSU6kU288"
               target="_blank"

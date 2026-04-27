@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Check, ChevronRight, ArrowRight, Loader2, ServerCog, Globe,
-  Tag, AlertTriangle, ChevronLeft, Box, Sparkles, Search
+  Tag, AlertTriangle, ChevronLeft, Box, Sparkles, Search, Wand2
 } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 
@@ -56,6 +56,100 @@ const PLANS = {
     stripeMonthly: 'https://buy.stripe.com/bJe7sM1HGe3R3lK2wo3AY05',
     stripeAnnual:  'https://buy.stripe.com/8x28wQ864f7V3lKfja3AY0d',
   },
+};
+
+/* ═══ Server templates ═══
+ * Pre-configuran software + version + nombre sugerido + lista de mods/plugins
+ * que el cliente pedirá al chat IA tras pagar (Phase 2: auto-instalación).
+ */
+const TEMPLATES = [
+  {
+    id: 'paper-smp',
+    name: 'Paper SMP',
+    tagline: 'Survival multijugador con plugins',
+    description: 'EssentialsX, LuckPerms y Vault listos. Ideal para comunidades.',
+    software: 'paper',
+    version: '1.21.4',
+    suggestedName: 'SMP Survival',
+    extras: ['EssentialsX', 'LuckPerms', 'Vault', 'WorldGuard'],
+    extrasLabel: 'Plugins recomendados',
+    badge: 'Más popular',
+    accent: 'green',
+    icon: '🌍',
+  },
+  {
+    id: 'cobblemon',
+    name: 'Cobblemon',
+    tagline: 'Pokémon en Minecraft',
+    description: 'Atrapa, entrena y combate. 1025 Pokémon listos.',
+    software: 'fabric',
+    version: '1.21.1',
+    suggestedName: 'Pokémon Server',
+    extras: ['Cobblemon', 'Sodium', 'Fabric API'],
+    extrasLabel: 'Mods incluidos',
+    badge: 'Trending',
+    accent: 'pink',
+    icon: '⚡',
+  },
+  {
+    id: 'atm9',
+    name: 'All The Mods 9',
+    tagline: 'Modpack hardcore · 400+ mods',
+    description: 'Tech, magia, exploración, automatización. Para sesiones largas.',
+    software: 'forge',
+    version: '1.20.1',
+    suggestedName: 'ATM9 Server',
+    extras: ['ATM9 modpack (auto-install)'],
+    extrasLabel: 'Modpack',
+    badge: 'Para expertos',
+    accent: 'orange',
+    icon: '⚙️',
+  },
+  {
+    id: 'better-mc',
+    name: 'Better MC',
+    tagline: 'Vanilla mejorado · QoL + shaders',
+    description: 'Optimizaciones, biomas mejorados, sin perder la esencia.',
+    software: 'fabric',
+    version: '1.21.1',
+    suggestedName: 'Better MC',
+    extras: ['Better MC modpack', 'Sodium', 'Iris Shaders'],
+    extrasLabel: 'Modpack + mejoras',
+    badge: 'Nuevo',
+    accent: 'blue',
+    icon: '✨',
+  },
+  {
+    id: 'vanilla',
+    name: 'Vanilla',
+    tagline: 'Minecraft puro · sin mods',
+    description: 'La experiencia oficial de Mojang. Para puristas.',
+    software: 'vanilla',
+    version: '1.21.4',
+    suggestedName: 'Vanilla Server',
+    extras: [],
+    badge: 'Limpio',
+    accent: 'gray',
+    icon: '🟩',
+  },
+  {
+    id: 'custom',
+    name: 'Personalizado',
+    tagline: 'Configura tú · desde cero',
+    description: 'Elige software, versión y todo lo demás. Para los que ya saben.',
+    custom: true,
+    badge: null,
+    accent: 'gray',
+    icon: '🛠️',
+  },
+];
+
+const TEMPLATE_ACCENT = {
+  green:  { border: 'border-[#22C55E]/40', bg: 'bg-[#22C55E]/10', text: 'text-[#22C55E]',   ring: 'ring-[#22C55E]/40',   glow: 'shadow-[0_0_24px_rgba(34,197,94,0.18)]' },
+  pink:   { border: 'border-pink-500/40',  bg: 'bg-pink-500/10',  text: 'text-pink-300',     ring: 'ring-pink-400/40',    glow: 'shadow-[0_0_24px_rgba(236,72,153,0.18)]' },
+  orange: { border: 'border-orange-500/40',bg: 'bg-orange-500/10',text: 'text-orange-300',   ring: 'ring-orange-400/40',  glow: 'shadow-[0_0_24px_rgba(249,115,22,0.18)]' },
+  blue:   { border: 'border-sky-500/40',   bg: 'bg-sky-500/10',   text: 'text-sky-300',      ring: 'ring-sky-400/40',     glow: 'shadow-[0_0_24px_rgba(56,189,248,0.18)]' },
+  gray:   { border: 'border-white/15',     bg: 'bg-white/[0.03]', text: 'text-white/80',     ring: 'ring-white/20',       glow: 'shadow-[0_0_18px_rgba(255,255,255,0.08)]' },
 };
 
 const SOFTWARES = [
@@ -138,6 +232,7 @@ const OrderConfigPage = () => {
 
   const [planId, setPlanId] = useState(PLANS[initialPlanId] ? initialPlanId : '6gb');
   const [billing, setBilling] = useState(initialBilling);
+  const [templateId, setTemplateId] = useState(stored.templateId || null);
   const [serverName, setServerName] = useState(stored.serverName || '');
   const [software, setSoftware] = useState(stored.software || 'paper');
   const [version, setVersion] = useState(stored.version || '');
@@ -167,9 +262,20 @@ const OrderConfigPage = () => {
   /* Persist draft */
   useEffect(() => {
     localStorage.setItem(DRAFT_KEY, JSON.stringify({
-      planId, billing, serverName, software, version, coupon,
+      planId, billing, templateId, serverName, software, version, coupon,
     }));
-  }, [planId, billing, serverName, software, version, coupon]);
+  }, [planId, billing, templateId, serverName, software, version, coupon]);
+
+  /* Apply template selection — autopopula software, version, nombre sugerido */
+  const applyTemplate = (tpl) => {
+    setTemplateId(tpl.id);
+    if (tpl.custom) return; // No tocar campos
+    setSoftware(tpl.software);
+    setVersion(tpl.version);
+    if (!serverName.trim()) setServerName(tpl.suggestedName);
+  };
+
+  const selectedTemplate = TEMPLATES.find((t) => t.id === templateId);
 
   /* Fetch versions when software changes */
   useEffect(() => {
@@ -397,8 +503,70 @@ const OrderConfigPage = () => {
               </div>
             </Section>
 
+            {/* Template picker — opcional, autopopula software/version/nombre */}
+            <Section number="02" title="¿Quieres un servidor pre-configurado?">
+              <p className="text-[#8B8B8B] text-sm mb-4 -mt-2">
+                Elige un template y nosotros nos ocupamos. O personaliza tú abajo.
+              </p>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {TEMPLATES.map((tpl) => {
+                  const sel = templateId === tpl.id;
+                  const acc = TEMPLATE_ACCENT[tpl.accent] || TEMPLATE_ACCENT.gray;
+                  return (
+                    <button
+                      key={tpl.id}
+                      onClick={() => applyTemplate(tpl)}
+                      className={`relative text-left p-4 rounded-2xl border-2 transition-all ${
+                        sel
+                          ? `${acc.border} ${acc.bg} ${acc.glow}`
+                          : 'border-[#1F1F1F] bg-[#0F0F0F] hover:border-[#2A2A2A] hover:bg-[#141414]'
+                      }`}
+                    >
+                      {tpl.badge && (
+                        <span className={`absolute -top-2 right-3 text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded ${
+                          sel ? `${acc.bg} ${acc.text} border ${acc.border}` : 'bg-[#1F1F1F] text-[#8B8B8B]'
+                        }`}>
+                          {tpl.badge}
+                        </span>
+                      )}
+                      <div className="flex items-start justify-between mb-3">
+                        <span className="text-3xl leading-none">{tpl.icon}</span>
+                        {sel && <Check size={14} className={acc.text} strokeWidth={3} />}
+                      </div>
+                      <p className={`font-black text-sm uppercase tracking-tight mb-0.5 ${sel ? acc.text : 'text-white'}`}>
+                        {tpl.name}
+                      </p>
+                      <p className="text-[10px] text-[#22C55E]/70 uppercase font-bold tracking-wider mb-2">
+                        {tpl.tagline}
+                      </p>
+                      <p className="text-xs text-[#8B8B8B] leading-snug">{tpl.description}</p>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {selectedTemplate && !selectedTemplate.custom && selectedTemplate.extras?.length > 0 && (
+                <div className="mt-4 p-4 rounded-xl border border-[#22C55E]/20 bg-[#22C55E]/[0.04]">
+                  <div className="flex items-start gap-3">
+                    <Wand2 size={16} className="text-[#22C55E] mt-0.5 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] uppercase font-black text-[#22C55E] tracking-[0.2em] mb-1">
+                        {selectedTemplate.extrasLabel || 'Incluye'}
+                      </p>
+                      <p className="text-white text-sm font-bold">
+                        {selectedTemplate.extras.join(' · ')}
+                      </p>
+                      <p className="text-[#8B8B8B] text-xs mt-2 leading-relaxed">
+                        Tras pagar, escribe al chat IA: <span className="text-[#22C55E] font-mono">"instálame {selectedTemplate.extras[0]}"</span> y lo configura solo en segundos.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </Section>
+
             {/* Server name */}
-            <Section number="02" title="Nombre del servidor">
+            <Section number="03" title="Nombre del servidor">
               <input
                 type="text"
                 value={serverName}
@@ -413,7 +581,7 @@ const OrderConfigPage = () => {
             </Section>
 
             {/* Software */}
-            <Section number="03" title="Software inicial">
+            <Section number="04" title="Software inicial">
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
                 {SOFTWARES.map(s => {
                   const sel = software === s.id;
@@ -446,7 +614,7 @@ const OrderConfigPage = () => {
             </Section>
 
             {/* Version dropdown */}
-            <Section number="04" title="Versión inicial">
+            <Section number="05" title="Versión inicial">
               <div ref={versionsRef} className="relative">
                 <button
                   onClick={() => setVersionsOpen(o => !o)}
@@ -500,7 +668,7 @@ const OrderConfigPage = () => {
             </Section>
 
             {/* Location (info card, single location) */}
-            <Section number="05" title="Ubicación">
+            <Section number="06" title="Ubicación">
               <div className="bg-[#0F0F0F] border-2 border-[#1F1F1F] rounded-xl p-4 flex items-center gap-4">
                 <div className="w-12 h-12 rounded-xl bg-[#22C55E]/10 border border-[#22C55E]/30 flex items-center justify-center shrink-0">
                   <Globe size={20} className="text-[#22C55E]" strokeWidth={2.2} />
@@ -517,7 +685,7 @@ const OrderConfigPage = () => {
             </Section>
 
             {/* Coupon (placeholder) */}
-            <Section number="06" title="¿Tienes un cupón?">
+            <Section number="07" title="¿Tienes un cupón?">
               <div className="flex gap-2">
                 <input
                   type="text"

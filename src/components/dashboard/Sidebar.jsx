@@ -97,6 +97,15 @@ const Sidebar = ({ viewState = 'dashboard', planStatus = 'none', onCreateServer,
                       {s.id === server.id && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-[#22C55E] shrink-0" />}
                     </button>
                   ))}
+                  <button
+                    onClick={() => { setServerPickerOpen(false); navigate('/configurar?plan=6gb&billing=monthly'); }}
+                    className="w-full flex items-center gap-2 px-4 py-3 text-left border-t border-[#2A2A2A] text-[#22C55E] hover:bg-[#22C55E]/[0.05] transition-colors"
+                  >
+                    <span className="w-5 h-5 rounded bg-[#22C55E]/15 border border-[#22C55E]/40 flex items-center justify-center shrink-0">
+                      <span className="text-[#22C55E] text-xs font-black">+</span>
+                    </span>
+                    <span className="text-xs font-black uppercase tracking-wider">Añadir servidor</span>
+                  </button>
                 </div>
               )}
             </div>
