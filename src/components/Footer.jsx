@@ -34,7 +34,7 @@ const Footer = () => {
             <h4 className="text-white font-semibold mb-6">Soporte</h4>
             <ul className="space-y-4">
               <li><a href="#support" className="text-white/50 hover:text-accent-green transition-colors text-sm">Base de Conocimiento</a></li>
-              <li><a href="https://discord.gg/TS49z4yr" target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-accent-green transition-colors text-sm">Comunidad Discord</a></li>
+              <li><a href="https://discord.gg/wUJZkQxAQk" target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-accent-green transition-colors text-sm">Comunidad Discord</a></li>
               <li><a href="#status" className="text-white/50 hover:text-accent-green transition-colors text-sm">Estado de Nodos</a></li>
               <li><a href="#contact" className="text-white/50 hover:text-accent-green transition-colors text-sm">Contacto Técnico</a></li>
             </ul>

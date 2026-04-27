@@ -611,7 +611,7 @@ const DashboardLayout = () => {
             </p>
           </div>
           <a
-            href="https://discord.gg/minelab"
+            href="https://discord.gg/wUJZkQxAQk"
             target="_blank"
             rel="noopener noreferrer"
             className="px-6 py-3 bg-[#22C55E] text-black font-bold rounded-lg hover:bg-[#16a34a] transition-colors"

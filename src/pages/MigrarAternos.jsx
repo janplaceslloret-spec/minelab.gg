@@ -312,7 +312,7 @@ export default function MigrarAternos() {
                   <span className="bg-[#0B1220] text-accent-green px-4 py-2 rounded-lg flex items-center gap-2 text-xs uppercase tracking-wider"><Server size={14} /> Crear</span>
                   Servidor MineLab <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                 </Link>
-                <a href="https://discord.gg/TS49z4yr" target="_blank" rel="noopener noreferrer" className="text-sm text-white/60 hover:text-white transition-colors">Pedir ayuda en Discord →</a>
+                <a href="https://discord.gg/wUJZkQxAQk" target="_blank" rel="noopener noreferrer" className="text-sm text-white/60 hover:text-white transition-colors">Pedir ayuda en Discord →</a>
               </div>
             </div>
           </div>
