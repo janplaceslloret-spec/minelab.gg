@@ -355,23 +355,42 @@ const OrderConfigPage = () => {
         return;
       }
 
-      // Insert draft mc_servers row
-      const { data: draft, error: insErr } = await supabase
+      // Insert draft mc_servers row.
+      // Si la columna `template` no existe en la tabla, el insert falla. Hacemos
+      // un retry sin esa columna en caso de error 400 (column does not exist).
+      const baseDraft = {
+        user_id: userId,
+        server_name: cleanName,
+        server_type: software,
+        mc_version: version,
+        ram_gb: plan.ram,
+        status: 'draft',
+        status_server: 'offline',
+        ready: false,
+        mods: false,
+        mod_count: 0,
+      };
+      const draftPayload = templateId && !selectedTemplate?.custom
+        ? { ...baseDraft, template: templateId }
+        : baseDraft;
+
+      let { data: draft, error: insErr } = await supabase
         .from('mc_servers')
-        .insert({
-          user_id: userId,
-          server_name: cleanName,
-          server_type: software,
-          mc_version: version,
-          ram_gb: plan.ram,
-          status: 'draft',
-          status_server: 'offline',
-          ready: false,
-          mods: false,
-          mod_count: 0,
-        })
+        .insert(draftPayload)
         .select('id')
         .single();
+
+      // Fallback si la columna template aún no existe en producción
+      if (insErr && /column.*template.*does not exist|template/i.test(insErr.message || '')) {
+        console.warn('[OrderConfig] template column missing, retry without it');
+        const retry = await supabase
+          .from('mc_servers')
+          .insert(baseDraft)
+          .select('id')
+          .single();
+        draft = retry.data;
+        insErr = retry.error;
+      }
       if (insErr || !draft?.id) {
         alert('No se pudo crear el borrador del servidor. Intenta de nuevo.');
         setSubmitting(false);
