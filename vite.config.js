@@ -26,6 +26,10 @@ export default defineConfig({
           // Heavy UI libs
           'vendor-gsap': ['gsap'],
           'vendor-supabase': ['@supabase/supabase-js'],
+          // Charts (usado en DemoPanel + MainContent dashboard)
+          'vendor-charts': ['recharts'],
+          // Mapa mundial (usado solo en ServerMap)
+          'vendor-maps': ['react-simple-maps'],
           // Dashboard core (siempre cargado al entrar a /panel)
           'dashboard-core': [
             './src/components/dashboard/DashboardLayout.jsx',
