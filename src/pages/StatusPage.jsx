@@ -2,27 +2,32 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CheckCircle2, XCircle, Loader2, ChevronLeft, RefreshCw, Activity } from 'lucide-react';
 
+// Anon key de Supabase (pública, está en el bundle igualmente — solo para health check)
+const SB_ANON = 'sb_publishable_4_B13I-thS2UABc4mRzQ_FZThGcAm';
 const ENDPOINTS = [
   {
     id: 'api',
     label: 'Panel y API',
     subtitle: 'Backend mc-api · gestión de servidores',
     url: 'https://api.fluxoai.co/health',
+    parse: 'json',
     test: (data) => data?.ok === true,
   },
   {
     id: 'web',
     label: 'Sitio web',
     subtitle: 'minelab.gg · landing y panel',
-    url: 'https://minelab.gg/',
-    test: () => true, // si llega 200 con texto, OK
+    // Si esta página carga, el sitio claramente está vivo. Asumimos OK directamente.
+    self: true,
   },
   {
     id: 'auth',
     label: 'Sistema de cuentas',
     subtitle: 'Login con Google · Supabase Auth',
-    url: 'https://bttpqnuwspwlszzlapht.supabase.co/auth/v1/health',
-    test: () => true,
+    url: 'https://bttpqnuwspwlszzlapht.supabase.co/auth/v1/settings',
+    headers: { apikey: SB_ANON, Authorization: `Bearer ${SB_ANON}` },
+    parse: 'json',
+    test: (data) => !!data && (data.external || data.disable_signup !== undefined),
   },
 ];
 
@@ -57,11 +62,26 @@ export default function StatusPage() {
   const runChecks = async () => {
     setStatuses(Object.fromEntries(ENDPOINTS.map(e => [e.id, 'loading'])));
     await Promise.all(ENDPOINTS.map(async (e) => {
+      // Si es self-check (este propio sitio), está OK por construcción
+      if (e.self) {
+        setStatuses(prev => ({ ...prev, [e.id]: 'ok' }));
+        return;
+      }
       try {
-        const res = await fetch(e.url, { method: 'GET', mode: 'cors' });
-        let body = null;
-        try { body = await res.json(); } catch { body = await res.text(); }
-        const ok = res.ok && (typeof e.test === 'function' ? e.test(body) : true);
+        const res = await fetch(e.url, {
+          method: 'GET',
+          mode: 'cors',
+          headers: e.headers || {},
+        });
+        let ok = res.ok;
+        if (ok && e.parse === 'json') {
+          try {
+            const data = await res.json();
+            if (typeof e.test === 'function') ok = !!e.test(data);
+          } catch {
+            ok = false;
+          }
+        }
         setStatuses(prev => ({ ...prev, [e.id]: ok ? 'ok' : 'fail' }));
       } catch {
         setStatuses(prev => ({ ...prev, [e.id]: 'fail' }));
