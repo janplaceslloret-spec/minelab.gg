@@ -8,6 +8,7 @@ import PlayersView from './PlayersView';
 import ConfigView from './ConfigView';
 import ReviewView from './ReviewView';
 import BackupsView from './BackupsView';
+import AuditLogView from './AuditLogView';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip } from 'recharts';
 
 const MainContent = ({ planStatus, server, activeTab = 'overview', user, onServerUpdate, isActionLoading, onServerAction, memberRole = 'owner' }) => {
@@ -423,6 +424,10 @@ const MainContent = ({ planStatus, server, activeTab = 'overview', user, onServe
 
         {activeTab === 'backups' && (
            <BackupsView server={server} />
+        )}
+
+        {activeTab === 'historial' && (
+           <AuditLogView server={server} />
         )}
 
       </div>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { LayoutDashboard, Terminal, FolderOpen, Blocks, Users, DatabaseBackup, Settings, LogOut, Star, ChevronDown, Share2 } from 'lucide-react';
+import { LayoutDashboard, Terminal, FolderOpen, Blocks, Users, DatabaseBackup, Settings, LogOut, Star, ChevronDown, Share2, History } from 'lucide-react';
 import { supabase } from '../../supabaseClient';
 import { useNavigate } from 'react-router-dom';
 
@@ -33,6 +33,7 @@ const Sidebar = ({ viewState = 'dashboard', planStatus = 'none', onCreateServer,
     { icon: <Users size={20} />, label: 'Jugadores', active: activeTab === 'players', id: 'players', hidden: !canAccessPlayers },
     { icon: <Settings size={20} />, label: 'Configuración', active: activeTab === 'configuracion', id: 'configuracion', hidden: !canAccessConfig },
     { icon: <DatabaseBackup size={20} />, label: 'Backups', active: activeTab === 'backups', id: 'backups', hidden: !canAccessFiles },
+    { icon: <History size={20} />, label: 'Historial IA', active: activeTab === 'historial', id: 'historial', hidden: !canAccessFiles },
   ].filter(i => !i.hidden);
 
   const accountItems = [
