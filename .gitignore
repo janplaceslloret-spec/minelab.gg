@@ -1,0 +1,24 @@
+# Build artifacts (mantenemos dist/ commit en main porque Cloudflare lee de ahí)
+node_modules/
+.vite/
+
+# Local archive de scripts one-off
+.archive/
+
+# IDE / editors
+.vscode/
+.idea/
+.claude/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Env
+.env
+.env.local
+.env.*.local
