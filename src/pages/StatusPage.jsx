@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CheckCircle2, XCircle, Loader2, ChevronLeft, RefreshCw, Activity } from 'lucide-react';
+import { supabase } from '../supabaseClient';
 
-// Anon key de Supabase (pública, está en el bundle igualmente — solo para health check)
-const SB_ANON = 'sb_publishable_4_B13I-thS2UABc4mRzQ_FZThGcAm';
 const ENDPOINTS = [
   {
     id: 'api',
@@ -24,10 +23,13 @@ const ENDPOINTS = [
     id: 'auth',
     label: 'Sistema de cuentas',
     subtitle: 'Login con Google · Supabase Auth',
-    url: 'https://bttpqnuwspwlszzlapht.supabase.co/auth/v1/settings',
-    headers: { apikey: SB_ANON, Authorization: `Bearer ${SB_ANON}` },
-    parse: 'json',
-    test: (data) => !!data && (data.external || data.disable_signup !== undefined),
+    // Usamos el cliente Supabase ya configurado — getSession() no falla aunque no haya
+    // sesión, pero sí lo hace si Supabase Auth está caído. Así verificamos sin claves
+    // hardcoded ni CORS issues.
+    custom: async () => {
+      const { error } = await supabase.auth.getSession();
+      return !error;
+    },
   },
 ];
 
@@ -62,11 +64,22 @@ export default function StatusPage() {
   const runChecks = async () => {
     setStatuses(Object.fromEntries(ENDPOINTS.map(e => [e.id, 'loading'])));
     await Promise.all(ENDPOINTS.map(async (e) => {
-      // Si es self-check (este propio sitio), está OK por construcción
+      // Self-check (este propio sitio cargado = vivo)
       if (e.self) {
         setStatuses(prev => ({ ...prev, [e.id]: 'ok' }));
         return;
       }
+      // Custom probe (función async que devuelve true/false)
+      if (typeof e.custom === 'function') {
+        try {
+          const ok = await e.custom();
+          setStatuses(prev => ({ ...prev, [e.id]: ok ? 'ok' : 'fail' }));
+        } catch {
+          setStatuses(prev => ({ ...prev, [e.id]: 'fail' }));
+        }
+        return;
+      }
+      // Default: HTTP fetch
       try {
         const res = await fetch(e.url, {
           method: 'GET',
