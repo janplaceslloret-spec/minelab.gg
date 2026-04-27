@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Star, ShieldCheck, ChevronLeft, ChevronRight, Quote, Send, CheckCircle2, X, AlertCircle, PenLine } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Star, ShieldCheck, ChevronLeft, ChevronRight, Quote, Send, CheckCircle2, X, AlertCircle, PenLine, Lock } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 
 const STATIC_REVIEWS = [
@@ -123,124 +124,32 @@ const ReviewCard = ({ review, active }) => {
   );
 };
 
-/* ── Review submission modal ── */
-const RATING_LABELS = { 1: 'Muy malo', 2: 'Malo', 3: 'Normal', 4: 'Bueno', 5: '¡Excelente!' };
-
+/* ── Review modal: redirect to /panel since only paying customers can leave reviews ── */
 const ReviewModal = ({ onClose }) => {
-  const [rating, setRating] = useState(5);
-  const [name, setName] = useState('');
-  const [title, setTitle] = useState('');
-  const [body, setBody] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [error, setError] = useState('');
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    if (!name.trim()) { setError('Escribe tu nombre o apodo.'); return; }
-    if (!title.trim()) { setError('Añade un título a tu reseña.'); return; }
-    if (body.trim().length < 30) { setError('La reseña debe tener al menos 30 caracteres.'); return; }
-
-    setSubmitting(true);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const userId = session?.user?.id || null;
-      const isVerified = !!userId;
-
-      await supabase.from('reviews').insert({
-        user_id: userId,
-        author_name: name.trim(),
-        rating,
-        title: title.trim(),
-        body: body.trim(),
-        verified: isVerified,
-        approved: false,
-      });
-      setSubmitted(true);
-    } catch (err) {
-      setError('No se pudo enviar. Inténtalo más tarde.');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
       <div className="relative bg-[#0B0F1A] border border-white/10 rounded-2xl p-8 w-full max-w-lg shadow-2xl">
         <button onClick={onClose} className="absolute top-4 right-4 text-white/40 hover:text-white transition-colors"><X size={20} /></button>
-
-        {submitted ? (
-          <div className="flex flex-col items-center gap-5 text-center py-6">
-            <div className="w-14 h-14 rounded-full bg-accent-green/10 border border-accent-green/20 flex items-center justify-center">
-              <CheckCircle2 size={28} className="text-accent-green" />
-            </div>
-            <div>
-              <h3 className="text-white text-xl font-extrabold uppercase tracking-tight mb-2">¡Gracias, {name.split(' ')[0]}!</h3>
-              <p className="text-white/50 text-sm">Tu reseña ha sido recibida y se publicará tras una breve revisión. ¡Nos ayuda muchísimo!</p>
-            </div>
-            <StarRow rating={rating} size={20} />
-            <button onClick={onClose} className="px-6 py-2.5 bg-accent-green text-black font-bold rounded-xl text-sm hover:bg-[#16a34a] transition-colors">Cerrar</button>
+        <div className="flex flex-col items-center gap-5 text-center py-2">
+          <div className="w-14 h-14 rounded-full bg-accent-green/10 border border-accent-green/20 flex items-center justify-center">
+            <ShieldCheck size={28} className="text-accent-green" />
           </div>
-        ) : (
-          <>
-            <h3 className="text-white text-xl font-extrabold uppercase tracking-tight mb-1">Deja tu reseña</h3>
-            <p className="text-white/40 text-sm mb-6">Tu opinión ayuda a otros jugadores a elegir el mejor hosting.</p>
-
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-              <div className="flex flex-col gap-2">
-                <label className="text-white/60 text-xs font-bold uppercase tracking-wider">Puntuación</label>
-                <div className="flex items-center gap-3">
-                  <StarPicker value={rating} onChange={setRating} />
-                  <span className="text-white/50 text-sm">{RATING_LABELS[rating]}</span>
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-white/60 text-xs font-bold uppercase tracking-wider">Tu nombre o apodo</label>
-                <input
-                  type="text" value={name} onChange={e => setName(e.target.value)} maxLength={40}
-                  placeholder="Ej: Carlos M."
-                  className="bg-[#111827] border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-white/20 focus:outline-none focus:border-accent-green/40 transition-colors"
-                />
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-white/60 text-xs font-bold uppercase tracking-wider">Título</label>
-                <input
-                  type="text" value={title} onChange={e => setTitle(e.target.value)} maxLength={80}
-                  placeholder="Resume tu experiencia en una frase"
-                  className="bg-[#111827] border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-white/20 focus:outline-none focus:border-accent-green/40 transition-colors"
-                />
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-white/60 text-xs font-bold uppercase tracking-wider">Tu reseña</label>
-                <textarea
-                  value={body} onChange={e => setBody(e.target.value)} maxLength={600} rows={4}
-                  placeholder="Cuéntanos tu experiencia: rendimiento, soporte, panel..."
-                  className="bg-[#111827] border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-white/20 focus:outline-none focus:border-accent-green/40 transition-colors resize-none leading-relaxed"
-                />
-                <span className="text-white/20 text-xs text-right">{body.length}/600</span>
-              </div>
-
-              {error && (
-                <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-red-400 text-sm">
-                  <AlertCircle size={14} className="shrink-0" /> {error}
-                </div>
-              )}
-
-              <button
-                type="submit" disabled={submitting}
-                className="flex items-center justify-center gap-2 px-6 py-3.5 bg-accent-green hover:bg-[#16a34a] disabled:opacity-50 disabled:cursor-not-allowed text-black font-bold rounded-xl transition-all text-sm uppercase tracking-wide shadow-[0_0_20px_rgba(34,197,94,0.3)]"
-              >
-                {submitting ? <><div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin"></div>Enviando...</> : <><Send size={15} />Enviar reseña</>}
-              </button>
-              <p className="text-white/20 text-xs text-center">Las reseñas se publican tras revisión manual.</p>
-            </form>
-          </>
-        )}
+          <div>
+            <h3 className="text-white text-xl font-extrabold uppercase tracking-tight mb-2">Reseñas verificadas</h3>
+            <p className="text-white/60 text-sm leading-relaxed max-w-sm">
+              Solo nuestros clientes con plan activo pueden dejar una reseña. Esto garantiza que cada estrella es de alguien que <strong className="text-white">realmente ha usado MineLab</strong>.
+            </p>
+          </div>
+          <div className="flex flex-col gap-3 w-full max-w-xs">
+            <Link to="/panel" onClick={onClose} className="flex items-center justify-center gap-2 px-6 py-3 bg-accent-green hover:bg-[#16a34a] text-black font-bold rounded-xl text-sm uppercase tracking-wide transition-all shadow-[0_0_20px_rgba(34,197,94,0.3)]">
+              <PenLine size={15} /> Soy cliente — Escribir reseña
+            </Link>
+            <Link to="/configurar?plan=6gb&billing=monthly" onClick={onClose} className="flex items-center justify-center gap-2 px-6 py-2.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 hover:border-accent-green/30 rounded-xl text-sm transition-all">
+              Aún no soy cliente · Ver planes →
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );

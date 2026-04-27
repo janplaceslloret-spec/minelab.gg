@@ -60,22 +60,29 @@ const ReviewView = ({ user, planStatus }) => {
         user?.email?.split('@')[0] ||
         'Usuario MineLab';
 
-      const { error: insertError } = await supabase.from('reviews').insert({
-        user_id: user?.id || null,
-        author_name: displayName,
-        rating,
-        title: title.trim(),
-        body: body.trim(),
-        plan: planStatus,
-        verified: true,
-        approved: false, // pendiente de moderación
+      // Submit via mc-api: el backend valida plan + auto-aprueba para clientes verificados
+      const r = await fetch('https://api.fluxoai.co/api/reviews/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: user?.id,
+          author_name: displayName,
+          rating,
+          title: title.trim(),
+          body: body.trim(),
+          plan: planStatus,
+        }),
       });
-
-      if (insertError) throw insertError;
+      const j = await r.json();
+      if (!r.ok) {
+        if (r.status === 409) throw new Error('Ya tienes una reseña enviada. Si quieres cambiarla, contacta soporte.');
+        if (r.status === 403) throw new Error('Necesitas un plan activo para dejar una reseña.');
+        throw new Error(j.error || 'No se pudo enviar la reseña.');
+      }
       setSubmitted(true);
     } catch (err) {
       console.error('Error submitting review:', err);
-      setError('No se pudo enviar la reseña. Inténtalo de nuevo más tarde.');
+      setError(err.message || 'No se pudo enviar la reseña. Inténtalo de nuevo más tarde.');
     } finally {
       setSubmitting(false);
     }
