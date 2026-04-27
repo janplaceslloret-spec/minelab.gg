@@ -37,7 +37,6 @@ export default defineConfig({
             './src/components/dashboard/PlayersView.jsx',
             './src/components/dashboard/SettingsView.jsx',
             './src/components/dashboard/AIAssistantSidebar.jsx',
-            './src/components/dashboard/CreateServerWizard.jsx',
           ],
         }
       }
