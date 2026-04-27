@@ -340,7 +340,7 @@ export default function AternosVsMinelab() {
                 <div className="col-span-2 rounded-2xl border border-accent-green/30 bg-gradient-to-br from-accent-green/15 to-transparent p-6">
                   <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-accent-green/90">Uptime real</p>
                   <p className="font-heading text-5xl md:text-6xl font-black text-white mt-1"><Counter to={99} suffix="," />995<span className="text-accent-green">%</span></p>
-                  <p className="text-xs text-white/50 mt-1">VPS dedicada · Hetzner Núremberg</p>
+                  <p className="text-xs text-white/50 mt-1">Servidor dedicado · datacenter Europa</p>
                 </div>
                 <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
                   <Cpu size={18} className="text-accent-violet mb-2" />

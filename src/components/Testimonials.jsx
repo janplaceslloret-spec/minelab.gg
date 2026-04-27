@@ -45,7 +45,7 @@ const STATIC_REVIEWS = [
     avatar: 'SG',
     rating: 4,
     title: 'Muy buena relación calidad-precio',
-    body: 'Comparado con otros hostings que probé antes, MineLab ofrece mejor hardware por el mismo precio. Los AMD EPYC se notan mucho en el rendimiento de Java. Llegaré para renovar sin duda.',
+    body: 'Comparado con otros hostings que probé antes, MineLab ofrece mejor hardware por el mismo precio. Los procesadores AMD se notan mucho en el rendimiento de Java. Llegaré para renovar sin duda.',
     date: '22 mar 2026',
     plan: 'Pro 6GB',
     verified: true,

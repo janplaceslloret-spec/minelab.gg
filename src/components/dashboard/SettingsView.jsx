@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Shield, Zap, Settings, FolderSync, Copy, Check, RefreshCw, Loader2, Eye, EyeOff, Plug, ArrowUpRight, TrendingUp } from 'lucide-react';
+import { User, Shield, Zap, Settings, FolderSync, Copy, Check, RefreshCw, Loader2, Eye, EyeOff, Plug, ArrowUpRight, TrendingUp, Sparkles } from 'lucide-react';
 import { supabase } from '../../supabaseClient';
 import MembersCard from './MembersCard';
 
@@ -136,10 +136,20 @@ const SettingsView = ({ planStatus, user, server, onServerUpdate, memberRole = '
               <span className="text-[#6B6B6B] text-[10px] uppercase font-bold tracking-widest">Correo Electrónico</span>
               <span className="text-[#E5E5E5] font-medium">{user?.email || 'No disponible'}</span>
             </div>
-            <div className="flex flex-col gap-1 pb-4">
+            <div className="flex flex-col gap-1 pb-4 border-b border-[#2A2A2A]">
               <span className="text-[#6B6B6B] text-[10px] uppercase font-bold tracking-widest">ID de Cuenta (UUID)</span>
               <span className="text-[#B3B3B3] font-mono text-xs truncate select-all">{user?.id}</span>
             </div>
+            <button
+              onClick={() => {
+                localStorage.removeItem('minelab-welcome-seen');
+                window.location.reload();
+              }}
+              className="mt-2 w-full flex items-center justify-center gap-2 bg-[#22C55E]/10 hover:bg-[#22C55E]/20 border border-[#22C55E]/30 text-[#22C55E] py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-colors"
+            >
+              <Sparkles size={12} />
+              Ver tour de bienvenida otra vez
+            </button>
           </div>
         </div>
 

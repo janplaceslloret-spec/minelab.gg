@@ -6,7 +6,6 @@ import MainContent from './MainContent';
 import WelcomeTour from './WelcomeTour';
 import AIAssistantSidebar from './AIAssistantSidebar';
 import EmptyServerState from './EmptyServerState';
-import CreateServerWizard from './CreateServerWizard';
 import InviteAcceptModal from './InviteAcceptModal';
 import { Loader2, MessageCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -642,13 +641,6 @@ const DashboardLayout = () => {
       <div className="flex-1 flex min-w-0 h-screen overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-800 relative">
         {viewState === 'empty' && (
           <EmptyServerState onStartWizard={handleCreateServer} />
-        )}
-
-        {viewState === 'wizard' && (
-          <CreateServerWizard user={user} onFinish={() => {
-            navigate('/panel');
-            setViewState('dashboard');
-          }} />
         )}
 
         {viewState === 'dashboard' && (

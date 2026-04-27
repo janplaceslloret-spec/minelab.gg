@@ -92,20 +92,20 @@ const Pricing = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
             Planes con especificaciones técnicas claras y máximo rendimiento para tu servidor.
           </p>
 
-          {/* Real infrastructure badge */}
+          {/* Infrastructure highlights */}
           <div className="mt-6 inline-flex flex-wrap justify-center gap-3 text-xs font-mono text-white/50">
             <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
               <span className="w-1.5 h-1.5 rounded-full bg-accent-green animate-pulse"></span>
-              Hetzner CX53
+              Servidores Premium 24/7
             </span>
             <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
-              ⚡ AMD EPYC · 16 vCPU
+              ⚡ Procesador AMD de última generación
             </span>
             <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
-              💾 NVMe SSD · 320 GB
+              💾 Almacenamiento NVMe ultra-rápido
             </span>
             <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
-              🌐 1 Gbps · Nuremberg 🇩🇪
+              🌐 1 Gbps · Datacenter Europa 🇪🇺
             </span>
           </div>
 
@@ -180,12 +180,14 @@ const Pricing = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
               <ul className="space-y-4 mb-8 flex-1">
                 {[
                   `${plan.name} RAM dedicada`,
-                  "Procesador AMD EPYC (Hetzner CX53)",
+                  "Procesador AMD de última generación",
                   "1 Gbps de ancho de banda",
-                  "Almacenamiento NVMe SSD local",
-                  "Datacenter Nuremberg, Alemania 🇩🇪",
-                  "Backups disponibles",
-                  "Compatible con Paper, Forge, Fabric y Vanilla"
+                  "Almacenamiento NVMe ultra-rápido",
+                  "Datacenter Europa 🇪🇺 · baja latencia",
+                  "Protección Anti-DDoS incluida",
+                  "Backups automáticos diarios",
+                  "Asistente IA · gestión total por chat",
+                  "Compatible con Paper, Forge, Fabric, NeoForge y Vanilla"
                 ].map((feat, f_idx) => (
                   <li key={f_idx} className="flex items-start gap-3 justify-start text-white/80 text-[13px] text-left">
                     <Check size={16} className={`shrink-0 mt-0.5 ${plan.popular ? 'text-accent-green' : 'text-white/40'}`} />

@@ -46,8 +46,8 @@ const Locations = () => {
                       <div className="absolute inset-0 bg-accent-green animate-ping rounded-full opacity-75"></div>
                     </div>
                     <div>
-                      <h4 className="text-white font-bold text-sm">Alemania — Núremberg 🇩🇪</h4>
-                      <p className="text-white/50 text-xs">AMD EPYC · 16 vCPU / NVMe SSD 320 GB</p>
+                      <h4 className="text-white font-bold text-sm">Europa 🇪🇺</h4>
+                      <p className="text-white/50 text-xs">AMD última generación · NVMe ultra-rápido</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-1 text-accent-green text-xs font-bold uppercase tracking-wider bg-accent-green/10 px-2 py-1 rounded-md">
