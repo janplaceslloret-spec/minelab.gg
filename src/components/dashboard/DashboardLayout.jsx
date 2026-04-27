@@ -3,6 +3,7 @@ import { supabase } from '../../supabaseClient';
 import { createClient } from '@supabase/supabase-js';
 import Sidebar from './Sidebar';
 import MainContent from './MainContent';
+import WelcomeTour from './WelcomeTour';
 import AIAssistantSidebar from './AIAssistantSidebar';
 import EmptyServerState from './EmptyServerState';
 import CreateServerWizard from './CreateServerWizard';
@@ -722,6 +723,7 @@ const DashboardLayout = () => {
             />
             {(planStatus !== 'none' || sharedServers.length > 0) && <AIAssistantSidebar activeServer={activeServer} user={user} />}
             <DiscordWidget className="bottom-6 right-[380px]" />
+            <WelcomeTour user={user} server={activeServer} />
           </>
         )}
 
