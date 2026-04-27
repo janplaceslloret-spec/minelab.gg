@@ -16,7 +16,7 @@ const Pricing = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
   // Click en COMPRAR → navega a /configurar con el plan + ciclo preseleccionados.
   // El usuario rellena el form y luego desde allí salta a Stripe (con auth si hace falta).
   const handleSubscribe = (_stripeUrl, ramGb) => {
-    const planMap = { 4: '4gb', 6: '6gb', 8: '8gb', 12: '12gb' };
+    const planMap = { 4: '4gb', 6: '6gb', 8: '8gb', 12: '12gb', 16: '16gb' };
     const planId = planMap[ramGb] || '6gb';
     navigate(`/configurar?plan=${planId}&billing=${billing}`);
   };
@@ -25,47 +25,49 @@ const Pricing = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
     {
       name: "4GB RAM",
       ramGb: 4,
-      originalPrice: "8€",
-      monthlyPrice: "5€",
-      annualPrice: "60€",
-      monthlyEquiv: "5€",
+      originalPrice: "12€",
+      monthlyPrice: "7,99€",
+      annualPrice: "87,99€",
+      monthlyEquiv: "7,33€",
       popular: false,
-      stripeMonthly: "https://buy.stripe.com/8x228s2LKcZN3lK3As3AY01",
-      stripeAnnual: "https://buy.stripe.com/fZu28s8641h54pOdb23AY0a",
+      stripeMonthly: "https://buy.stripe.com/14AbJ23PO9NB1dC0og3AY0e",
+      stripeAnnual: "https://buy.stripe.com/00w4gAbig6BpbSg4Ew3AY0j",
     },
     {
       name: "6GB RAM",
       ramGb: 6,
-      originalPrice: "10€",
-      monthlyPrice: "7€",
-      annualPrice: "84€",
-      monthlyEquiv: "7€",
+      originalPrice: "15€",
+      monthlyPrice: "10,99€",
+      annualPrice: "120,99€",
+      monthlyEquiv: "10,08€",
       popular: true,
-      stripeMonthly: "https://buy.stripe.com/4gM5kE1HG6Bpg8w7QI3AY02",
-      stripeAnnual: "https://buy.stripe.com/4gMaEY4TS0d1e0ogne3AY0b",
+      stripeMonthly: "https://buy.stripe.com/00w00k2LK1h59K80og3AY0f",
+      stripeAnnual: "https://buy.stripe.com/eVq4gA5XWaRFaOcc6Y3AY0k",
     },
     {
       name: "8GB RAM",
       ramGb: 8,
-      originalPrice: "13€",
-      monthlyPrice: "10€",
-      annualPrice: "120€",
-      monthlyEquiv: "10€",
+      originalPrice: "19€",
+      monthlyPrice: "14,99€",
+      annualPrice: "164,99€",
+      monthlyEquiv: "13,75€",
       popular: false,
-      stripeMonthly: "https://buy.stripe.com/14AdRa2LK2l99K8gne3AY03",
-      stripeAnnual: "https://buy.stripe.com/eVq7sM9a8aRF4pOc6Y3AY0c",
+      stripeMonthly: "https://buy.stripe.com/00w8wQbigf7V9K86ME3AY0g",
+      stripeAnnual: "https://buy.stripe.com/fZu8wQ864aRF3lKb2U3AY0l",
     },
     {
       name: "12GB RAM",
       ramGb: 12,
-      originalPrice: "18€",
-      monthlyPrice: "15€",
-      annualPrice: "180€",
-      monthlyEquiv: "15€",
+      originalPrice: "26€",
+      monthlyPrice: "21,99€",
+      annualPrice: "241,99€",
+      monthlyEquiv: "20,17€",
       popular: false,
-      stripeMonthly: "https://buy.stripe.com/bJe7sM1HGe3R3lK2wo3AY05",
-      stripeAnnual: "https://buy.stripe.com/8x28wQ864f7V3lKfja3AY0d",
-    }
+      stripeMonthly: "https://buy.stripe.com/14A3cw9a86Bp7C01sk3AY0h",
+      stripeAnnual: "https://buy.stripe.com/fZu8wQ9a8bVJ5tSb2U3AY0m",
+    },
+    // Pro 16GB no se muestra en la landing (UX limpio con 4 planes en grid).
+    // Disponible desde /configurar?plan=16gb.
   ];
 
   useEffect(() => {

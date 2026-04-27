@@ -9,52 +9,68 @@ import { supabase } from '../supabaseClient';
 const VERSIONS_API = 'https://api.fluxoai.co/api/versions';
 const DRAFT_KEY = 'minelab-order-draft';
 
-/* ═══ CATALOG ═══ */
+/* ═══ CATALOG ═══
+ * Pricing v2 (lanzamiento 2026-04-27): subida de precios para sostener
+ * el coste real de la VPS + soporte. Clientes anteriores quedan con su
+ * tarifa congelada via grandfathering (Founder Member).
+ * Annual = 11× monthly = 1 mes gratis.
+ */
 const PLANS = {
   '4gb': {
     id: '4gb',
     ram: 4,
     name: 'Pro 4 GB',
-    monthly: 5,
-    annual: 60,
-    monthlyEq: 5,
-    originalMonthly: 8,
-    stripeMonthly: 'https://buy.stripe.com/8x228s2LKcZN3lK3As3AY01',
-    stripeAnnual:  'https://buy.stripe.com/fZu28s8641h54pOdb23AY0a',
+    monthly: 7.99,
+    annual: 87.99,
+    monthlyEq: 7.33,
+    originalMonthly: 12,
+    stripeMonthly: 'https://buy.stripe.com/14AbJ23PO9NB1dC0og3AY0e',
+    stripeAnnual:  'https://buy.stripe.com/00w4gAbig6BpbSg4Ew3AY0j',
   },
   '6gb': {
     id: '6gb',
     ram: 6,
     name: 'Pro 6 GB',
-    monthly: 7,
-    annual: 84,
-    monthlyEq: 7,
-    originalMonthly: 10,
+    monthly: 10.99,
+    annual: 120.99,
+    monthlyEq: 10.08,
+    originalMonthly: 15,
     popular: true,
-    stripeMonthly: 'https://buy.stripe.com/4gM5kE1HG6Bpg8w7QI3AY02',
-    stripeAnnual:  'https://buy.stripe.com/4gMaEY4TS0d1e0ogne3AY0b',
+    stripeMonthly: 'https://buy.stripe.com/00w00k2LK1h59K80og3AY0f',
+    stripeAnnual:  'https://buy.stripe.com/eVq4gA5XWaRFaOcc6Y3AY0k',
   },
   '8gb': {
     id: '8gb',
     ram: 8,
     name: 'Pro 8 GB',
-    monthly: 10,
-    annual: 120,
-    monthlyEq: 10,
-    originalMonthly: 13,
-    stripeMonthly: 'https://buy.stripe.com/14AdRa2LK2l99K8gne3AY03',
-    stripeAnnual:  'https://buy.stripe.com/eVq7sM9a8aRF4pOc6Y3AY0c',
+    monthly: 14.99,
+    annual: 164.99,
+    monthlyEq: 13.75,
+    originalMonthly: 19,
+    stripeMonthly: 'https://buy.stripe.com/00w8wQbigf7V9K86ME3AY0g',
+    stripeAnnual:  'https://buy.stripe.com/fZu8wQ864aRF3lKb2U3AY0l',
   },
   '12gb': {
     id: '12gb',
     ram: 12,
     name: 'Pro 12 GB',
-    monthly: 15,
-    annual: 180,
-    monthlyEq: 15,
-    originalMonthly: 18,
-    stripeMonthly: 'https://buy.stripe.com/bJe7sM1HGe3R3lK2wo3AY05',
-    stripeAnnual:  'https://buy.stripe.com/8x28wQ864f7V3lKfja3AY0d',
+    monthly: 21.99,
+    annual: 241.99,
+    monthlyEq: 20.17,
+    originalMonthly: 26,
+    stripeMonthly: 'https://buy.stripe.com/14A3cw9a86Bp7C01sk3AY0h',
+    stripeAnnual:  'https://buy.stripe.com/fZu8wQ9a8bVJ5tSb2U3AY0m',
+  },
+  '16gb': {
+    id: '16gb',
+    ram: 16,
+    name: 'Pro 16 GB',
+    monthly: 24.99,
+    annual: 274.99,
+    monthlyEq: 22.92,
+    originalMonthly: 30,
+    stripeMonthly: 'https://buy.stripe.com/3cI6oIfyw6Bp1dCc6Y3AY0i',
+    stripeAnnual:  'https://buy.stripe.com/00w8wQeusgbZ7C09YQ3AY0n',
   },
 };
 
