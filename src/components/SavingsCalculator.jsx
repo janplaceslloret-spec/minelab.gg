@@ -20,8 +20,8 @@ export default function SavingsCalculator() {
   const { aternosCost, minelabCost, savings } = useMemo(() => {
     // Apex Hosting precios reales (USD→EUR aprox, 2026)
     const apexBase = ram <= 4 ? 16.99 : ram <= 6 ? 24.99 : ram <= 8 ? 32.99 : 44.99;
-    // MineLab precios del Pricing del sitio
-    const minelabBase = ram <= 4 ? 5 : ram <= 6 ? 7 : ram <= 8 ? 10 : 15;
+    // MineLab precios v2 (4GB=7,99€ · 6GB=10,99€ · 8GB=14,99€ · 12GB=21,99€ · 16GB=24,99€)
+    const minelabBase = ram <= 4 ? 7.99 : ram <= 6 ? 10.99 : ram <= 8 ? 14.99 : ram <= 12 ? 21.99 : 24.99;
     return { aternosCost: apexBase, minelabCost: minelabBase, savings: Math.max(0, apexBase - minelabBase) };
   }, [ram]);
 

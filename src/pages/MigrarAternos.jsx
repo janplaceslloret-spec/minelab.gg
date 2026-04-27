@@ -120,7 +120,7 @@ export default function MigrarAternos() {
                 </div>
                 <div className="mt-5 pt-4 border-t border-white/5 flex items-center justify-between text-xs">
                   <span className="text-white/50">Soporte español 24/7</span>
-                  <span className="text-accent-green font-bold">desde 5€/mes</span>
+                  <span className="text-accent-green font-bold">desde 7,99€/mes</span>
                 </div>
               </div>
             </div>

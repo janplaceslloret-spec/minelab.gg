@@ -81,7 +81,7 @@ const Navbar = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
                     </div>
                     <div className="flex-1">
                       <p className="font-heading font-black text-white uppercase tracking-tight text-sm">Minecraft Hosting</p>
-                      <p className="text-[10px] text-white/50 leading-tight mt-0.5 uppercase tracking-wide">Planes desde 5€/mes</p>
+                      <p className="text-[10px] text-white/50 leading-tight mt-0.5 uppercase tracking-wide">Planes desde 7,99€/mes</p>
                     </div>
                   </a>
 

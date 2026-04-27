@@ -209,7 +209,7 @@ export default function StatusPage() {
             <p className="text-[10px] uppercase font-black text-accent-green tracking-[0.2em] mb-2">¿Aún no tienes server?</p>
             <p className="font-black text-white uppercase tracking-tight mb-1">Crear servidor →</p>
             <p className="text-white/60 text-sm">
-              Desde 5€/mes. IA gestiona los plugins, mods y errores.
+              Desde 7,99€/mes. IA gestiona los plugins, mods y errores.
             </p>
           </Link>
         </div>

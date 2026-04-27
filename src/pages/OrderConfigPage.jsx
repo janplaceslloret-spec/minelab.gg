@@ -337,10 +337,11 @@ const OrderConfigPage = () => {
   }, [continueFlag, user]);
 
   /* Pricing computation (frontend, stays in sync with backend Stripe products) */
+  const fmtEur = (n) => n.toFixed(2).replace('.', ',');
   const subtotal = isAnnual ? plan.annual : plan.monthly;
-  const discount = 0; // Coupons not active yet
+  const discount = 0; // Stripe checkout aplica el cupón (allow_promotion_codes=true)
   const totalToday = subtotal - discount;
-  const renewal = isAnnual ? `${plan.annual}€/año` : `${plan.monthly}€/mes`;
+  const renewal = isAnnual ? `${fmtEur(plan.annual)}€/año` : `${fmtEur(plan.monthly)}€/mes`;
   const savingPct = isAnnual
     ? Math.round((1 - (plan.monthlyEq * 12) / (plan.originalMonthly * 12)) * 100)
     : Math.round((1 - plan.monthly / plan.originalMonthly) * 100);
@@ -502,7 +503,7 @@ const OrderConfigPage = () => {
                         {p.ram} GB
                       </p>
                       <p className="text-[#8B8B8B] text-xs">
-                        Desde {p.monthlyEq}€/mes
+                        {p.monthly.toFixed(2).replace('.', ',')}€/mes
                       </p>
                     </button>
                   );
@@ -519,7 +520,7 @@ const OrderConfigPage = () => {
                   }`}
                 >
                   <p className="font-black text-sm uppercase tracking-tight text-white mb-1">Mensual</p>
-                  <p className="text-[#8B8B8B] text-xs">{plan.monthly}€/mes · cancela cuando quieras</p>
+                  <p className="text-[#8B8B8B] text-xs">{plan.monthly.toFixed(2).replace('.', ',')}€/mes · cancela cuando quieras</p>
                 </button>
                 <button
                   onClick={() => setBilling('annual')}
@@ -533,7 +534,7 @@ const OrderConfigPage = () => {
                     1 solo pago
                   </span>
                   <p className="font-black text-sm uppercase tracking-tight text-white mb-1">Anual</p>
-                  <p className="text-[#8B8B8B] text-xs">{plan.annual}€/año · {plan.monthlyEq}€/mes equivalentes</p>
+                  <p className="text-[#8B8B8B] text-xs">{plan.annual.toFixed(2).replace('.', ',')}€/año · {plan.monthlyEq.toFixed(2).replace('.', ',')}€/mes equiv.</p>
                 </button>
               </div>
             </Section>
@@ -719,27 +720,17 @@ const OrderConfigPage = () => {
               </div>
             </Section>
 
-            {/* Coupon (placeholder) */}
+            {/* Coupon — el código real se introduce en Stripe Checkout */}
             <Section number="07" title="¿Tienes un cupón?">
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={coupon}
-                  onChange={e => setCoupon(e.target.value)}
-                  placeholder="Próximamente…"
-                  disabled
-                  className="flex-1 bg-[#0F0F0F] border-2 border-[#1F1F1F] rounded-xl px-4 py-3 text-white placeholder-[#4B4B4B] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
-                />
-                <button
-                  disabled
-                  className="px-5 py-3 rounded-xl border-2 border-[#1F1F1F] text-[#6B6B6B] text-xs font-black uppercase tracking-[0.15em] disabled:cursor-not-allowed"
-                >
-                  Canjear
-                </button>
+              <div className="rounded-xl border-2 border-[#22C55E]/20 bg-[#22C55E]/5 px-4 py-4 flex items-start gap-3">
+                <Tag size={16} className="text-[#22C55E] shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm text-white font-bold mb-1">Aplica tu código en el pago</p>
+                  <p className="text-xs text-[#B3B3B3] leading-relaxed">
+                    En la pantalla de Stripe verás el campo <span className="text-[#22C55E] font-bold">"Add promotion code"</span>. Escribe ahí tu código (ej. <span className="font-mono text-[#22C55E]">BETA30</span>, <span className="font-mono text-[#22C55E]">TIKTOK50</span>) y se aplica al instante.
+                  </p>
+                </div>
               </div>
-              <p className="text-xs text-[#6B6B6B] mt-2 flex items-center gap-1.5">
-                <Tag size={11} /> Estamos preparando códigos de lanzamiento.
-              </p>
             </Section>
 
             {/* Mobile-only checkout button */}
@@ -752,7 +743,7 @@ const OrderConfigPage = () => {
                   : 'bg-white/5 text-[#4B4B4B] cursor-not-allowed'
               }`}
             >
-              {submitting ? <><Loader2 size={14} className="animate-spin" /> Procesando…</> : <>Continuar al pago · {totalToday}€ <ArrowRight size={14} strokeWidth={3} /></>}
+              {submitting ? <><Loader2 size={14} className="animate-spin" /> Procesando…</> : <>Continuar al pago · {fmtEur(totalToday)}€ <ArrowRight size={14} strokeWidth={3} /></>}
             </button>
           </div>
 
@@ -773,7 +764,7 @@ const OrderConfigPage = () => {
                     <p className="text-white font-black text-base uppercase tracking-tight">{plan.name}</p>
                     <p className="text-[#8B8B8B] text-xs mt-0.5">{isAnnual ? 'Anual' : 'Mensual'} · auto-renovable</p>
                   </div>
-                  <p className="text-white font-black text-lg">{subtotal}€</p>
+                  <p className="text-white font-black text-lg">{fmtEur(subtotal)}€</p>
                 </div>
 
                 {/* Features list */}
@@ -816,7 +807,7 @@ const OrderConfigPage = () => {
               <div className="px-5 py-4 space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-[#B3B3B3]">Subtotal</span>
-                  <span className="text-white font-bold">{subtotal}€</span>
+                  <span className="text-white font-bold">{fmtEur(subtotal)}€</span>
                 </div>
                 {savingPct > 0 && (
                   <div className="flex justify-between text-sm">
@@ -829,7 +820,7 @@ const OrderConfigPage = () => {
                 {discount > 0 && (
                   <div className="flex justify-between text-sm">
                     <span className="text-[#22C55E]">Cupón</span>
-                    <span className="text-[#22C55E] font-bold">-{discount}€</span>
+                    <span className="text-[#22C55E] font-bold">-{fmtEur(discount)}€</span>
                   </div>
                 )}
               </div>
@@ -838,7 +829,7 @@ const OrderConfigPage = () => {
               <div className="px-5 py-4 border-t border-white/5 bg-[#0A0A0A]">
                 <div className="flex justify-between items-end mb-1">
                   <span className="text-[10px] uppercase font-black text-[#22C55E] tracking-[0.2em]">Total hoy</span>
-                  <span className="text-white font-black text-3xl tracking-tight">{totalToday}€</span>
+                  <span className="text-white font-black text-3xl tracking-tight">{fmtEur(totalToday)}€</span>
                 </div>
                 <p className="text-[10px] text-[#6B6B6B] uppercase tracking-wider">
                   Renovación: {renewal}
