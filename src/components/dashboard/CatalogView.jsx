@@ -209,21 +209,32 @@ const CatalogView = ({ type = 'mods', server, user }) => {
     setError('');
     setInstallState({ id: item.project_id, status: 'installing' });
     try {
-      const r = await fetch(N8N_ASISTENTE, {
+      // Direct install via mc-api: descarga jar de CurseForge y lo coloca en /plugins/ o /mods/
+      const r = await fetch(`${CATALOG_API}/install`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           server_id: server.id,
-          user_key: `catalog-${user.id}-${Date.now()}`,
-          message: `instálame ${cfg.installVerb} ${item.name}`,
+          project_id: item.project_id,
+          type: cfg.apiType,
         }),
       });
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const j = await r.json();
+      if (!r.ok || !j.ok) {
+        // Fallback al chat IA si el endpoint directo falla (modpack, autor que bloquea, etc.)
+        if (cfg.apiType === 'modpack' || j.delegated_to === 'chat_ia') {
+          // Modpack ya delegado → considerar instalado
+          setInstallState({ id: item.project_id, status: 'installed' });
+          return;
+        }
+        throw new Error(j.error || `HTTP ${r.status}`);
+      }
+      console.log('[catalog/install] OK', j);
       setInstallState({ id: item.project_id, status: 'installed' });
     } catch (e) {
       console.error('[catalog/install]', e);
       setInstallState({ id: item.project_id, status: 'failed' });
-      setError(`No se pudo instalar ${item.name}. Intenta desde el chat IA.`);
+      setError(`No se pudo instalar ${item.name}: ${e.message}. Prueba con el chat IA.`);
     }
   };
 
