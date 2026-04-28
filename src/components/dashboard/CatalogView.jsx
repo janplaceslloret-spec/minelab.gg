@@ -5,15 +5,18 @@ const N8N_ASISTENTE = 'https://snack55-n8n1.q7pa8v.easypanel.host/webhook/asiste
 const CATALOG_API = 'https://api.fluxoai.co/api/catalog';
 
 const TYPE_CONFIG = {
-  mods:     { title: 'Mods', subtitle: 'Catálogo en vivo · Modrinth + CurseForge combinados · 200.000+ mods', icon: <Wrench size={28} className="text-[#22C55E]" />, apiType: 'mod', installVerb: 'el mod' },
-  plugins:  { title: 'Plugins', subtitle: 'Catálogo en vivo · todos los plugins de Modrinth + CurseForge para Paper/Spigot', icon: <Puzzle size={28} className="text-[#22C55E]" />, apiType: 'plugin', installVerb: 'el plugin' },
-  modpacks: { title: 'Modpacks', subtitle: 'Modpacks completos · ATM, RLCraft, Vault Hunters y miles más · 1-click install', icon: <Package size={28} className="text-[#22C55E]" />, apiType: 'modpack', installVerb: 'el modpack' },
+  mods:     { title: 'Mods', subtitle: 'Catálogo completo de CurseForge · 200.000+ mods compatibles con Fabric, Forge y NeoForge', icon: <Wrench size={28} className="text-[#22C55E]" />, apiType: 'mod', installVerb: 'el mod' },
+  plugins:  { title: 'Plugins', subtitle: 'Catálogo completo de Bukkit/Spigot/Paper plugins desde CurseForge', icon: <Puzzle size={28} className="text-[#22C55E]" />, apiType: 'plugin', installVerb: 'el plugin' },
+  modpacks: { title: 'Modpacks', subtitle: '10.000+ modpacks: ATM, RLCraft, Vault Hunters, Cobblemon… 1-click install', icon: <Package size={28} className="text-[#22C55E]" />, apiType: 'modpack', installVerb: 'el modpack' },
 };
 
-const SOURCE_BADGE = {
-  modrinth: { label: 'Modrinth', cls: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' },
-  curseforge: { label: 'CurseForge', cls: 'bg-orange-500/15 text-orange-300 border-orange-500/30' },
-};
+const SORT_OPTIONS = [
+  { value: 'popular', label: 'Más populares' },
+  { value: 'featured', label: 'Destacados' },
+  { value: 'updated', label: 'Actualizados' },
+  { value: 'created', label: 'Más nuevos' },
+  { value: 'name', label: 'Alfabético' },
+];
 
 // Server type → loader que pasamos a Modrinth
 const LOADER_MAP = {
@@ -61,11 +64,6 @@ const CatalogCard = ({ item, server, onInstall, installState }) => {
         {item.downloads >= 1e6 && (
           <span className="absolute top-3 right-3 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-[#22C55E]/15 text-[#22C55E] border border-[#22C55E]/30">
             🔥 Popular
-          </span>
-        )}
-        {SOURCE_BADGE[item.source] && (
-          <span className={`absolute top-3 left-3 text-[9px] font-black uppercase tracking-wider px-2 py-1 rounded-full border ${SOURCE_BADGE[item.source].cls}`}>
-            {SOURCE_BADGE[item.source].label}
           </span>
         )}
       </div>
@@ -125,6 +123,7 @@ const CatalogView = ({ type = 'mods', server, user }) => {
   const [error, setError] = useState('');
   const [stale, setStale] = useState(false);
   const [filterByVersion, setFilterByVersion] = useState(true);
+  const [sortBy, setSortBy] = useState('popular');
   const [installState, setInstallState] = useState({ id: null, status: null });
   const debounceRef = useRef(null);
   const PAGE_SIZE = 20;
@@ -152,6 +151,7 @@ const CatalogView = ({ type = 'mods', server, user }) => {
       q: debouncedSearch,
       offset: '0',
       limit: String(PAGE_SIZE),
+      sort: sortBy,
     });
     if (loader) params.set('loader', loader);
     if (version) params.set('version', version);
@@ -174,7 +174,7 @@ const CatalogView = ({ type = 'mods', server, user }) => {
       .finally(() => { if (!aborted) setLoading(false); });
 
     return () => { aborted = true; };
-  }, [type, debouncedSearch, server?.server_type, server?.mc_version, filterByVersion]);
+  }, [type, debouncedSearch, server?.server_type, server?.mc_version, filterByVersion, sortBy]);
 
   const loadMore = async () => {
     if (loadingMore || items.length >= total) return;
@@ -186,6 +186,7 @@ const CatalogView = ({ type = 'mods', server, user }) => {
       q: debouncedSearch,
       offset: String(offset),
       limit: String(PAGE_SIZE),
+      sort: sortBy,
     });
     if (loader) params.set('loader', loader);
     if (version) params.set('version', version);
@@ -255,7 +256,7 @@ const CatalogView = ({ type = 'mods', server, user }) => {
                 Tu server: <span className="text-[#22C55E] font-bold">{server.server_type} {server.mc_version}</span>
               </span>
               {total > 0 && (
-                <span className="text-white/40">· <span className="text-white">{formatNum(total)}</span> resultados <span className="text-emerald-400/70">Modrinth</span> + <span className="text-orange-400/70">CurseForge</span></span>
+                <span className="text-white/40">· <span className="text-white">{formatNum(total)}</span> resultados desde <span className="text-orange-400/70">CurseForge</span></span>
               )}
               {stale && (
                 <span className="text-amber-400/80 flex items-center gap-1.5">
@@ -284,6 +285,15 @@ const CatalogView = ({ type = 'mods', server, user }) => {
             </button>
           )}
         </div>
+        <select
+          value={sortBy}
+          onChange={e => setSortBy(e.target.value)}
+          className="shrink-0 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider bg-[#0F0F0F] text-white border border-[#1F1F1F] hover:border-white/20 cursor-pointer transition-all focus:outline-none focus:border-[#22C55E]/40"
+        >
+          {SORT_OPTIONS.map(o => (
+            <option key={o.value} value={o.value} className="bg-[#0F0F0F]">{o.label}</option>
+          ))}
+        </select>
         <button
           onClick={() => setFilterByVersion(v => !v)}
           className={`shrink-0 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all border whitespace-nowrap
@@ -359,11 +369,10 @@ const CatalogView = ({ type = 'mods', server, user }) => {
 
       {/* Footer hint */}
       <div className="mt-4 flex items-center gap-3 bg-[#0F0F0F] border border-[#1F1F1F] rounded-xl px-5 py-4 text-white/55 text-xs">
-        <ExternalLink size={14} className="text-[#22C55E] shrink-0" />
+        <ExternalLink size={14} className="text-orange-400 shrink-0" />
         <span>
-          Catálogo conectado en vivo a <a href="https://modrinth.com" target="_blank" rel="noreferrer" className="text-[#22C55E] hover:underline">Modrinth</a>.
-          Si el {type === 'plugins' ? 'plugin' : type === 'modpacks' ? 'modpack' : 'mod'} que buscas está en CurseForge, usa el chat IA con
-          "<em>instálame [nombre]</em>" — la IA lo busca y descarga.
+          Catálogo conectado en vivo a <a href="https://www.curseforge.com" target="_blank" rel="noreferrer" className="text-orange-300 hover:underline">CurseForge</a>.
+          Click "Instalar" y la IA descarga + configura automáticamente. Si pasa cualquier cosa rara, usa el chat IA.
         </span>
       </div>
     </div>
