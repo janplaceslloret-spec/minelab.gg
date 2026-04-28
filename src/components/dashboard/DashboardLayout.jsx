@@ -52,11 +52,16 @@ const DashboardLayout = () => {
     }
 
     try {
-      const response = await fetch('https://snack55-n8n1.q7pa8v.easypanel.host/webhook/server-action', {
+      // Llama a mc-api wrapper que ejecuta la acción y verifica con mcping real
+      // (anteriormente llamaba directo a n8n sin verificación → "completed but broken")
+      const response = await fetch('https://api.fluxoai.co/api/server/action', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': import.meta.env.VITE_MC_API_KEY,
+        },
         body: JSON.stringify({
-          id: activeServer.id,
+          server_id: activeServer.id,
           action: action
         })
       });

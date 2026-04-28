@@ -22,3 +22,7 @@ npm-debug.log*
 .env
 .env.local
 .env.*.local
+scripts/notion-docs.mjs
+scripts/send-reactivation.mjs
+tiktok_dm_templates.md
+tiktok_leads_minecraft.csv
