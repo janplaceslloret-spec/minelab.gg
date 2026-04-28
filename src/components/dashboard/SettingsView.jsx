@@ -161,11 +161,16 @@ const SettingsView = ({ planStatus, user, server, onServerUpdate, memberRole = '
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-1 pb-4 border-b border-[#2A2A2A]">
               <span className="text-[#6B6B6B] text-[10px] uppercase font-bold tracking-widest">Plan Actual</span>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-[#FFFFFF] text-lg font-black uppercase">{planStatus === 'none' ? 'Sin Plan' : planStatus.replace(/_/g, ' ')}</span>
                 {planStatus !== 'none' && (
                   <div className="px-2 py-0.5 rounded-full bg-[#22C55E]/10 border border-[#22C55E]/20 text-[#22C55E] text-[10px] uppercase font-bold tracking-widest flex items-center gap-1">
                     <Zap size={10} className="fill-current" /> Activo
+                  </div>
+                )}
+                {planStatus !== 'none' && server && !server.stripe_subscription_id && (
+                  <div className="px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-[10px] uppercase font-bold tracking-widest flex items-center gap-1">
+                    🛡️ Founder
                   </div>
                 )}
               </div>
@@ -175,8 +180,8 @@ const SettingsView = ({ planStatus, user, server, onServerUpdate, memberRole = '
               <span className="text-[#E5E5E5] font-medium">{server ? '1 / 1' : '0 / 1'} servidor(es) en uso</span>
             </div>
 
-            {/* Upgrade plan suggestion */}
-            {planStatus && planStatus !== 'none' && planStatus !== 'pro_12gb' && (
+            {/* Upgrade plan: navega a /configurar para upgrade real */}
+            {planStatus && planStatus !== 'none' && planStatus !== 'pro_16gb' && (
               <div className="rounded-xl border-2 border-[#22C55E]/25 bg-gradient-to-br from-[#22C55E]/[0.06] via-transparent to-transparent p-4 mb-2">
                 <div className="flex items-start gap-3 mb-3">
                   <div className="w-9 h-9 rounded-lg bg-[#22C55E]/15 border border-[#22C55E]/40 flex items-center justify-center shrink-0">
@@ -187,32 +192,67 @@ const SettingsView = ({ planStatus, user, server, onServerUpdate, memberRole = '
                       ¿Necesitas más RAM?
                     </p>
                     <p className="text-[#8B8B8B] text-xs leading-relaxed">
-                      Sube de plan en cualquier momento. Stripe ajusta el cobro automáticamente (proration) y la RAM se aplica en el siguiente reinicio.
+                      Elige un plan superior. La RAM se aplica en el siguiente reinicio.
                     </p>
                   </div>
                 </div>
                 <a
-                  href="https://billing.stripe.com/p/login/eVadRua7ygSU6kU288"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href="/configurar?plan=12gb&billing=monthly"
                   className="w-full bg-[#22C55E]/15 hover:bg-[#22C55E]/25 border border-[#22C55E]/40 text-[#22C55E] py-2 rounded-lg text-xs font-black uppercase tracking-[0.15em] transition-colors text-center inline-flex items-center justify-center gap-1.5"
                 >
-                  Cambiar de plan <ArrowUpRight size={11} strokeWidth={3} />
+                  Ver planes superiores <ArrowUpRight size={11} strokeWidth={3} />
                 </a>
               </div>
             )}
 
-            <a
-              href="https://billing.stripe.com/p/login/eVadRua7ygSU6kU288"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-2 w-full bg-[#22C55E] hover:bg-[#1eb754] text-[#0A0A0A] py-2.5 rounded-lg text-sm font-black uppercase tracking-wider transition-colors text-center inline-flex items-center justify-center gap-2 shadow-[0_4px_12px_rgba(34,197,94,0.25)]"
-            >
-              Gestionar facturación →
-            </a>
-            <p className="text-[#6B6B6B] text-[10px] mt-2 text-center">
-              Cancela, cambia tarjeta o descarga facturas. Te enviaremos un link a {user?.email || 'tu email'}.
-            </p>
+            {/* Si tiene suscripción Stripe real → portal Stripe.
+                Si no (Founder Members + asignados manualmente) → contacto soporte */}
+            {server?.stripe_subscription_id ? (
+              <>
+                <a
+                  href="https://billing.stripe.com/p/login/eVadRua7ygSU6kU288"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 w-full bg-[#22C55E] hover:bg-[#1eb754] text-[#0A0A0A] py-2.5 rounded-lg text-sm font-black uppercase tracking-wider transition-colors text-center inline-flex items-center justify-center gap-2 shadow-[0_4px_12px_rgba(34,197,94,0.25)]"
+                >
+                  Gestionar facturación →
+                </a>
+                <p className="text-[#6B6B6B] text-[10px] mt-2 text-center">
+                  Cancela, cambia tarjeta o descarga facturas. Te enviaremos un link a {user?.email || 'tu email'}.
+                </p>
+              </>
+            ) : planStatus !== 'none' ? (
+              <div className="mt-2 rounded-xl border border-amber-500/20 bg-amber-500/5 p-4">
+                <p className="text-amber-300 text-xs font-bold uppercase tracking-wider mb-2">🛡️ Founder Member</p>
+                <p className="text-[#B3B3B3] text-xs leading-relaxed mb-3">
+                  Tu plan está congelado al precio antiguo (gracias por estar desde el principio).
+                  Para cualquier cambio (RAM, cancelación, factura), escríbeme directamente y lo resolvemos en minutos.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <a
+                    href="https://discord.gg/wUJZkQxAQk"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 bg-[#5865F2]/15 hover:bg-[#5865F2]/25 border border-[#5865F2]/40 text-[#9aa5ff] py-2 rounded-lg text-xs font-bold uppercase tracking-wider text-center transition-colors"
+                  >
+                    💬 Discord (Jan)
+                  </a>
+                  <a
+                    href="mailto:janplaceslloret@gmail.com?subject=Founder%20-%20cambio%20de%20plan"
+                    className="flex-1 bg-white/5 hover:bg-white/10 border border-white/10 text-white py-2 rounded-lg text-xs font-bold uppercase tracking-wider text-center transition-colors"
+                  >
+                    ✉️ Email directo
+                  </a>
+                </div>
+              </div>
+            ) : (
+              <a
+                href="/configurar?plan=6gb&billing=monthly"
+                className="mt-2 w-full bg-[#22C55E] hover:bg-[#1eb754] text-[#0A0A0A] py-2.5 rounded-lg text-sm font-black uppercase tracking-wider transition-colors text-center inline-flex items-center justify-center gap-2 shadow-[0_4px_12px_rgba(34,197,94,0.25)]"
+              >
+                Activar plan →
+              </a>
+            )}
           </div>
         </div>
 
