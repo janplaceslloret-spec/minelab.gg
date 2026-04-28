@@ -80,6 +80,7 @@ const VersionModal = ({ server, onClose }) => {
   const [versionsBySw, setVersionsBySw] = useState({});  // softwareId -> string[]
   const [versionsLoading, setVersionsLoading] = useState(false);
   const [versionsError, setVersionsError] = useState(null);
+  const [resetChoice, setResetChoice] = useState(null); // null | 'keep' | 'reset' — paso pre-confirm
   const abortRef = useRef(null);
 
   // Fetch versions when software changes
@@ -119,7 +120,9 @@ const VersionModal = ({ server, onClose }) => {
 
   const sw = SOFTWARE.find(s => s.id === selectedSoftware);
 
-  const confirm = async () => {
+  const confirm = async (choice) => {
+    const reset = choice === 'reset';
+    setResetChoice(null); // close modal
     setState('loading');
     try {
       const res = await fetch(VERSION_WEBHOOK, {
@@ -128,6 +131,7 @@ const VersionModal = ({ server, onClose }) => {
         body: JSON.stringify({
           message: `CAMBIAR VERSION A ${selectedSoftware} ${selectedVersion}`,
           server_id: server?.id,
+          reset_world: reset,
         }),
       });
       if (!res.ok) throw new Error();
@@ -292,7 +296,7 @@ const VersionModal = ({ server, onClose }) => {
           </div>
 
           <button
-            onClick={confirm}
+            onClick={() => setResetChoice('asking')}
             disabled={!selectedSoftware || !selectedVersion || state === 'loading' || state === 'ok'}
             className={`flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-black uppercase tracking-[0.15em] transition-all ${
               state === 'ok'
@@ -307,9 +311,69 @@ const VersionModal = ({ server, onClose }) => {
             {state === 'loading' && <Loader2 size={14} className="animate-spin" />}
             {state === 'ok' && <CheckCircle2 size={14} />}
             {state === 'err' && <XCircle size={14} />}
-            {state === 'loading' ? 'Ejecutando...' : state === 'ok' ? 'Completado' : state === 'err' ? 'Error, reintenta' : 'Confirmar cambio'}
-            {state === 'idle' && selectedSoftware && selectedVersion && <ArrowRight size={14} />}
+            {state === 'loading' ? 'Ejecutando...' : state === 'ok' ? 'Completado' : state === 'err' ? 'Error, reintenta' : 'Continuar →'}
           </button>
+
+          {/* Modal pregunta sobre el mundo */}
+          {resetChoice === 'asking' && (
+            <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/85 backdrop-blur-md p-6" onClick={() => setResetChoice(null)}>
+              <div className="w-full max-w-lg bg-[#0A0A0A] border border-[#22C55E]/15 rounded-2xl p-6 md:p-8 shadow-[0_20px_60px_-15px_rgba(34,197,94,0.3)]" onClick={e => e.stopPropagation()}>
+                <div className="mb-6">
+                  <p className="text-[10px] uppercase font-black text-[#22C55E] tracking-[0.25em] mb-2">◆ Antes de cambiar</p>
+                  <h3 className="text-white text-2xl font-black uppercase tracking-tight mb-2">¿Qué hacemos con tu mundo?</h3>
+                  <p className="text-white/60 text-sm">
+                    Vas a cambiar a <span className="text-[#22C55E] font-bold">{selectedSoftware?.toUpperCase()} {selectedVersion}</span>. Elige qué pasa con tu mundo y tus configuraciones.
+                  </p>
+                </div>
+
+                <div className="flex flex-col gap-3 mb-4">
+                  <button
+                    onClick={() => confirm('keep')}
+                    className="text-left p-5 rounded-xl border-2 border-[#22C55E]/30 bg-gradient-to-br from-[#22C55E]/10 to-transparent hover:border-[#22C55E]/60 hover:from-[#22C55E]/15 transition-all group"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-[#22C55E]/15 border border-[#22C55E]/30 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                        <span className="text-xl">🛡️</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white font-black text-base mb-1">Conservar mundo</p>
+                        <p className="text-white/60 text-xs leading-relaxed">
+                          Mantenemos tu mundo, jugadores y configuraciones. <span className="text-[#22C55E] font-bold">Recomendado.</span>
+                        </p>
+                        <p className="text-white/40 text-[10px] mt-2">
+                          ⚠️ Si cambias a un loader incompatible, hacemos backup automático antes.
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => confirm('reset')}
+                    className="text-left p-5 rounded-xl border-2 border-red-500/20 bg-gradient-to-br from-red-500/[0.04] to-transparent hover:border-red-500/40 transition-all group"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-red-500/15 border border-red-500/30 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                        <Trash2 size={18} className="text-red-400" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white font-black text-base mb-1">Borrar todo y empezar de cero</p>
+                        <p className="text-white/60 text-xs leading-relaxed">
+                          Borra mundo, plugins, mods y configs. Empezarás con un servidor totalmente nuevo.
+                        </p>
+                        <p className="text-red-400/80 text-[10px] mt-2">
+                          ⚠️ Esto NO se puede deshacer. Hacemos backup antes por seguridad.
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+                </div>
+
+                <button onClick={() => setResetChoice(null)} className="w-full py-2.5 text-white/40 hover:text-white text-xs font-bold uppercase tracking-wider transition-colors">
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

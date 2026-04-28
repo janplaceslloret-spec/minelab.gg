@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Search, Download, CheckCircle2, Loader2, Package, Wrench, Puzzle, AlertCircle, ExternalLink, Sparkles, RefreshCw } from 'lucide-react';
+import { Search, Download, CheckCircle2, Loader2, Package, Wrench, Puzzle, AlertCircle, ExternalLink, Sparkles, RefreshCw, Trash2, FolderOpen, Library } from 'lucide-react';
 
 const N8N_ASISTENTE = 'https://snack55-n8n1.q7pa8v.easypanel.host/webhook/asistente';
 const CATALOG_API = 'https://api.fluxoai.co/api/catalog';
@@ -127,6 +127,9 @@ const CatalogView = ({ type = 'mods', server, user }) => {
   const [sortBy, setSortBy] = useState('popular');
   const [installState, setInstallState] = useState({ id: null, status: null });
   const [installedData, setInstalledData] = useState({ project_ids: [], jar_names: [] });
+  const [tab, setTab] = useState('catalog'); // 'catalog' | 'installed'
+  const [uninstallTarget, setUninstallTarget] = useState(null); // jar_name a confirmar
+  const [uninstalling, setUninstalling] = useState(null); // jar_name en proceso
   const debounceRef = useRef(null);
   const PAGE_SIZE = 20;
 
@@ -241,6 +244,32 @@ const CatalogView = ({ type = 'mods', server, user }) => {
     finally { setLoadingMore(false); }
   };
 
+  const handleUninstall = async (jarName) => {
+    if (!server?.id || !jarName) return;
+    setUninstalling(jarName);
+    setError('');
+    try {
+      const r = await fetch(`${CATALOG_API}/uninstall`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ server_id: server.id, jar_name: jarName }),
+      });
+      const j = await r.json();
+      if (!r.ok || !j.ok) throw new Error(j.error || `HTTP ${r.status}`);
+      // Remove de installedData inmediatamente
+      setInstalledData(prev => ({
+        project_ids: prev.project_ids,
+        jar_names: prev.jar_names.filter(n => n !== jarName),
+      }));
+    } catch (e) {
+      console.error('[catalog/uninstall]', e);
+      setError(`No se pudo desinstalar ${jarName}: ${e.message}`);
+    } finally {
+      setUninstalling(null);
+      setUninstallTarget(null);
+    }
+  };
+
   const handleInstall = async (item) => {
     if (!server?.id || !user) {
       setError('Necesitas tener un servidor activo para instalar.');
@@ -318,6 +347,116 @@ const CatalogView = ({ type = 'mods', server, user }) => {
           </div>
         </div>
       </div>
+
+      {/* Tab toggle: Catálogo / Mis X */}
+      <div className="flex items-center gap-1 p-1 bg-[#0F0F0F] border border-[#1F1F1F] rounded-xl w-fit">
+        <button
+          onClick={() => setTab('catalog')}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-xs font-black uppercase tracking-[0.15em] transition-all
+            ${tab === 'catalog'
+              ? 'bg-[#22C55E] text-[#0A0A0A] shadow-[0_4px_12px_rgba(34,197,94,0.25)]'
+              : 'text-white/50 hover:text-white'}`}
+        >
+          <Library size={14} /> Explorar
+        </button>
+        <button
+          onClick={() => setTab('installed')}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-xs font-black uppercase tracking-[0.15em] transition-all
+            ${tab === 'installed'
+              ? 'bg-[#22C55E] text-[#0A0A0A] shadow-[0_4px_12px_rgba(34,197,94,0.25)]'
+              : 'text-white/50 hover:text-white'}`}
+        >
+          <FolderOpen size={14} /> Mis {cfg.title}
+          {installedData.jar_names.length > 0 && (
+            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${tab === 'installed' ? 'bg-[#0A0A0A]/20 text-[#0A0A0A]' : 'bg-[#22C55E]/20 text-[#22C55E]'}`}>
+              {installedData.jar_names.length}
+            </span>
+          )}
+        </button>
+      </div>
+
+      {/* === TAB: Mis X (instalados) === */}
+      {tab === 'installed' && (
+        <div className="flex flex-col gap-4">
+          {installedData.jar_names.length === 0 ? (
+            <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
+              <FolderOpen size={32} className="text-white/20" />
+              <p className="text-white/50 text-sm">No tienes ningún {cfg.title.toLowerCase().replace(/s$/, '')} instalado todavía.</p>
+              <button onClick={() => setTab('catalog')} className="text-[#22C55E] text-xs font-bold uppercase tracking-wider hover:underline">
+                Explorar catálogo →
+              </button>
+            </div>
+          ) : (
+            <>
+              <p className="text-white/55 text-xs">
+                {installedData.jar_names.length} {cfg.title.toLowerCase()} instalados en tu server. Click en 🗑 para borrar.
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {installedData.jar_names.map(jar => {
+                  const isUninstalling = uninstalling === jar;
+                  const niceName = jar.replace(/[-_]/g, ' ').replace(/\.jar$/, '').replace(/\d+(\.\d+)*/g, '').trim() || jar;
+                  return (
+                    <div key={jar} className="bg-[#0F0F0F] border border-[#1F1F1F] hover:border-[#22C55E]/30 rounded-xl p-4 flex items-center gap-3 transition-all">
+                      <div className="w-10 h-10 rounded-lg bg-[#22C55E]/10 border border-[#22C55E]/20 flex items-center justify-center shrink-0">
+                        <CheckCircle2 size={18} className="text-[#22C55E]" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white font-bold text-sm truncate" title={jar}>{niceName}</p>
+                        <p className="text-white/40 text-[10px] font-mono truncate" title={jar}>{jar}</p>
+                      </div>
+                      <button
+                        onClick={() => setUninstallTarget(jar)}
+                        disabled={isUninstalling}
+                        className="shrink-0 w-9 h-9 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 flex items-center justify-center text-red-400 hover:text-red-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                        title="Desinstalar"
+                      >
+                        {isUninstalling ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+              <p className="text-[10px] text-white/30 mt-4 text-center">
+                💡 El server se reiniciará al desinstalar si está corriendo. Los archivos en /plugins/ y /mods/ se borran de tu disco.
+              </p>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Modal confirmación uninstall */}
+      {uninstallTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-6" onClick={() => setUninstallTarget(null)}>
+          <div className="w-full max-w-md bg-[#0A0A0A] border border-red-500/20 rounded-2xl p-6 shadow-[0_20px_60px_-15px_rgba(239,68,68,0.3)]" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-xl bg-red-500/15 border border-red-500/30 flex items-center justify-center">
+                <Trash2 size={20} className="text-red-400" />
+              </div>
+              <div>
+                <h3 className="text-white font-black text-lg uppercase tracking-tight">Desinstalar</h3>
+                <p className="text-white/50 text-xs">Esta acción no se puede deshacer</p>
+              </div>
+            </div>
+            <div className="bg-[#1F1F1F]/50 rounded-lg p-3 mb-4 border border-[#2A2A2A]">
+              <p className="text-white/80 font-mono text-xs break-all">{uninstallTarget}</p>
+            </div>
+            <p className="text-white/60 text-sm mb-6">
+              Se borrará el archivo del disco. Si tu server está corriendo, se reiniciará automáticamente.
+            </p>
+            <div className="flex gap-2">
+              <button onClick={() => setUninstallTarget(null)} className="flex-1 py-2.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-bold uppercase tracking-wider transition-all">
+                Cancelar
+              </button>
+              <button onClick={() => handleUninstall(uninstallTarget)} className="flex-1 py-2.5 rounded-lg bg-red-500 hover:bg-red-600 text-white text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2">
+                <Trash2 size={13} /> Desinstalar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* === TAB: Explorar catálogo === */}
+      {tab === 'catalog' && <>
 
       {/* Search + filters */}
       <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
@@ -427,6 +566,8 @@ const CatalogView = ({ type = 'mods', server, user }) => {
           Click "Instalar" y la IA descarga + configura automáticamente. Si pasa cualquier cosa rara, usa el chat IA.
         </span>
       </div>
+
+      </>}
     </div>
   );
 };
