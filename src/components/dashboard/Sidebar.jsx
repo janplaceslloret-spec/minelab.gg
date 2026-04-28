@@ -3,13 +3,17 @@ import { LayoutDashboard, Terminal, FolderOpen, Blocks, Users, DatabaseBackup, S
 import { supabase } from '../../supabaseClient';
 import { useNavigate } from 'react-router-dom';
 
-const Sidebar = ({ viewState = 'dashboard', planStatus = 'none', onCreateServer, activeTab = 'overview', onTabChange, user, server, sharedServers = [], onSwitchServer, onServerAction, isActionLoading, memberRole = 'owner' }) => {
+const Sidebar = ({ viewState = 'dashboard', planStatus = 'none', onCreateServer, activeTab = 'overview', onTabChange, user, server, sharedServers = [], onSwitchServer, onServerAction, isActionLoading, memberRole = 'owner', isOwner = false, allOwnerServers = [] }) => {
   const [serverPickerOpen, setServerPickerOpen] = useState(false);
   const status = server?.status_server || 'offline';
-  const allServers = [
-    ...(server ? [{ ...server, _own: true }] : []),
-    ...sharedServers.filter(s => s.id !== server?.id).map(s => ({ ...s, _own: false })),
-  ];
+  // Para OWNER: mostramos TODOS los servers (allOwnerServers contiene la lista completa)
+  // Para users normales: own + invited (sharedServers).
+  const allServers = isOwner && allOwnerServers.length > 0
+    ? allOwnerServers.map(s => ({ ...s, _own: s.id === server?.id, _ownerView: true }))
+    : [
+        ...(server ? [{ ...server, _own: true }] : []),
+        ...sharedServers.filter(s => s.id !== server?.id).map(s => ({ ...s, _own: false })),
+      ];
   const canStart = status === 'stopped' || status === 'error' || status === 'offline';
   const canStop = status === 'running';
   const canRestart = status === 'running';
@@ -254,8 +258,11 @@ const Sidebar = ({ viewState = 'dashboard', planStatus = 'none', onCreateServer,
               <span className="text-[#FFFFFF] text-sm font-semibold truncate max-w-[120px]">
                  {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Minelab User'}
               </span>
-              <span className="text-[#6B6B6B] text-[10px] uppercase tracking-wider font-bold">
-                {planStatus === 'none' ? 'Sin Plan Activo' : planStatus.replace(/_/g, ' ')}
+              <span className="text-[#6B6B6B] text-[10px] uppercase tracking-wider font-bold flex items-center gap-1.5">
+                {isOwner && (
+                  <span className="px-1.5 py-0.5 rounded bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 text-[8px] tracking-widest">OWNER</span>
+                )}
+                {planStatus === 'none' ? (isOwner ? 'Acceso Total' : 'Sin Plan Activo') : planStatus.replace(/_/g, ' ')}
               </span>
             </div>
           </div>

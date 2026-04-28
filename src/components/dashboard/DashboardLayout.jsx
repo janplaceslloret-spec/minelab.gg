@@ -30,6 +30,8 @@ const DashboardLayout = () => {
   const [paymentFailed, setPaymentFailed] = useState(false);
   const [sharedServers, setSharedServers] = useState([]); // servers the user was invited to
   const [pendingInviteToken, setPendingInviteToken] = useState(null); // ?invite= URL param
+  const [isOwner, setIsOwner] = useState(false); // global owner (acceso total a todos los servers)
+  const [allServers, setAllServers] = useState([]); // todos los servers visibles (owner: TODOS)
   const navigate = useNavigate();
 
   // Crear nuevo servidor → redirige al wizard moderno /configurar
@@ -180,10 +182,19 @@ const DashboardLayout = () => {
       }
     };
 
+    // Global OWNERS — emails con acceso total a todos los servers de todos los clientes.
+    // Coordinado con mc-api OWNER_EMAILS. Frontend solo lo usa para forzar fetch via mc-api
+    // (que devuelve TODOS los servers para owners) — la verificación real vive server-side.
+    const OWNER_EMAILS = ['janplaceslloret@gmail.com'];
+    const isOwnerEmail = (e) => !!e && OWNER_EMAILS.includes(String(e).trim().toLowerCase());
+
     const fetchServersAndState = async (userId, userEmail = '') => {
       console.log("[DashboardLayout] Fetching servers for user:", userId);
       try {
         const lowerEmail = userEmail ? String(userEmail).toLowerCase() : '';
+        const isOwner = isOwnerEmail(lowerEmail);
+        setIsOwner(isOwner);
+        if (isOwner) console.log('[DashboardLayout] OWNER mode — fetching ALL servers via mc-api');
         const [serversResponse, profileResponse1, membersByIdResp, membersByEmailResp] = await Promise.all([
           supabase.from('mc_servers').select('*').eq('user_id', userId),
           supabase.from('profiles').select('plan_status').eq('id', userId).limit(1).maybeSingle(),
@@ -261,11 +272,9 @@ const DashboardLayout = () => {
           }
         }
 
-        // Server-side rescue for mc_servers when authenticated client returns 0 rows.
-        // Causes: (a) UUID drift between auth.uid and profile.id (manually inserted profile,
-        // OAuth recreated user), (b) clock-skew making Supabase reject the JWT silently
-        // and queries fall to anon (RLS blocks). mc-api uses service_role to bypass.
-        if ((!servers || servers.length === 0) && (lowerEmail || userId)) {
+        // OWNER mode: SIEMPRE fetch via mc-api para obtener TODOS los servers (no solo los propios).
+        // Para users normales: fallback solo si auth client devuelve 0 rows.
+        if ((isOwner || !servers || servers.length === 0) && (lowerEmail || userId)) {
           try {
             console.log('[DashboardLayout v2] Authenticated mc_servers fetch returned 0 rows. Falling back to mc-api…', { lowerEmail, userId });
             const resp = await fetch('https://api.fluxoai.co/api/list-my-servers', {
@@ -280,10 +289,16 @@ const DashboardLayout = () => {
               const json = await resp.json();
               const recovered = Array.isArray(json?.servers) ? json.servers : [];
               if (recovered.length > 0) {
-                console.log('[DashboardLayout] mc-api fallback recovered', recovered.length, 'server(s).');
-                servers = recovered;
-                const recoveredIds = new Set(recovered.map(s => s.id));
-                setSharedServers(prev => prev.filter(s => !recoveredIds.has(s.id)));
+                if (isOwner) {
+                  console.log('[DashboardLayout] OWNER fetch returned', recovered.length, 'server(s).');
+                  servers = recovered;
+                  setSharedServers([]);
+                } else {
+                  console.log('[DashboardLayout] mc-api fallback recovered', recovered.length, 'server(s).');
+                  servers = recovered;
+                  const recoveredIds = new Set(recovered.map(s => s.id));
+                  setSharedServers(prev => prev.filter(s => !recoveredIds.has(s.id)));
+                }
               }
             } else {
               console.warn('[DashboardLayout] mc-api fallback HTTP', resp.status);
@@ -299,6 +314,7 @@ const DashboardLayout = () => {
           // Prefer a non-draft server, otherwise just the first one
           const currentServer = servers.find(s => s.status !== 'draft') || servers[0];
           setActiveServer(currentServer);
+          setAllServers(servers);
         }
 
         if (serversError) {
@@ -329,7 +345,8 @@ const DashboardLayout = () => {
 
         const normalizedPlan = String(currentPlanStatus).trim().toLowerCase();
         const validPlans = ['pro_4gb', 'pro_6gb', 'pro_8gb', 'pro_12gb', 'admin'];
-        const isPlanValid = validPlans.includes(normalizedPlan);
+        // OWNERS siempre tienen acceso al panel (no se les redirige a /configurar)
+        const isPlanValid = isOwner || validPlans.includes(normalizedPlan);
 
         if (!isPlanValid) {
           // Check if user is returning from Stripe (paid=1 param)
@@ -641,6 +658,8 @@ const DashboardLayout = () => {
         isActionLoading={isActionLoading}
         onServerAction={handleServerAction}
         memberRole={memberRole}
+        isOwner={isOwner}
+        allOwnerServers={isOwner ? (allServers || []) : []}
       />
 
       <div className="flex-1 flex min-w-0 h-screen overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-800 relative">
