@@ -5,9 +5,14 @@ const N8N_ASISTENTE = 'https://snack55-n8n1.q7pa8v.easypanel.host/webhook/asiste
 const CATALOG_API = 'https://api.fluxoai.co/api/catalog';
 
 const TYPE_CONFIG = {
-  mods:     { title: 'Mods', subtitle: 'Catálogo en vivo desde Modrinth · 100.000+ mods compatibles con Fabric, Forge y NeoForge', icon: <Wrench size={28} className="text-[#22C55E]" />, apiType: 'mod', installVerb: 'el mod' },
-  plugins:  { title: 'Plugins', subtitle: 'Catálogo en vivo · plugins para servers Paper/Spigot/Velocity', icon: <Puzzle size={28} className="text-[#22C55E]" />, apiType: 'plugin', installVerb: 'el plugin' },
-  modpacks: { title: 'Modpacks', subtitle: 'Modpacks completos · desde Vanilla+ hasta hardcore extremo · pre-configurados', icon: <Package size={28} className="text-[#22C55E]" />, apiType: 'modpack', installVerb: 'el modpack' },
+  mods:     { title: 'Mods', subtitle: 'Catálogo en vivo · Modrinth + CurseForge combinados · 200.000+ mods', icon: <Wrench size={28} className="text-[#22C55E]" />, apiType: 'mod', installVerb: 'el mod' },
+  plugins:  { title: 'Plugins', subtitle: 'Catálogo en vivo · todos los plugins de Modrinth + CurseForge para Paper/Spigot', icon: <Puzzle size={28} className="text-[#22C55E]" />, apiType: 'plugin', installVerb: 'el plugin' },
+  modpacks: { title: 'Modpacks', subtitle: 'Modpacks completos · ATM, RLCraft, Vault Hunters y miles más · 1-click install', icon: <Package size={28} className="text-[#22C55E]" />, apiType: 'modpack', installVerb: 'el modpack' },
+};
+
+const SOURCE_BADGE = {
+  modrinth: { label: 'Modrinth', cls: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' },
+  curseforge: { label: 'CurseForge', cls: 'bg-orange-500/15 text-orange-300 border-orange-500/30' },
 };
 
 // Server type → loader que pasamos a Modrinth
@@ -56,6 +61,11 @@ const CatalogCard = ({ item, server, onInstall, installState }) => {
         {item.downloads >= 1e6 && (
           <span className="absolute top-3 right-3 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-[#22C55E]/15 text-[#22C55E] border border-[#22C55E]/30">
             🔥 Popular
+          </span>
+        )}
+        {SOURCE_BADGE[item.source] && (
+          <span className={`absolute top-3 left-3 text-[9px] font-black uppercase tracking-wider px-2 py-1 rounded-full border ${SOURCE_BADGE[item.source].cls}`}>
+            {SOURCE_BADGE[item.source].label}
           </span>
         )}
       </div>
@@ -245,7 +255,7 @@ const CatalogView = ({ type = 'mods', server, user }) => {
                 Tu server: <span className="text-[#22C55E] font-bold">{server.server_type} {server.mc_version}</span>
               </span>
               {total > 0 && (
-                <span className="text-white/40">· <span className="text-white">{formatNum(total)}</span> resultados</span>
+                <span className="text-white/40">· <span className="text-white">{formatNum(total)}</span> resultados <span className="text-emerald-400/70">Modrinth</span> + <span className="text-orange-400/70">CurseForge</span></span>
               )}
               {stale && (
                 <span className="text-amber-400/80 flex items-center gap-1.5">
