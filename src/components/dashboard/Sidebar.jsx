@@ -18,12 +18,13 @@ const Sidebar = ({ viewState = 'dashboard', planStatus = 'none', onCreateServer,
   const canStop = status === 'running';
   const canRestart = status === 'running';
 
-  // Role-based permissions
-  const canControlServer = memberRole === 'owner' || memberRole === 'admin' || memberRole === 'member';
-  const canAccessFiles    = memberRole === 'owner' || memberRole === 'admin';
-  const canAccessPlayers  = memberRole === 'owner' || memberRole === 'admin';
-  const canAccessConfig   = memberRole === 'owner' || memberRole === 'admin';
-  const canAccessSettings = memberRole === 'owner' || memberRole === 'admin';
+  // Role-based permissions. isOwner (global) tiene acceso total a todo, sobreescribe memberRole.
+  const effectiveRole = isOwner ? 'owner' : memberRole;
+  const canControlServer = effectiveRole === 'owner' || effectiveRole === 'admin' || effectiveRole === 'member';
+  const canAccessFiles    = effectiveRole === 'owner' || effectiveRole === 'admin';
+  const canAccessPlayers  = effectiveRole === 'owner' || effectiveRole === 'admin';
+  const canAccessConfig   = effectiveRole === 'owner' || effectiveRole === 'admin';
+  const canAccessSettings = effectiveRole === 'owner' || effectiveRole === 'admin';
   
   const navigate = useNavigate();
 
@@ -68,8 +69,12 @@ const Sidebar = ({ viewState = 'dashboard', planStatus = 'none', onCreateServer,
 
       {!isLimited && server && (
          <div className="px-6 flex flex-col gap-3 mb-8">
-            {/* Role badge for invited members */}
-            {memberRole !== 'owner' && (
+            {/* Role badge — owner global ve "OWNER VIEW", invited members ven su rol */}
+            {isOwner ? (
+              <div className="flex items-center gap-1.5">
+                <span className="px-2 py-0.5 rounded-full border text-[9px] uppercase font-bold tracking-widest bg-emerald-500/10 border-emerald-500/30 text-emerald-400">Owner View</span>
+              </div>
+            ) : memberRole !== 'owner' && (
               <div className="flex items-center gap-1.5">
                 <span className={`px-2 py-0.5 rounded-full border text-[9px] uppercase font-bold tracking-widest ${
                   memberRole === 'admin'  ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' :
