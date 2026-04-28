@@ -38,11 +38,12 @@ const formatNum = (n) => {
   return String(n);
 };
 
-const CatalogCard = ({ item, server, onInstall, installState }) => {
+const CatalogCard = ({ item, server, onInstall, installState, alreadyInstalled }) => {
   const isInstalling = installState?.id === item.project_id && installState?.status === 'installing';
-  const isInstalled = installState?.id === item.project_id && installState?.status === 'installed';
+  const isJustInstalled = installState?.id === item.project_id && installState?.status === 'installed';
+  const isInstalled = isJustInstalled || alreadyInstalled;
   const isFailed = installState?.id === item.project_id && installState?.status === 'failed';
-  const compatible = !server?.mc_version || (item.versions || []).includes(server.mc_version) || true; // permisive: Modrinth filtra ya server-side
+  const compatible = !server?.mc_version || (item.versions || []).includes(server.mc_version) || true;
   const cats = (item.categories || []).filter(c => !['fabric', 'forge', 'neoforge', 'paper', 'spigot', 'velocity', 'purpur'].includes(c)).slice(0, 3);
 
   return (
@@ -125,6 +126,7 @@ const CatalogView = ({ type = 'mods', server, user }) => {
   const [filterByVersion, setFilterByVersion] = useState(true);
   const [sortBy, setSortBy] = useState('popular');
   const [installState, setInstallState] = useState({ id: null, status: null });
+  const [installedData, setInstalledData] = useState({ project_ids: [], jar_names: [] });
   const debounceRef = useRef(null);
   const PAGE_SIZE = 20;
 
@@ -134,6 +136,44 @@ const CatalogView = ({ type = 'mods', server, user }) => {
     debounceRef.current = setTimeout(() => setDebouncedSearch(search), 300);
     return () => debounceRef.current && clearTimeout(debounceRef.current);
   }, [search]);
+
+  // Fetch lo que ya está instalado en el server (DB + filesystem)
+  useEffect(() => {
+    if (!server?.id) return;
+    let aborted = false;
+    fetch(`${CATALOG_API}/installed?server_id=${server.id}`)
+      .then(r => r.json())
+      .then(data => {
+        if (aborted) return;
+        if (data && !data.error) {
+          setInstalledData({
+            project_ids: data.project_ids || [],
+            jar_names: data.jar_names || [],
+          });
+        }
+      })
+      .catch(() => {});
+    return () => { aborted = true; };
+  }, [server?.id, installState.status]); // refetch tras cada install
+
+  // Matcher: dado un item, busca si ya está instalado
+  const isItemInstalled = (item) => {
+    if (!item) return false;
+    // Match exacto por project_id (instalación reciente vía nuestro endpoint)
+    if (installedData.project_ids.includes(item.project_id)) return true;
+    // Match por slug en filename (instalaciones antiguas o vía chat IA)
+    const slug = (item.slug || item.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    if (!slug) return false;
+    const slugTokens = slug.split('-').filter(t => t.length >= 3);
+    return installedData.jar_names.some(jar => {
+      const jarLow = jar.toLowerCase();
+      // El slug entero está en el jar (ej "luckperms" en "LuckPerms-Bukkit-5.5.17.jar")
+      if (jarLow.includes(slug)) return true;
+      // O todos los tokens >= 3 chars del slug están en el jar (ej "just enough items" → ["just","enough","items"] vs "jei-1.20.1.jar" requiere fallback más laxo)
+      if (slugTokens.length > 1 && slugTokens.every(t => jarLow.includes(t))) return true;
+      return false;
+    });
+  };
 
   // Fetch items when search/filter/server changes
   useEffect(() => {
@@ -361,6 +401,7 @@ const CatalogView = ({ type = 'mods', server, user }) => {
                 server={server}
                 onInstall={handleInstall}
                 installState={installState}
+                alreadyInstalled={isItemInstalled(item)}
               />
             ))}
           </div>
