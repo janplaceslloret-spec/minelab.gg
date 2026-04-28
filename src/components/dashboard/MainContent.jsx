@@ -9,6 +9,7 @@ import ConfigView from './ConfigView';
 import ReviewView from './ReviewView';
 import BackupsView from './BackupsView';
 import AuditLogView from './AuditLogView';
+import CatalogView from './CatalogView';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip } from 'recharts';
 
 const MainContent = ({ planStatus, server, activeTab = 'overview', user, onServerUpdate, isActionLoading, onServerAction, memberRole = 'owner' }) => {
@@ -428,6 +429,18 @@ const MainContent = ({ planStatus, server, activeTab = 'overview', user, onServe
 
         {activeTab === 'historial' && (
            <AuditLogView server={server} />
+        )}
+
+        {activeTab === 'mods' && (
+           <CatalogView type="mods" server={server} user={user} />
+        )}
+
+        {activeTab === 'plugins' && (
+           <CatalogView type="plugins" server={server} user={user} />
+        )}
+
+        {activeTab === 'modpacks' && (
+           <CatalogView type="modpacks" server={server} user={user} />
         )}
 
       </div>

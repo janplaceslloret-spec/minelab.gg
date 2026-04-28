@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { LayoutDashboard, Terminal, FolderOpen, Blocks, Users, DatabaseBackup, Settings, LogOut, Star, ChevronDown, Share2, History } from 'lucide-react';
+import { LayoutDashboard, Terminal, FolderOpen, Blocks, Users, DatabaseBackup, Settings, LogOut, Star, ChevronDown, Share2, History, Wrench, Puzzle, Package } from 'lucide-react';
 import { supabase } from '../../supabaseClient';
 import { useNavigate } from 'react-router-dom';
 
@@ -28,12 +28,21 @@ const Sidebar = ({ viewState = 'dashboard', planStatus = 'none', onCreateServer,
     { icon: <Terminal size={20} />, label: 'Consola', active: activeTab === 'console', id: 'console' },
   ];
 
+  // Visibilidad de catálogos según server_type
+  const serverType = String(server?.server_type || '').toLowerCase();
+  const isPaperLike = ['paper', 'spigot', 'vanilla'].includes(serverType);
+  const isModded = ['fabric', 'forge', 'neoforge'].includes(serverType);
+
   const serverItems = [
     { icon: <FolderOpen size={20} />, label: 'Archivos', active: activeTab === 'files', id: 'files', hidden: !canAccessFiles },
     { icon: <Users size={20} />, label: 'Jugadores', active: activeTab === 'players', id: 'players', hidden: !canAccessPlayers },
     { icon: <Settings size={20} />, label: 'Configuración', active: activeTab === 'configuracion', id: 'configuracion', hidden: !canAccessConfig },
     { icon: <DatabaseBackup size={20} />, label: 'Backups', active: activeTab === 'backups', id: 'backups', hidden: !canAccessFiles },
     { icon: <History size={20} />, label: 'Historial IA', active: activeTab === 'historial', id: 'historial', hidden: !canAccessFiles },
+    // Catálogos 1-click (visibilidad por server type)
+    { icon: <Puzzle size={20} />, label: 'Plugins', active: activeTab === 'plugins', id: 'plugins', hidden: !isPaperLike },
+    { icon: <Wrench size={20} />, label: 'Mods', active: activeTab === 'mods', id: 'mods', hidden: !isModded },
+    { icon: <Package size={20} />, label: 'Modpacks', active: activeTab === 'modpacks', id: 'modpacks', hidden: !isModded },
   ].filter(i => !i.hidden);
 
   const accountItems = [
