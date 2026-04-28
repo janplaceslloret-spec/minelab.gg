@@ -6,7 +6,7 @@ const CATALOG_API = 'https://api.fluxoai.co/api/catalog';
 
 const TYPE_CONFIG = {
   mods:     { title: 'Mods', subtitle: 'Catálogo completo de CurseForge · 200.000+ mods compatibles con Fabric, Forge y NeoForge', icon: <Wrench size={28} className="text-[#22C55E]" />, apiType: 'mod', installVerb: 'el mod' },
-  plugins:  { title: 'Plugins', subtitle: 'Catálogo completo de Bukkit/Spigot/Paper plugins desde CurseForge', icon: <Puzzle size={28} className="text-[#22C55E]" />, apiType: 'plugin', installVerb: 'el plugin' },
+  plugins:  { title: 'Plugins', subtitle: 'CurseForge + Modrinth combinados · LuckPerms, EssentialsX, Vault, Geyser y miles más', icon: <Puzzle size={28} className="text-[#22C55E]" />, apiType: 'plugin', installVerb: 'el plugin' },
   modpacks: { title: 'Modpacks', subtitle: '10.000+ modpacks: ATM, RLCraft, Vault Hunters, Cobblemon… 1-click install', icon: <Package size={28} className="text-[#22C55E]" />, apiType: 'modpack', installVerb: 'el modpack' },
 };
 
