@@ -75,7 +75,7 @@ const Pricing = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
   }, []);
 
   return (
-    <section id="pricing" ref={sectionRef} className="py-24 min-h-screen relative z-10 bg-[#0A0D14] flex flex-col justify-center">
+    <section id="pricing" ref={sectionRef} className="py-24 min-h-screen relative z-10 bg-[#0A0D14] flex flex-col justify-center" style={{ scrollMarginTop: '160px' }}>
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-none -z-10">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] bg-accent-green/5 rounded-full blur-[150px]"></div>
@@ -85,7 +85,7 @@ const Pricing = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
         <div className="text-center mb-20 max-w-3xl mx-auto">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-accent-green/30 bg-accent-green/10 text-accent-green text-xs font-bold uppercase tracking-widest mb-6 shadow-[0_0_15px_rgba(34,197,94,0.2)]">
             <Zap size={14} className="animate-pulse" />
-            Fase Beta Pública
+            Sin permanencia · Cancela cuando quieras
           </div>
           <h2 className="font-heading text-4xl md:text-5xl font-bold tracking-tighter mb-4 uppercase text-white leading-tight">
             POTENCIA SIN LÍMITES <br/> A <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent-green to-accent-violet">MITAD DE PRECIO</span>
@@ -181,7 +181,7 @@ const Pricing = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
 
               <ul className="space-y-4 mb-8 flex-1">
                 {[
-                  `${plan.name} RAM dedicada`,
+                  `${plan.name} dedicada`,
                   "Procesador AMD de última generación",
                   "1 Gbps de ancho de banda",
                   "Almacenamiento NVMe ultra-rápido",

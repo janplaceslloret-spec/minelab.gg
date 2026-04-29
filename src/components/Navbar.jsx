@@ -40,7 +40,7 @@ const Navbar = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
               if (isHome) window.scrollTo({ top: 0, behavior: 'smooth' });
               else navigate('/');
             }}
-            className="flex items-center gap-3 cursor-pointer group"
+            className="flex items-center gap-3 cursor-pointer group mr-8 shrink-0"
           >
             <img
               src="/favicon.png?v=3"
@@ -145,17 +145,6 @@ const Navbar = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
             <a href="/#features" onClick={goToAnchor('features')} className="text-white/80 hover:text-white font-medium transition-colors py-2 uppercase tracking-wide text-sm">Características</a>
             <a href="/#how-it-works" onClick={goToAnchor('how-it-works')} className="text-white/80 hover:text-white font-medium transition-colors py-2 uppercase tracking-wide text-sm">Cómo Funciona</a>
             <a href="/#pricing" onClick={goToAnchor('pricing')} className="text-white/80 hover:text-white font-medium transition-colors py-2 uppercase tracking-wide text-sm">Planes</a>
-            <Link
-              to="/aternos-vs-minelab"
-              className="relative flex items-center gap-1.5 text-white/80 hover:text-white font-medium transition-colors py-2 uppercase tracking-wide text-sm group"
-            >
-              <Swords size={14} className="text-accent-green" strokeWidth={2.4} />
-              <span>Vs Aternos</span>
-              <span className="relative flex w-1.5 h-1.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-green opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-accent-green"></span>
-              </span>
-            </Link>
             <a href="/#about" onClick={goToAnchor('about')} className="text-white/80 hover:text-white font-medium transition-colors py-2 uppercase tracking-wide text-sm">Nosotros</a>
           </div>
 
