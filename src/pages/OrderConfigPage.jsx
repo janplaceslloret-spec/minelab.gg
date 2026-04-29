@@ -720,17 +720,29 @@ const OrderConfigPage = () => {
               </div>
             </Section>
 
-            {/* Coupon — el código real se introduce en Stripe Checkout */}
+            {/* Coupon — solo válido en pagos mensuales (los anuales NO admiten códigos) */}
             <Section number="07" title="¿Tienes un cupón?">
-              <div className="rounded-xl border-2 border-[#22C55E]/20 bg-[#22C55E]/5 px-4 py-4 flex items-start gap-3">
-                <Tag size={16} className="text-[#22C55E] shrink-0 mt-0.5" />
-                <div className="flex-1">
-                  <p className="text-sm text-white font-bold mb-1">Aplica tu código en el pago</p>
-                  <p className="text-xs text-[#B3B3B3] leading-relaxed">
-                    En la pantalla de Stripe verás el campo <span className="text-[#22C55E] font-bold">"Add promotion code"</span>. Escribe ahí tu código (ej. <span className="font-mono text-[#22C55E]">BETA30</span>, <span className="font-mono text-[#22C55E]">TIKTOK50</span>) y se aplica al instante.
-                  </p>
+              {isAnnual ? (
+                <div className="rounded-xl border-2 border-[#F59E0B]/30 bg-[#F59E0B]/5 px-4 py-4 flex items-start gap-3">
+                  <Tag size={16} className="text-[#F59E0B] shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-sm text-white font-bold mb-1">Los códigos no aplican en pagos anuales</p>
+                    <p className="text-xs text-[#B3B3B3] leading-relaxed">
+                      El plan anual ya incluye <span className="text-[#22C55E] font-bold">1 mes gratis</span> (pagas 11 meses, te llevas 12). Los cupones BETA30 / TIKTOK50 solo aplican al ciclo <span className="text-white font-bold">mensual</span>.
+                    </p>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="rounded-xl border-2 border-[#22C55E]/20 bg-[#22C55E]/5 px-4 py-4 flex items-start gap-3">
+                  <Tag size={16} className="text-[#22C55E] shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-sm text-white font-bold mb-1">Aplica tu código en el pago</p>
+                    <p className="text-xs text-[#B3B3B3] leading-relaxed">
+                      En la pantalla de Stripe verás el campo <span className="text-[#22C55E] font-bold">"Add promotion code"</span>. Escribe ahí tu código (ej. <span className="font-mono text-[#22C55E]">BETA30</span>, <span className="font-mono text-[#22C55E]">TIKTOK50</span>) y se aplica al instante.
+                    </p>
+                  </div>
+                </div>
+              )}
             </Section>
 
             {/* Mobile-only checkout button */}
