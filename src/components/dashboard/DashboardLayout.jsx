@@ -375,7 +375,15 @@ const DashboardLayout = () => {
             navigate('/configurar?plan=6gb&billing=monthly', { replace: true });
             return;
           }
-          setViewState('dashboard');
+          // Defensivo: si el plan es válido pero NO hay activeServer (ni propio ni
+          // compartido) → empty state en lugar de panel zombie con defaults.
+          // Caso típico: drift de auth.uid entre profiles y mc_servers, o cuenta
+          // recién pagada cuyo crear_servidor.sh no completó.
+          if (!servers || servers.length === 0) {
+            setViewState('empty');
+          } else {
+            setViewState('dashboard');
+          }
         }
       } catch (err) {
         console.error('[DashboardLayout] Error fetching servers:', err);
