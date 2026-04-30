@@ -122,19 +122,24 @@ const AIAssistantSidebar = ({ activeServer, user, isMobile = false, onClose = nu
       });
 
       // Try to parse the body regardless of status code — n8n sometimes returns
-      // non-2xx even when the action succeeded.
+      // non-2xx even when la acción real tuvo éxito.
       let data = {};
       try { data = await response.json(); } catch (_) {}
 
       const assistantText =
-        data.response || data.output || data.message || data.reply ||
-        (response.ok ? "He procesado tu solicitud." : null);
+        data.response || data.output || data.message || data.reply || null;
 
       if (assistantText) {
         setMessages(prev => [...prev, { role: 'assistant', text: assistantText }]);
       } else {
-        // Non-200 and no parseable body — genuine connectivity error
-        throw new Error(`HTTP ${response.status}`);
+        // n8n devolvió 200 OK pero sin texto útil → la IA no resolvió la
+        // tool / hubo un parse fail / el LLM se quedó sin tokens. Antes
+        // teníamos un fallback "He procesado tu solicitud" que MENTÍA al
+        // cliente — preferimos mostrar honestidad: no se procesó nada.
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          text: "⚠️ No he podido procesar tu solicitud (la IA no devolvió respuesta). Reformula la pregunta o intenta de nuevo en unos segundos."
+        }]);
       }
     } catch (err) {
       console.error("Chat error:", err);
