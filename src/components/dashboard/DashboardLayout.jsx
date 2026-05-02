@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
 import { createClient } from '@supabase/supabase-js';
 import Sidebar from './Sidebar';
+import MobileNav from './MobileNav';
 import MainContent from './MainContent';
 import WelcomeTour from './WelcomeTour';
 import AIAssistantSidebar from './AIAssistantSidebar';
@@ -670,7 +671,25 @@ const DashboardLayout = () => {
         allOwnerServers={isOwner ? (allServers || []) : []}
       />
 
-      <div className="flex-1 flex min-w-0 h-screen overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-800 relative">
+      {/* Navegación móvil — solo visible en md:hidden, no afecta desktop */}
+      <MobileNav
+        viewState={viewState}
+        planStatus={planStatus}
+        onCreateServer={handleCreateServer}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        user={user}
+        server={activeServer}
+        sharedServers={sharedServers}
+        onSwitchServer={setActiveServer}
+        isActionLoading={isActionLoading}
+        onServerAction={handleServerAction}
+        memberRole={memberRole}
+        isOwner={isOwner}
+        allOwnerServers={isOwner ? (allServers || []) : []}
+      />
+
+      <div className="flex-1 flex min-w-0 h-screen overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-800 relative pb-[68px] md:pb-0">
         {viewState === 'empty' && (
           <EmptyServerState onStartWizard={handleCreateServer} />
         )}

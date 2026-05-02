@@ -40,8 +40,8 @@ const Topbar = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
             </span>
           </div>
 
-          {/* Promotional Text */}
-          <span style={{ color: 'white', fontSize: '13px', fontWeight: 400, whiteSpace: 'nowrap', display: 'flex', alignItems: 'center' }}>
+          {/* Promotional Text — oculto en móvil <768px para reducir saturación */}
+          <span className="hidden md:flex" style={{ color: 'white', fontSize: '13px', fontWeight: 400, whiteSpace: 'nowrap', alignItems: 'center' }}>
             ¡Obtén&nbsp;<strong style={{ fontWeight: 700 }}>ACCESO ANTICIPADO</strong>&nbsp;a la beta por un precio exclusivo!
             <img src="/flecha-verde.png" alt="→" style={{ width: '20px', height: 'auto', marginLeft: '8px' }} />
           </span>
@@ -51,8 +51,8 @@ const Topbar = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
         {/* Right Side: Stats & CTA */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexShrink: 0 }}>
 
-          {/* Dynamic Stats */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', whiteSpace: 'nowrap' }}>
+          {/* Dynamic Stats — oculto en móvil */}
+          <div className="hidden md:flex" style={{ alignItems: 'center', gap: '6px', fontSize: '12px', whiteSpace: 'nowrap' }}>
             <span style={{ color: 'white', fontWeight: 700, fontSize: '16px', lineHeight: 1 }}>→</span>
             <span style={{ color: 'white' }}>
               <strong style={{ color: '#4ADE80' }}>97</strong> jugadores en <strong style={{ color: '#4ADE80' }}>29</strong> servidores 📦

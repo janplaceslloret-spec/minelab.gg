@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronDown, Server, Cpu, Swords, Package, ArrowLeftRight } from 'lucide-react';
+import { ChevronDown, Server, Cpu, Swords, Package, ArrowLeftRight, Menu, X } from 'lucide-react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 
 const Navbar = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
   const [scrolled, setScrolled] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const isHome = location.pathname === '/';
@@ -19,7 +20,17 @@ const Navbar = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
       navigate('/#' + id);
     }
     setIsDropdownOpen(false);
+    setMobileMenuOpen(false);
   };
+
+  // Bloquear scroll del body cuando el menu mobile está abierto
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => { document.body.style.overflow = prev; };
+    }
+  }, [mobileMenuOpen]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -148,10 +159,10 @@ const Navbar = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
             <a href="/#about" onClick={goToAnchor('about')} className="text-white/80 hover:text-white font-medium transition-colors py-2 uppercase tracking-wide text-sm">Nosotros</a>
           </div>
 
-          {/* Right Actions */}
+          {/* Right Actions desktop */}
           <div className="hidden md:flex items-center gap-4">
             {!isLoggedIn && (
-              <button 
+              <button
                 onClick={onLoginDemo}
                 className="text-white/80 hover:text-white font-heading font-black px-4 py-2 transition-colors uppercase tracking-tight text-sm disabled:opacity-50"
               >
@@ -165,8 +176,102 @@ const Navbar = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
               {isLoggedIn ? 'PANEL' : 'CREAR SERVIDOR'}
             </button>
           </div>
+
+          {/* Hamburguesa mobile (visible solo <md) */}
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(true)}
+            aria-label="Abrir menú"
+            className="md:hidden flex items-center justify-center w-11 h-11 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white transition-all active:scale-95"
+          >
+            <Menu size={22} strokeWidth={2.4} />
+          </button>
         </div>
       </div>
+
+      {/* Mobile drawer overlay (md:hidden) */}
+      {mobileMenuOpen && (
+        <div className="md:hidden fixed inset-0 z-[60] bg-[#0B0F1A]/98 backdrop-blur-sm flex flex-col animate-in fade-in duration-200">
+          {/* Header con close */}
+          <div className="flex justify-between items-center px-5 pt-4 pb-3 border-b border-white/10">
+            <span className="font-heading font-black text-2xl tracking-tighter text-white uppercase">MINELAB</span>
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(false)}
+              aria-label="Cerrar menú"
+              className="flex items-center justify-center w-10 h-10 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white transition-all active:scale-95"
+            >
+              <X size={22} strokeWidth={2.4} />
+            </button>
+          </div>
+
+          {/* Items */}
+          <div className="flex-1 overflow-y-auto px-5 py-6 flex flex-col gap-1">
+            {/* Sección Hosting */}
+            <p className="text-[10px] uppercase font-black text-white/30 tracking-[0.2em] mb-2 px-2">Minecraft Hosting</p>
+            <a href="/#pricing" onClick={goToAnchor('pricing')} className="flex items-center gap-3 px-3 py-3.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all">
+              <div className="w-9 h-9 rounded-lg bg-[#1F2937] flex items-center justify-center shrink-0">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#7CB342" stroke="#558B2F" strokeWidth="1" strokeLinejoin="round"/>
+                  <path d="M2 7V17L12 22V12L2 7Z" fill="#5D4037" stroke="#4E342E" strokeWidth="1" strokeLinejoin="round"/>
+                  <path d="M22 7V17L12 22V12L22 7Z" fill="#795548" stroke="#5D4037" strokeWidth="1" strokeLinejoin="round"/>
+                </svg>
+              </div>
+              <div className="flex-1">
+                <p className="font-heading font-black text-white uppercase tracking-tight text-sm">Planes</p>
+                <p className="text-[10px] text-white/50 leading-tight uppercase tracking-wide">Desde 7,99€/mes</p>
+              </div>
+            </a>
+            <Link to="/aternos-vs-minelab" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-3.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all">
+              <div className="w-9 h-9 rounded-lg bg-[#1F2937] flex items-center justify-center shrink-0">
+                <Swords size={16} className="text-accent-green" strokeWidth={2.4} />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <p className="font-heading font-black text-white uppercase tracking-tight text-sm">Vs Aternos</p>
+                  <span className="text-[8px] uppercase font-black tracking-wider px-1.5 py-0.5 rounded bg-accent-green/20 text-accent-green border border-accent-green/30">Nuevo</span>
+                </div>
+              </div>
+            </Link>
+            <Link to="/migrar-servidor-aternos" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-3.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all">
+              <div className="w-9 h-9 rounded-lg bg-[#1F2937] flex items-center justify-center shrink-0">
+                <ArrowLeftRight size={16} className="text-white/80" strokeWidth={2.4} />
+              </div>
+              <p className="font-heading font-black text-white uppercase tracking-tight text-sm">Migrar de Aternos</p>
+            </Link>
+            <Link to="/hosting-minecraft-con-mods" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-3.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all">
+              <div className="w-9 h-9 rounded-lg bg-[#1F2937] flex items-center justify-center shrink-0">
+                <Package size={16} className="text-white/80" strokeWidth={2.4} />
+              </div>
+              <p className="font-heading font-black text-white uppercase tracking-tight text-sm">Hosting con mods</p>
+            </Link>
+
+            {/* Sección Navegación */}
+            <p className="text-[10px] uppercase font-black text-white/30 tracking-[0.2em] mb-2 mt-6 px-2">Navegación</p>
+            <a href="/#features" onClick={goToAnchor('features')} className="px-3 py-3 rounded-lg hover:bg-white/5 text-white/90 font-heading font-black uppercase tracking-tight text-sm transition-all">Características</a>
+            <a href="/#how-it-works" onClick={goToAnchor('how-it-works')} className="px-3 py-3 rounded-lg hover:bg-white/5 text-white/90 font-heading font-black uppercase tracking-tight text-sm transition-all">Cómo Funciona</a>
+            <a href="/#about" onClick={goToAnchor('about')} className="px-3 py-3 rounded-lg hover:bg-white/5 text-white/90 font-heading font-black uppercase tracking-tight text-sm transition-all">Nosotros</a>
+          </div>
+
+          {/* CTAs sticky bottom */}
+          <div className="px-5 pt-3 pb-6 border-t border-white/10 bg-[#0B0F1A]/98 flex flex-col gap-3">
+            {!isLoggedIn && (
+              <button
+                onClick={() => { setMobileMenuOpen(false); onLoginDemo?.(); }}
+                className="w-full text-white/90 hover:text-white font-heading font-black py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/15 transition-all uppercase tracking-tight text-sm"
+              >
+                INICIAR SESIÓN
+              </button>
+            )}
+            <button
+              onClick={() => { setMobileMenuOpen(false); if (isLoggedIn) onOpenDashboard?.(); else window.location.assign('/configurar?plan=6gb&billing=monthly'); }}
+              className="w-full bg-accent-green hover:bg-[#1faa50] text-gray-900 py-3.5 rounded-xl font-heading font-black transition-all shadow-[0_0_25px_rgba(34,197,94,0.4)] uppercase tracking-tight text-sm"
+            >
+              {isLoggedIn ? 'IR AL PANEL' : 'CREAR SERVIDOR'}
+            </button>
+          </div>
+        </div>
+      )}
     </nav>
   );
 };
