@@ -59,24 +59,26 @@ const MembersCard = ({ server, user }) => {
   const [error,    setError]    = useState('');
   const [success,  setSuccess]  = useState('');
 
-  /* ── Load members ──────────────────────────────────────────── */
+  /* ── Load members (via mc-api, bypass RLS) ─────────────────── */
   const loadMembers = useCallback(async () => {
     if (!server?.id) return;
     setLoading(true);
-    const { data, error: err } = await supabase
-      .from('server_members')
-      .select('*')
-      .eq('server_id', server.id)
-      .neq('status', 'revoked')
-      .order('created_at', { ascending: false });
-
-    if (!err) setMembers(data || []);
+    try {
+      const r = await fetch('https://api.fluxoai.co/api/members/list?server_id=' + server.id, {
+        headers: { 'x-api-key': import.meta.env.VITE_MC_API_KEY },
+      });
+      const j = await r.json();
+      setMembers(Array.isArray(j.members) ? j.members : []);
+    } catch (e) {
+      console.warn('[MembersCard] load failed:', e);
+      setMembers([]);
+    }
     setLoading(false);
   }, [server?.id]);
 
   useEffect(() => { loadMembers(); }, [loadMembers]);
 
-  /* ── Send invite ───────────────────────────────────────────── */
+  /* ── Send invite (via mc-api: insert + email automático) ───── */
   const sendInvite = async (e) => {
     e.preventDefault();
     if (!email.trim()) return;
@@ -85,34 +87,27 @@ const MembersCard = ({ server, user }) => {
     setInviting(true);
 
     try {
-      // Prevent duplicate active/pending invite for same email
-      const { data: existing } = await supabase
-        .from('server_members')
-        .select('id, status')
-        .eq('server_id', server.id)
-        .eq('invited_email', email.trim().toLowerCase())
-        .in('status', ['pending', 'active'])
-        .maybeSingle();
-
-      if (existing) {
-        setError('Ya existe una invitación activa para ese email.');
-        setInviting(false);
-        return;
-      }
-
-      const { error: insertErr } = await supabase
-        .from('server_members')
-        .insert({
-          server_id:     server.id,
-          invited_email: email.trim().toLowerCase(),
+      const r = await fetch('https://api.fluxoai.co/api/members/invite', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': import.meta.env.VITE_MC_API_KEY,
+        },
+        body: JSON.stringify({
+          server_id: server.id,
+          email: email.trim().toLowerCase(),
           role,
-          invited_by:    user.id,
-          status:        'pending',
-        });
-
-      if (insertErr) throw new Error(insertErr.message);
-
-      setSuccess(`Invitación creada para ${email.trim()}`);
+          inviter_id: user.id,
+          inviter_email: user.email,
+        }),
+      });
+      const j = await r.json();
+      if (!r.ok) {
+        throw new Error(j.message || j.error || 'Error desconocido');
+      }
+      setSuccess(j.email_sent
+        ? `✅ Invitación enviada por email a ${email.trim()}`
+        : `Invitación creada. ${j.message || ''}`);
       setEmail('');
       loadMembers();
     } catch (err) {
@@ -122,12 +117,15 @@ const MembersCard = ({ server, user }) => {
     }
   };
 
-  /* ── Revoke access ─────────────────────────────────────────── */
+  /* ── Revoke access (via mc-api) ────────────────────────────── */
   const revoke = async (memberId) => {
-    await supabase
-      .from('server_members')
-      .update({ status: 'revoked' })
-      .eq('id', memberId);
+    try {
+      await fetch('https://api.fluxoai.co/api/members/revoke', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': import.meta.env.VITE_MC_API_KEY },
+        body: JSON.stringify({ member_id: memberId }),
+      });
+    } catch (_) {}
     loadMembers();
   };
 
