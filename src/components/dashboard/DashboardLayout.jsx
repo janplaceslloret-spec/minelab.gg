@@ -221,17 +221,22 @@ const DashboardLayout = () => {
         const seenServerIds = new Set(byId.map(m => m.server_id));
         const rawMemberships = [...byId, ...byEmail.filter(m => !seenServerIds.has(m.server_id))];
 
-        // Fetch the actual server data for shared memberships separately
-        // (avoids nested-join RLS block — mc_servers RLS requires allow_all SELECT policy)
+        // Fetch the actual server data for shared memberships via mc-api (bypass RLS).
+        // Antes usábamos supabaseAnon → bloqueado por RLS de mc_servers, los shared servers
+        // nunca aparecían. Ahora mc-api con service_role devuelve los servers + role del user.
         let membershipsWithServers = rawMemberships;
-        const sharedServerIds = rawMemberships.map(m => m.server_id);
-        if (sharedServerIds.length > 0) {
-          const { data: sharedServerRows } = await supabaseAnon
-            .from('mc_servers')
-            .select('*')
-            .in('id', sharedServerIds);
-          const serverMap = Object.fromEntries((sharedServerRows || []).map(s => [s.id, s]));
-          membershipsWithServers = rawMemberships.map(m => ({ ...m, mc_servers: serverMap[m.server_id] || null }));
+        if (rawMemberships.length > 0 && (lowerEmail || userId)) {
+          try {
+            const sharedResp = await fetch('https://api.fluxoai.co/api/members/shared-servers?user_id=' + encodeURIComponent(userId) + '&email=' + encodeURIComponent(lowerEmail || ''), {
+              headers: { 'x-api-key': import.meta.env.VITE_MC_API_KEY },
+            });
+            const sharedJson = await sharedResp.json();
+            const sharedRows = Array.isArray(sharedJson?.shared) ? sharedJson.shared : [];
+            const serverMap = Object.fromEntries(sharedRows.map(s => [s.id, s]));
+            membershipsWithServers = rawMemberships.map(m => ({ ...m, mc_servers: serverMap[m.server_id] || null }));
+          } catch (e) {
+            console.warn('[DashboardLayout] shared-servers fetch failed:', e);
+          }
         }
 
         const membershipsResponse = { data: membershipsWithServers };
