@@ -22,31 +22,34 @@ const InviteAcceptModal = ({ token, user, onAccepted, onDismiss }) => {
     const load = async () => {
       if (!token || !user) return;
 
-      // Look up the invite by token
-      const { data: inv, error } = await supabase
-        .from('server_members')
-        .select('*, mc_servers(server_name, ip, port, status_server)')
-        .eq('invite_token', token)
-        .eq('status', 'pending')
-        .maybeSingle();
+      // Use mc-api endpoint with service_role to bypass RLS
+      try {
+        const r = await fetch('https://api.fluxoai.co/api/members/get-invite?token=' + encodeURIComponent(token));
+        const j = await r.json();
 
-      if (error || !inv) {
-        setErrMsg('Esta invitación no existe o ya fue aceptada.');
-        setState('error');
-        return;
-      }
+        if (!r.ok || !j.ok) {
+          setErrMsg(j.message || 'Esta invitación no existe o ya fue aceptada.');
+          setState('error');
+          return;
+        }
 
-      // Email check
-      const userEmail = user.email?.toLowerCase() || '';
-      if (inv.invited_email && inv.invited_email.toLowerCase() !== userEmail) {
-        setState('mismatch');
+        const inv = j.invite;
+
+        // Email check
+        const userEmail = user.email?.toLowerCase() || '';
+        if (inv.invited_email && inv.invited_email.toLowerCase() !== userEmail) {
+          setState('mismatch');
+          setInvite(inv);
+          return;
+        }
+
         setInvite(inv);
-        return;
+        setServer(j.server);
+        setState('ready');
+      } catch (err) {
+        setErrMsg('Error al verificar invitación: ' + err.message);
+        setState('error');
       }
-
-      setInvite(inv);
-      setServer(inv.mc_servers);
-      setState('ready');
     };
 
     load();
@@ -55,27 +58,26 @@ const InviteAcceptModal = ({ token, user, onAccepted, onDismiss }) => {
   const accept = async () => {
     setState('accepting');
     try {
-      const { error } = await supabase
-        .from('server_members')
-        .update({
-          user_id:     user.id,
-          status:      'active',
-          accepted_at: new Date().toISOString(),
-        })
-        .eq('invite_token', token)
-        .eq('status', 'pending');
+      // Get user JWT
+      const { data: { session } } = await supabase.auth.getSession();
+      const accessToken = session?.access_token || localStorage.getItem('minelab-forced-token');
+      if (!accessToken) throw new Error('No hay sesión activa');
 
-      if (error) throw new Error(error.message);
-
-      // Fetch full server object
-      const { data: srv } = await supabase
-        .from('mc_servers')
-        .select('*')
-        .eq('id', invite.server_id)
-        .single();
+      const r = await fetch('https://api.fluxoai.co/api/members/accept-invite', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + accessToken,
+        },
+        body: JSON.stringify({ token }),
+      });
+      const j = await r.json();
+      if (!r.ok || !j.ok) {
+        throw new Error(j.message || j.error || 'Error al aceptar la invitación');
+      }
 
       setState('done');
-      setTimeout(() => onAccepted(srv, invite.role), 1200);
+      setTimeout(() => onAccepted(j.server, j.member?.role || invite?.role), 1200);
     } catch (err) {
       setErrMsg(err.message);
       setState('error');
