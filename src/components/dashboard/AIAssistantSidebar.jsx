@@ -410,7 +410,7 @@ const AIAssistantSidebar = ({ activeServer, user, isMobile = false, onClose = nu
               </div>
             ) : (
               <div className="max-w-[90%] bg-[#171717] border border-[#2A2A2A] text-[#E5E5E5] px-4 py-3.5 rounded-2xl rounded-tl-sm shadow-md text-sm leading-relaxed whitespace-pre-wrap">
-                {msg.text}
+                <Markdown text={msg.text} />
               </div>
             )}
           </div>
