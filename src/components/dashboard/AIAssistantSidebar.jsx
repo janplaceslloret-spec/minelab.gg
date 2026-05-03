@@ -126,8 +126,25 @@ const AIAssistantSidebar = ({ activeServer, user, isMobile = false, onClose = nu
       let data = {};
       try { data = await response.json(); } catch (_) {}
 
-      const assistantText =
+      const rawText =
         data.response || data.output || data.message || data.reply || null;
+
+      // Cleanup defensivo: algunos modelos (DeepSeek, gpt-oss) ocasionalmente
+      // pegan su scratchpad/trace en la respuesta antes del texto real:
+      //   "[Used tools: Tool: X, Input: {...}, Result: [...]] El log no muestra..."
+      // Quitamos cualquier bloque `[Used tools: ...]]` al inicio + espacios sobrantes.
+      const cleanText = rawText
+        ? rawText
+            // bloque al inicio: [Used tools: ... ]] (puede tener varios cierres)
+            .replace(/^\s*\[\s*Used\s+tools?\s*:[\s\S]*?\]\]\s*/i, '')
+            // bloque al inicio: [Tool: ... Result: ... ]
+            .replace(/^\s*\[\s*Tool\s*:[\s\S]*?\]\s*/i, '')
+            // backticks JSON al inicio
+            .replace(/^\s*```[a-z]*\n[\s\S]*?\n```\s*/i, '')
+            .trim()
+        : null;
+
+      const assistantText = cleanText || null;
 
       if (assistantText) {
         setMessages(prev => [...prev, { role: 'assistant', text: assistantText }]);
