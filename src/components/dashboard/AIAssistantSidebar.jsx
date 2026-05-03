@@ -3,6 +3,59 @@ import { Bot, Send, Sparkles, Zap, X } from 'lucide-react';
 import { supabase } from '../../supabaseClient';
 import IncidentBanner from './IncidentBanner';
 
+/**
+ * Renderiza markdown ligero (bold, italic, code, headings, bullets, links)
+ * de forma segura sin librerías. Suficiente para los outputs de la IA.
+ */
+const escapeHtml = (s) => s
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');
+
+const renderMarkdown = (text) => {
+  if (!text) return '';
+  let html = escapeHtml(text);
+
+  // Code blocks ```lang\ncode\n```
+  html = html.replace(/```(\w+)?\n([\s\S]*?)```/g, (_, lang, code) =>
+    `<pre class="bg-black/40 border border-white/10 rounded-lg p-2.5 my-2 overflow-x-auto text-[12px] font-mono"><code>${code.trim()}</code></pre>`);
+
+  // Inline code `x`
+  html = html.replace(/`([^`\n]+)`/g, '<code class="bg-white/10 border border-white/15 rounded px-1.5 py-0.5 text-[12px] font-mono text-[#22C55E]">$1</code>');
+
+  // Bold **x**
+  html = html.replace(/\*\*([^*\n]+)\*\*/g, '<strong class="font-bold text-white">$1</strong>');
+
+  // Italic *x* (evitando colisión con bold ya procesado)
+  html = html.replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, '$1<em class="italic">$2</em>');
+
+  // Headings (### x al inicio de línea)
+  html = html.replace(/^#{3,6}\s+(.+)$/gm, '<div class="font-bold text-white text-[14px] mt-3 mb-1">$1</div>');
+  html = html.replace(/^##\s+(.+)$/gm, '<div class="font-bold text-white text-[15px] mt-3 mb-1">$1</div>');
+  html = html.replace(/^#\s+(.+)$/gm, '<div class="font-bold text-white text-[16px] mt-3 mb-1">$1</div>');
+
+  // Numeric list "1. " — solo bold el número
+  html = html.replace(/^(\d+)\.\s+/gm, '<span class="text-[#22C55E] font-bold">$1.</span> ');
+
+  // Bullet list "- "
+  html = html.replace(/^-\s+/gm, '<span class="text-[#22C55E]">•</span> ');
+
+  // Links [text](url)
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-[#22C55E] underline hover:text-[#1faa50]">$1</a>');
+
+  return html;
+};
+
+/** Componente que renderiza markdown como HTML seguro */
+const Markdown = ({ text }) => (
+  <div
+    className="leading-relaxed [&_strong]:font-bold [&_em]:italic"
+    dangerouslySetInnerHTML={{ __html: renderMarkdown(text || '') }}
+  />
+);
+
 const AIAssistantSidebar = ({ activeServer, user, isMobile = false, onClose = null }) => {
   const [inputStr, setInputStr] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -226,7 +279,7 @@ const AIAssistantSidebar = ({ activeServer, user, isMobile = false, onClose = nu
                 </div>
               ) : (
                 <div className="max-w-[90%] bg-[#171717] border border-[#2A2A2A] text-[#E5E5E5] px-4 py-3.5 rounded-2xl rounded-tl-sm shadow-md text-sm leading-relaxed whitespace-pre-wrap">
-                  {msg.text}
+                  <Markdown text={msg.text} />
                 </div>
               )}
             </div>
