@@ -317,8 +317,14 @@ const DashboardLayout = () => {
         setPlanStatus(currentPlanStatus);
 
         if (servers && servers.length > 0) {
-          // Prefer a non-draft server, otherwise just the first one
-          const currentServer = servers.find(s => s.status !== 'draft') || servers[0];
+          // If URL has ?server=<UUID> (admin deep-link), pre-select that server.
+          let preselected = null;
+          try {
+            const urlSrv = new URLSearchParams(window.location.search).get('server');
+            if (urlSrv) preselected = servers.find(s => s.id === urlSrv);
+          } catch (e) {}
+          // Prefer URL-pinned, then a non-draft server, otherwise the first
+          const currentServer = preselected || servers.find(s => s.status !== 'draft') || servers[0];
           setActiveServer(currentServer);
           setAllServers(servers);
         }
