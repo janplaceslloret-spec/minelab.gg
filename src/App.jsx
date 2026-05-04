@@ -38,19 +38,42 @@ function ProtectedPanel() {
   const navigate = useNavigate();
   useEffect(() => {
     let active = true;
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // If user is returning from Stripe checkout, retry getSession() a few times
+    // before bouncing to landing — Supabase hydrates from localStorage async
+    // and a single check can race with the redirect.
+    const isPostStripe =
+      /[?&](stripe_success|paid)=1/.test(window.location.search);
+    const maxAttempts = isPostStripe ? 12 : 1; // ~6s grace post-Stripe
+    let attempts = 0;
+    const check = async () => {
+      attempts += 1;
+      const { data: { session } } = await supabase.auth.getSession();
       if (!active) return;
       const ok = !!session || !!localStorage.getItem('minelab-forced-token');
-      setState(ok ? 'auth' : 'guest');
-      if (!ok) {
-        // No session: bounce to landing, preserve query params
-        navigate('/' + window.location.search, { replace: true });
+      if (ok) { setState('auth'); return; }
+      if (attempts < maxAttempts) {
+        setTimeout(check, 500);
+        return;
       }
-    });
+      setState('guest');
+      navigate('/' + window.location.search, { replace: true });
+    };
+    check();
     return () => { active = false; };
   }, [navigate]);
   if (state === 'loading') {
-    return <div className="min-h-screen bg-background text-primary flex items-center justify-center">Cargando...</div>;
+    const isPostStripe =
+      /[?&](stripe_success|paid)=1/.test(window.location.search);
+    return (
+      <div className="min-h-screen bg-background text-primary flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-10 h-10 border-2 border-accent-green border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="text-sm">
+            {isPostStripe ? '✅ Pago confirmado · preparando tu panel...' : 'Cargando...'}
+          </div>
+        </div>
+      </div>
+    );
   }
   if (state === 'guest') return null;
   return <DashboardLayout />;
