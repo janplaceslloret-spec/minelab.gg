@@ -133,6 +133,17 @@ function App() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsLoggedIn(!!session || !!localStorage.getItem('minelab-forced-token'));
+      // Track signup the first time we see a session for this visitor (vid).
+      // The beacon backend dedupes by vid+email so no duplicates.
+      try {
+        const u = session?.user;
+        if (u && u.email && _event === 'SIGNED_IN' && !localStorage.getItem('ml_signup_tracked')) {
+          localStorage.setItem('ml_signup_tracked', '1');
+          if (typeof window !== 'undefined' && typeof window.__ml_track === 'function') {
+            window.__ml_track('signup', { email: u.email });
+          }
+        }
+      } catch (e) {}
     });
 
     return () => subscription.unsubscribe();
