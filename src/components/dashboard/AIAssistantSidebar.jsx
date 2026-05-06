@@ -375,7 +375,7 @@ const AIAssistantSidebar = ({ activeServer, user, isMobile = false, onClose = nu
           <div className="w-8 h-8 rounded-full bg-[#171717] flex items-center justify-center border border-[#22C55E]/30 shadow-[0_0_15px_rgba(34,197,94,0.2)]">
             <Bot size={16} className="text-[#22C55E]" />
           </div>
-          <div>
+          <div className="flex-1">
             <h3 className="text-sm font-bold text-[#FFFFFF] tracking-wide flex items-center gap-1.5">
               ASISTENTE IA <Sparkles size={12} className="text-[#22C55E] opacity-80" />
             </h3>
@@ -383,6 +383,15 @@ const AIAssistantSidebar = ({ activeServer, user, isMobile = false, onClose = nu
               <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] animate-pulse inline-block shadow-[0_0_8px_#22C55E] shrink-0"></span> ONLINE
             </p>
           </div>
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="w-8 h-8 rounded-lg bg-[#2A2A2A] flex items-center justify-center text-[#B3B3B3] hover:text-white hover:bg-red-500/20 transition-colors shrink-0"
+              title="Cerrar chat IA"
+            >
+              <X size={16} />
+            </button>
+          )}
         </div>
 
         {/* Quick Actions */}

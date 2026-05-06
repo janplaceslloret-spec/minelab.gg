@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { supabase } from '../../supabaseClient';
-import { Play, Square, RotateCcw, Activity, Cpu, Users, Layers, AlertCircle, Copy, Terminal, Zap, ChevronDown, Check, FolderOpen, LayoutDashboard, Globe, MessageSquare } from 'lucide-react';
+import { Play, Square, RotateCcw, Activity, Cpu, Users, Layers, AlertCircle, Copy, Terminal, Zap, ChevronDown, Check, FolderOpen, LayoutDashboard, Globe, MessageSquare, Loader2 } from 'lucide-react';
 import ConsoleView from './ConsoleView';
-import FileManagerView from './FileManagerView';
+const FileManagerView = lazy(() => import('./FileManagerView'));
 import SettingsView from './SettingsView';
 import PlayersView from './PlayersView';
 import ConfigView from './ConfigView';
@@ -404,7 +404,9 @@ const MainContent = ({ planStatus, server, activeTab = 'overview', user, onServe
         )}
 
         {activeTab === 'files' && (
-           <FileManagerView server={server} />
+           <Suspense fallback={<div className="flex items-center justify-center p-12 text-[#6B6B6B]"><Loader2 className="animate-spin" size={24} /></div>}>
+             <FileManagerView server={server} />
+           </Suspense>
         )}
 
         {activeTab === 'settings' && (

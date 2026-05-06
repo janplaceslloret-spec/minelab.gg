@@ -28,6 +28,12 @@ const DashboardLayout = () => {
   const [activeTab, setActiveTab] = useState('overview'); // Controls MainContent views
   const [isActionLoading, setIsActionLoading] = useState(false);
   const [mobileChatOpen, setMobileChatOpen] = useState(false);
+  const [aiOpen, setAiOpen] = useState(() => {
+    try { return localStorage.getItem('minelab-ai-sidebar-closed') !== '1'; } catch { return true; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem('minelab-ai-sidebar-closed', aiOpen ? '0' : '1'); } catch {}
+  }, [aiOpen]);
   const [paymentFailed, setPaymentFailed] = useState(false);
   const [sharedServers, setSharedServers] = useState([]); // servers the user was invited to
   const [pendingInviteToken, setPendingInviteToken] = useState(null); // ?invite= URL param
@@ -717,8 +723,21 @@ const DashboardLayout = () => {
               onServerAction={handleServerAction}
               memberRole={memberRole}
             />
-            {(planStatus !== 'none' || sharedServers.length > 0) && <AIAssistantSidebar activeServer={activeServer} user={user} />}
-            <DiscordWidget className="bottom-6 right-[380px]" />
+            {(planStatus !== 'none' || sharedServers.length > 0) && aiOpen && (
+              <AIAssistantSidebar activeServer={activeServer} user={user} onClose={() => setAiOpen(false)} />
+            )}
+            {/* Botón flotante para reabrir chat IA en desktop */}
+            {(planStatus !== 'none' || sharedServers.length > 0) && !aiOpen && (
+              <button
+                onClick={() => setAiOpen(true)}
+                className="hidden lg:flex fixed bottom-6 right-6 z-40 items-center gap-2 bg-[#22C55E] hover:bg-[#1faa50] text-[#0B0B0B] px-4 py-3 rounded-full shadow-[0_0_25px_rgba(34,197,94,0.4)] hover:shadow-[0_0_35px_rgba(34,197,94,0.6)] transition-all group"
+                title="Abrir chat IA"
+              >
+                <MessageCircle size={18} className="group-hover:scale-110 transition-transform" />
+                <span className="text-xs font-bold uppercase tracking-wider">Chat IA</span>
+              </button>
+            )}
+            <DiscordWidget className={aiOpen ? "bottom-6 right-[380px]" : "bottom-6 right-[170px]"} />
             <WelcomeTour user={user} server={activeServer} />
           </>
         )}

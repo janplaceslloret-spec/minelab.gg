@@ -32,11 +32,19 @@ export default defineConfig({
             './src/components/dashboard/Sidebar.jsx',
             './src/components/dashboard/ConsoleView.jsx',
             './src/components/dashboard/BackupsView.jsx',
-            './src/components/dashboard/FileManagerView.jsx',
             './src/components/dashboard/ConfigView.jsx',
             './src/components/dashboard/PlayersView.jsx',
             './src/components/dashboard/SettingsView.jsx',
             './src/components/dashboard/AIAssistantSidebar.jsx',
+          ],
+          // FileManagerView con CodeMirror (lazy on demand)
+          'file-editor': [
+            './src/components/dashboard/FileManagerView.jsx',
+            '@uiw/react-codemirror',
+            '@codemirror/lang-yaml',
+            '@codemirror/lang-json',
+            '@codemirror/lang-javascript',
+            '@codemirror/theme-one-dark',
           ],
         }
       }

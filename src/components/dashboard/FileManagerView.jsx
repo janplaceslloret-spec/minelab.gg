@@ -1,7 +1,36 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { FolderOpen, File, Download, Trash2, Upload, ChevronLeft, Save, Edit3, X, Loader2, AlertTriangle } from 'lucide-react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
+import { FolderOpen, File, Download, Trash2, Upload, ChevronLeft, Save, Edit3, X, Loader2, AlertTriangle, Maximize2, Minimize2 } from 'lucide-react';
+import CodeMirror from '@uiw/react-codemirror';
+import { yaml } from '@codemirror/lang-yaml';
+import { json } from '@codemirror/lang-json';
+import { javascript } from '@codemirror/lang-javascript';
+import { oneDark } from '@codemirror/theme-one-dark';
+import { EditorView } from '@codemirror/view';
 
 const API_KEY = import.meta.env.VITE_MC_API_KEY;
+
+/* ── Detectar lenguaje por extensión de archivo ──────────────────────── */
+const detectLanguage = (filename = '') => {
+  const ext = filename.toLowerCase().split('.').pop();
+  if (['yml', 'yaml'].includes(ext)) return [yaml()];
+  if (['json', 'mcmeta'].includes(ext)) return [json()];
+  if (['js', 'mjs', 'cjs', 'ts'].includes(ext)) return [javascript()];
+  if (['sk', 'skript'].includes(ext)) return [yaml()]; // Skript se parece a yaml visualmente
+  return [];
+};
+
+/* ── Tema custom: gutter de líneas + active line + sin altura mínima ──── */
+const editorTheme = EditorView.theme({
+  '&': { fontSize: '13px', height: '100%' },
+  '.cm-scroller': { fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace', overflow: 'auto' },
+  '.cm-gutters': { backgroundColor: '#0B0B0B', borderRight: '1px solid #2A2A2A', color: '#6B6B6B' },
+  '.cm-activeLineGutter': { backgroundColor: 'rgba(34, 197, 94, 0.08)', color: '#22C55E' },
+  '.cm-activeLine': { backgroundColor: 'rgba(34, 197, 94, 0.04)' },
+  '.cm-content': { padding: '12px 0' },
+  '.cm-cursor': { borderLeftColor: '#22C55E' },
+  '&.cm-focused': { outline: 'none' },
+  '.cm-selectionBackground': { backgroundColor: 'rgba(34, 197, 94, 0.18) !important' },
+});
 
 /* ── Confirmation Modal ────────────────────────────────────────────── */
 const ConfirmModal = ({ name, onConfirm, onCancel }) => (
@@ -42,7 +71,28 @@ const FileManagerView = ({ server }) => {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(null); // { name, path }
+  const [maximized, setMaximized] = useState(false);
   const fileInputRef = useRef(null);
+
+  // Memoize language extensions per selected file (evita re-render del editor)
+  const languageExt = useMemo(
+    () => (selectedFile ? detectLanguage(selectedFile.name) : []),
+    [selectedFile?.name]
+  );
+
+  // Atajo teclado: Esc cierra fullscreen; Ctrl+S guarda
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === 'Escape' && maximized) setMaximized(false);
+      if ((e.ctrlKey || e.metaKey) && e.key === 's' && selectedFile) {
+        e.preventDefault();
+        saveFile();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [maximized, selectedFile, content]);
 
   const serverId = server?.id;
 
@@ -309,15 +359,23 @@ const FileManagerView = ({ server }) => {
             <>
               {/* Editor Header */}
               <div className="px-6 py-4 border-b border-[#2A2A2A] bg-[#0B0B0B] flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Edit3 size={18} className="text-[#22C55E]" />
-                  <span className="font-mono text-sm font-bold text-[#FFFFFF]">{selectedFile.name}</span>
+                <div className="flex items-center gap-3 min-w-0">
+                  <Edit3 size={18} className="text-[#22C55E] shrink-0" />
+                  <span className="font-mono text-sm font-bold text-[#FFFFFF] truncate">{selectedFile.name}</span>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={() => setMaximized(true)}
+                    className="p-2 hover:bg-[#2A2A2A] text-[#B3B3B3] hover:text-[#22C55E] rounded-lg transition-colors"
+                    title="Pantalla completa (Esc para salir)"
+                  >
+                    <Maximize2 size={16} />
+                  </button>
                   <button
                     onClick={saveFile}
                     disabled={saving}
                     className="px-4 py-2 bg-[#22C55E] hover:bg-[#1faa50] text-[#0B0B0B] text-sm font-bold rounded-lg flex items-center gap-2 transition-colors disabled:opacity-50"
+                    title="Guardar (Ctrl+S)"
                   >
                     {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
                     Guardar
@@ -332,13 +390,16 @@ const FileManagerView = ({ server }) => {
               </div>
 
               {/* Editor Content */}
-              <div className="flex-1 relative">
+              <div className="flex-1 relative overflow-hidden">
                  {loading && <div className="absolute inset-0 bg-[#121212]/50 backdrop-blur-sm z-10 flex items-center justify-center"><Loader2 className="animate-spin text-[#22C55E]" size={32}/></div>}
-                 <textarea
-                   className="absolute inset-0 w-full h-full bg-[#121212] p-6 text-sm font-mono text-[#E5E5E5] resize-none focus:outline-none scrollbar-thin scrollbar-thumb-zinc-800"
+                 <CodeMirror
                    value={content}
-                   onChange={(e) => setContent(e.target.value)}
-                   spellCheck={false}
+                   onChange={setContent}
+                   theme={oneDark}
+                   extensions={[...languageExt, editorTheme, EditorView.lineWrapping]}
+                   basicSetup={{ lineNumbers: true, highlightActiveLine: true, highlightActiveLineGutter: true, foldGutter: true, autocompletion: false, indentOnInput: false }}
+                   height="100%"
+                   className="absolute inset-0"
                  />
               </div>
             </>
@@ -354,6 +415,50 @@ const FileManagerView = ({ server }) => {
         </div>
 
       </div>
+
+      {/* Modal Fullscreen Editor */}
+      {maximized && selectedFile && (
+        <div className="fixed inset-0 z-[60] flex flex-col bg-[#0B0B0B] animate-in fade-in duration-150">
+          <div className="px-6 py-3 border-b border-[#2A2A2A] bg-[#0B0B0B] flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-3 min-w-0">
+              <Edit3 size={18} className="text-[#22C55E] shrink-0" />
+              <span className="font-mono text-sm font-bold text-white truncate">{selectedFile.name}</span>
+              <span className="text-[10px] text-[#6B6B6B] uppercase tracking-widest hidden sm:inline">{currentPath || 'raíz'}</span>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={saveFile}
+                disabled={saving}
+                className="px-4 py-2 bg-[#22C55E] hover:bg-[#1faa50] text-[#0B0B0B] text-sm font-bold rounded-lg flex items-center gap-2 transition-colors disabled:opacity-50"
+                title="Guardar (Ctrl+S)"
+              >
+                {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                Guardar
+              </button>
+              <button
+                onClick={() => setMaximized(false)}
+                className="p-2 hover:bg-[#2A2A2A] text-[#B3B3B3] hover:text-white rounded-lg transition-colors flex items-center gap-1.5"
+                title="Salir de pantalla completa (Esc)"
+              >
+                <Minimize2 size={16} />
+                <span className="text-xs hidden sm:inline">Esc</span>
+              </button>
+            </div>
+          </div>
+          <div className="flex-1 relative overflow-hidden">
+            <CodeMirror
+              value={content}
+              onChange={setContent}
+              theme={oneDark}
+              extensions={[...languageExt, editorTheme, EditorView.lineWrapping]}
+              basicSetup={{ lineNumbers: true, highlightActiveLine: true, highlightActiveLineGutter: true, foldGutter: true, autocompletion: false, indentOnInput: false }}
+              height="100%"
+              className="absolute inset-0"
+              autoFocus
+            />
+          </div>
+        </div>
+      )}
     </>
   );
 };
