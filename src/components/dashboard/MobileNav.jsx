@@ -163,7 +163,7 @@ const MobileNav = ({
               >
                 <div className="flex flex-col gap-0.5 min-w-0 flex-1">
                   <span className="text-white text-base font-bold truncate uppercase tracking-tight">{server.server_name || 'Servidor'}</span>
-                  <span className="text-white/50 font-mono text-[11px] tracking-widest">{server.ip ? `${server.ip}:${server.port}` : 'IP PENDIENTE'}</span>
+                  <span className="text-white/50 font-mono text-[11px] tracking-widest">{server.slug ? `${server.slug}.minelab.gg` : (server.ip ? `${server.ip}:${server.port}` : 'IP PENDIENTE')}</span>
                 </div>
                 {allServers.length > 1 && (
                   <ChevronDown size={16} className={`text-white/60 shrink-0 transition-transform ${serverPickerOpen ? 'rotate-180' : ''}`} />

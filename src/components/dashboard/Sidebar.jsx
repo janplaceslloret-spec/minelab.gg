@@ -91,7 +91,7 @@ const Sidebar = ({ viewState = 'dashboard', planStatus = 'none', onCreateServer,
               >
                 <div className="flex flex-col gap-0.5 min-w-0">
                   <span className="text-white text-sm font-bold truncate uppercase tracking-tight">{server.server_name || "Servidor"}</span>
-                  <span className="text-[#6B6B6B] font-mono text-[10px] tracking-widest">{server.ip ? `${server.ip}:${server.port}` : "IP PENDIENTE"}</span>
+                  <span className="text-[#6B6B6B] font-mono text-[10px] tracking-widest">{server.slug ? `${server.slug}.minelab.gg` : (server.ip ? `${server.ip}:${server.port}` : "IP PENDIENTE")}</span>
                 </div>
                 {allServers.length > 1 && (
                   <ChevronDown size={14} className={`text-[#6B6B6B] shrink-0 transition-transform ${serverPickerOpen ? 'rotate-180' : ''}`} />

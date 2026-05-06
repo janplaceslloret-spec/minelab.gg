@@ -191,7 +191,7 @@ const MainContent = ({ planStatus, server, activeTab = 'overview', user, onServe
   const canStop = status === 'running';
   const canRestart = status === 'running';
   
-  const ipAddress = (server?.ip && server?.port) ? `${server.ip}:${server.port}` : "IP no disponible";
+  const ipAddress = server?.slug ? `${server.slug}.minelab.gg` : ((server?.ip && server?.port) ? `${server.ip}:${server.port}` : "IP no disponible");
 
   const handleCopy = () => {
     navigator.clipboard.writeText(ipAddress);
