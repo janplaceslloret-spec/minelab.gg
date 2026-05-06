@@ -344,17 +344,13 @@ const MainContent = ({ planStatus, server, activeTab = 'overview', user, onServe
                       </span>
                    </div>
                    
-                   <div className="flex flex-col gap-1">
-                      <span className="text-[#6B6B6B] text-[10px] font-bold uppercase tracking-wider">Dirección IP</span>
+                   <div className="flex flex-col gap-1 md:col-span-2">
+                      <span className="text-[#6B6B6B] text-[10px] font-bold uppercase tracking-wider">Dirección de conexión</span>
                       <div className="flex items-center gap-2">
-                         <span className="text-[#E5E5E5] font-mono text-sm">{server?.ip || 'Pendiente'}</span>
-                      </div>
-                   </div>
-
-                   <div className="flex flex-col gap-1">
-                      <span className="text-[#6B6B6B] text-[10px] font-bold uppercase tracking-wider">Puerto</span>
-                      <div className="flex items-center gap-2">
-                         <span className="text-[#E5E5E5] font-mono text-sm">{server?.port || 'Pendiente'}</span>
+                         <span className="text-[#22C55E] font-mono text-sm font-bold">{server?.slug ? `${server.slug}.minelab.gg` : (server?.ip ? `${server.ip}:${server.port}` : 'Pendiente')}</span>
+                         {server?.slug && (
+                           <span className="text-[#6B6B6B] text-[10px] font-mono">(puerto {server.port})</span>
+                         )}
                       </div>
                    </div>
 
