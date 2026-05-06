@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { FolderOpen, File, Download, Trash2, Upload, ChevronLeft, Save, Edit3, X, Loader2, AlertTriangle, Maximize2, Minimize2 } from 'lucide-react';
 import CodeMirror from '@uiw/react-codemirror';
 import { yaml } from '@codemirror/lang-yaml';
@@ -416,9 +417,9 @@ const FileManagerView = ({ server }) => {
 
       </div>
 
-      {/* Modal Fullscreen Editor */}
-      {maximized && selectedFile && (
-        <div className="fixed inset-0 z-[60] flex flex-col bg-[#0B0B0B] animate-in fade-in duration-150">
+      {/* Modal Fullscreen Editor — Portal a document.body para escapar containing blocks con transform */}
+      {maximized && selectedFile && createPortal(
+        <div className="fixed inset-0 z-[100] flex flex-col bg-[#0B0B0B]">
           <div className="px-6 py-3 border-b border-[#2A2A2A] bg-[#0B0B0B] flex items-center justify-between shrink-0">
             <div className="flex items-center gap-3 min-w-0">
               <Edit3 size={18} className="text-[#22C55E] shrink-0" />
@@ -457,7 +458,8 @@ const FileManagerView = ({ server }) => {
               autoFocus
             />
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
