@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
-/* build-bust: 2026-05-06-v2 — fuerza nuevo hash CSS para invalidar caches truncados */
+/* Bust cache 2026-05-06-v3 (fuerza cambio de hash del bundle CSS) */
+.minelab-cache-bust-2026-05-06-v3 { display: none !important; }
 
 @theme {
   --color-background: #0B0F1A;
