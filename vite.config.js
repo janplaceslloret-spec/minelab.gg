@@ -2,11 +2,25 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
+// Plugin: elimina el atributo crossorigin de los <link>/<script> en index.html.
+// Vite lo añade por defecto pero hace que algunos navegadores cacheen una versión
+// truncada del recurso bajo ciertos fallos de red, dejando la página sin estilos
+// hasta limpiar la caché manualmente. Como nuestros assets son same-origin no es
+// necesario y produce este bug.
+const stripCrossorigin = {
+  name: 'strip-crossorigin',
+  enforce: 'post',
+  transformIndexHtml(html) {
+    return html.replace(/\s+crossorigin(="[^"]*")?/g, '')
+  },
+}
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
+    stripCrossorigin,
   ],
   server: {
     proxy: {
@@ -17,6 +31,8 @@ export default defineConfig({
     }
   },
   build: {
+    // Disable crossorigin attribute on assets - evita corrupción de caché en algunos navegadores
+    modulePreload: { polyfill: false },
     rollupOptions: {
       output: {
         manualChunks: {

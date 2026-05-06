@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+/* build-bust: 2026-05-06-v2 — fuerza nuevo hash CSS para invalidar caches truncados */
+
 @theme {
   --color-background: #0B0F1A;
   --color-primary: #FFFFFF;
