@@ -260,6 +260,24 @@ const OrderConfigPage = () => {
   const [submitting, setSubmitting] = useState(false);
   const [user, setUser] = useState(null);
   const versionsRef = useRef(null);
+  const [slugCheck, setSlugCheck] = useState({ status: 'idle', slug: null, suggestions: [], full: null });
+
+  // Comprueba disponibilidad de slug con debounce 400ms
+  useEffect(() => {
+    const name = serverName.trim();
+    if (name.length < 3) { setSlugCheck({ status: 'idle', slug: null, suggestions: [], full: null }); return; }
+    setSlugCheck(s => ({ ...s, status: 'checking' }));
+    const t = setTimeout(async () => {
+      try {
+        const r = await fetch(`${import.meta.env.VITE_API_URL}/api/check-slug?name=${encodeURIComponent(name)}`);
+        const d = await r.json();
+        if (d.available) setSlugCheck({ status: 'available', slug: d.slug, suggestions: [], full: d.full });
+        else if (d.reason === 'taken') setSlugCheck({ status: 'taken', slug: d.slug, suggestions: d.suggestions || [], full: d.full });
+        else setSlugCheck({ status: 'invalid', slug: null, suggestions: [], full: null });
+      } catch { setSlugCheck({ status: 'idle', slug: null, suggestions: [], full: null }); }
+    }, 400);
+    return () => clearTimeout(t);
+  }, [serverName]);
 
   const plan = PLANS[planId];
   const isAnnual = billing === 'annual';
@@ -609,11 +627,55 @@ const OrderConfigPage = () => {
                 onChange={e => setServerName(e.target.value.slice(0, 40))}
                 placeholder="Mi server épico"
                 maxLength={40}
-                className="w-full bg-[#0F0F0F] border-2 border-[#1F1F1F] rounded-xl px-4 py-3.5 text-white placeholder-[#4B4B4B] focus:outline-none focus:border-[#22C55E]/40 transition-colors"
+                className={`w-full bg-[#0F0F0F] border-2 rounded-xl px-4 py-3.5 text-white placeholder-[#4B4B4B] focus:outline-none transition-colors ${
+                  slugCheck.status === 'taken' ? 'border-amber-500/50 focus:border-amber-400' :
+                  slugCheck.status === 'available' ? 'border-[#22C55E]/40 focus:border-[#22C55E]' :
+                  'border-[#1F1F1F] focus:border-[#22C55E]/40'
+                }`}
               />
-              <p className="text-xs text-[#6B6B6B] mt-2">
-                {cleanName.length === 0 ? 'Cómo se llamará en el panel.' : nameValid ? `${cleanName.length}/40 · OK` : 'Mínimo 3 caracteres.'}
-              </p>
+              {/* Indicador de disponibilidad */}
+              <div className="mt-2 min-h-[20px]">
+                {cleanName.length === 0 && (
+                  <p className="text-xs text-[#6B6B6B]">Cómo se llamará en el panel y tu IP de conexión.</p>
+                )}
+                {cleanName.length > 0 && cleanName.length < 3 && (
+                  <p className="text-xs text-[#6B6B6B]">Mínimo 3 caracteres.</p>
+                )}
+                {cleanName.length >= 3 && slugCheck.status === 'checking' && (
+                  <p className="text-xs text-[#6B6B6B] flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-[#6B6B6B] animate-pulse"/>Comprobando…</p>
+                )}
+                {slugCheck.status === 'available' && slugCheck.full && (
+                  <p className="text-xs text-[#22C55E] flex items-center gap-1.5">
+                    <span className="text-base leading-none">✓</span>
+                    Disponible — tu IP será <span className="font-mono font-bold ml-1">{slugCheck.full}</span>
+                  </p>
+                )}
+                {slugCheck.status === 'taken' && (
+                  <div className="text-xs space-y-1.5">
+                    <p className="text-amber-400 flex items-center gap-1.5">
+                      <span className="text-base leading-none">⚠️</span>
+                      <span><span className="font-mono">{slugCheck.slug}</span> ya está cogido. Elige otro nombre o prueba:</span>
+                    </p>
+                    {slugCheck.suggestions.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-1">
+                        {slugCheck.suggestions.map(sug => (
+                          <button
+                            key={sug}
+                            type="button"
+                            onClick={() => setServerName(sug)}
+                            className="px-2.5 py-1 bg-[#22C55E]/10 hover:bg-[#22C55E]/20 border border-[#22C55E]/30 rounded-md font-mono text-[#22C55E] hover:text-[#1faa50] transition-colors text-[11px]"
+                          >
+                            {sug}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+                {slugCheck.status === 'invalid' && (
+                  <p className="text-xs text-amber-400">Usa solo letras, números, espacios o guiones.</p>
+                )}
+              </div>
             </Section>
 
             {/* Software */}
