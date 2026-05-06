@@ -5,7 +5,7 @@ import {
   ChevronRight, Check, ArrowRight, Gamepad2, Sparkles, AlertTriangle
 } from 'lucide-react';
 
-const WEBHOOK = 'https://snack55-n8n1.q7pa8v.easypanel.host/webhook/asistente';
+const WEBHOOK = 'https://n8n.minelab.gg/webhook/asistente';
 const VERSION_WEBHOOK = 'https://api.fluxoai.co/webhook/cambiar-version';
 const VERSIONS_API = 'https://api.fluxoai.co/api/versions';
 

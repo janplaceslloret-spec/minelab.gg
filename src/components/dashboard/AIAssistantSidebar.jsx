@@ -165,7 +165,7 @@ const AIAssistantSidebar = ({ activeServer, user, isMobile = false, onClose = nu
     setIsTyping(true);
 
     try {
-      const response = await fetch('https://snack55-n8n1.q7pa8v.easypanel.host/webhook/asistente', {
+      const response = await fetch('https://n8n.minelab.gg/webhook/asistente', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Search, Download, CheckCircle2, Loader2, Package, Wrench, Puzzle, AlertCircle, ExternalLink, Sparkles, RefreshCw, Trash2, FolderOpen, Library } from 'lucide-react';
 
-const N8N_ASISTENTE = 'https://snack55-n8n1.q7pa8v.easypanel.host/webhook/asistente';
+const N8N_ASISTENTE = 'https://n8n.minelab.gg/webhook/asistente';
 const CATALOG_API = 'https://api.fluxoai.co/api/catalog';
 
 const TYPE_CONFIG = {
