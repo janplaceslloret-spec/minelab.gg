@@ -177,13 +177,13 @@ const SOFTWARES = [
 ];
 
 const FEATURES = (ram) => [
-  `${ram} GB RAM dedicada`,
-  'Procesador AMD última generación',
-  'NVMe SSD local',
-  'Datacenter Europa 🇪🇺 · baja latencia',
-  'DDoS Protection incluida',
-  'Backups automáticos',
-  'Subdominio .minelab.gg',
+  `${ram} GB RAM ECC dedicada`,
+  'AMD Ryzen 9 · 12 cores físicos',
+  'NVMe Datacenter en RAID',
+  'Falkenstein 🇩🇪 · 30 ms desde España',
+  'Anti-DDoS Protection incluida',
+  'Backups automáticos + off-site',
+  'tunombre.minelab.gg sin puerto',
   'Asistente IA · gestión total',
 ];
 
@@ -783,8 +783,8 @@ const OrderConfigPage = () => {
                   <Globe size={20} className="text-[#22C55E]" strokeWidth={2.2} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-white font-black text-sm uppercase tracking-tight">Europa 🇪🇺</p>
-                  <p className="text-[#8B8B8B] text-xs mt-0.5">~12 ms desde España · NVMe ultra-rápido · 1 Gbps</p>
+                  <p className="text-white font-black text-sm uppercase tracking-tight">Falkenstein 🇩🇪</p>
+                  <p className="text-[#8B8B8B] text-xs mt-0.5">~30 ms desde España · NVMe Datacenter · 1 Gbps</p>
                 </div>
                 <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#22C55E]/10 border border-[#22C55E]/20 text-[10px] uppercase font-black tracking-wider text-[#22C55E]">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] animate-pulse" />

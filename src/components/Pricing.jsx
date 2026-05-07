@@ -101,13 +101,13 @@ const Pricing = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
               Servidores Premium 24/7
             </span>
             <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
-              ⚡ Procesador AMD de última generación
+              ⚡ AMD Ryzen 9 · 12 cores dedicados
             </span>
             <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
-              💾 Almacenamiento NVMe ultra-rápido
+              💾 RAM ECC + NVMe Datacenter
             </span>
             <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
-              🌐 1 Gbps · Datacenter Europa 🇪🇺
+              🌐 Datacenter Alemania 🇩🇪 · 30 ms desde España
             </span>
           </div>
 
@@ -181,14 +181,15 @@ const Pricing = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
 
               <ul className="space-y-4 mb-8 flex-1">
                 {[
-                  `${plan.name} dedicada`,
-                  "Procesador AMD de última generación",
+                  `${plan.name} ECC dedicada`,
+                  "AMD Ryzen 9 · 12 cores físicos dedicados",
                   "1 Gbps de ancho de banda",
-                  "Almacenamiento NVMe ultra-rápido",
-                  "Datacenter Europa 🇪🇺 · baja latencia",
+                  "NVMe Datacenter en RAID · IOPS empresariales",
+                  "Datacenter Falkenstein 🇩🇪 · 30 ms desde España",
                   "Protección Anti-DDoS incluida",
-                  "Backups automáticos diarios",
+                  "Backups automáticos diarios + off-site",
                   "Asistente IA · gestión total por chat",
+                  "Subdominio personalizado tunombre.minelab.gg",
                   "Compatible con Paper, Forge, Fabric, NeoForge y Vanilla"
                 ].map((feat, f_idx) => (
                   <li key={f_idx} className="flex items-start gap-3 justify-start text-white/80 text-[13px] text-left">
