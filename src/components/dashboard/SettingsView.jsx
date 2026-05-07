@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Shield, Zap, Settings, FolderSync, Copy, Check, RefreshCw, Loader2, Eye, EyeOff, Plug, ArrowUpRight, TrendingUp, Sparkles, X, ChevronUp, AlertCircle } from 'lucide-react';
+import { User, Shield, Zap, Settings, FolderSync, Copy, Check, RefreshCw, Loader2, Eye, EyeOff, Plug, ArrowUpRight, TrendingUp, Sparkles, X, ChevronUp, AlertCircle, Gift } from 'lucide-react';
 import { supabase } from '../../supabaseClient';
 import MembersCard from './MembersCard';
 
@@ -8,6 +8,43 @@ const API_KEY = import.meta.env.VITE_MC_API_KEY;
 
 const SFTP_HOST = '46.225.115.78';
 const SFTP_PORT = 22;
+
+/* ── Referral Card — share & earn ──────────────────────────────── */
+const ReferralCard = ({ userId }) => {
+  const [copied, setCopied] = useState(false);
+  const refLink = `https://minelab.gg/configurar?ref=${userId}`;
+  const copy = () => {
+    navigator.clipboard.writeText(refLink).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    });
+  };
+  return (
+    <div className="bg-gradient-to-br from-[#22C55E]/8 via-[#171717] to-[#171717] border border-[#22C55E]/20 rounded-xl p-6 flex flex-col shadow-sm">
+      <h3 className="text-[#22C55E] text-lg font-bold mb-2 flex items-center gap-2">
+        <Gift size={18} /> Comparte y gana
+      </h3>
+      <p className="text-[#9CA3AF] text-xs leading-relaxed mb-4">
+        Invita a un amigo. Si paga su primer mes, recibís <strong className="text-[#22C55E]">25% de descuento</strong> los dos en la siguiente factura.
+      </p>
+      <div className="flex flex-col gap-1.5 mb-3">
+        <span className="text-[#6B6B6B] text-[10px] uppercase font-bold tracking-widest">Tu link personal</span>
+        <div className="flex items-center gap-2 bg-[#0B0B0B] border border-[#2A2A2A] rounded-lg px-3 py-2.5">
+          <span className="font-mono text-[11px] text-[#B3B3B3] truncate flex-1 select-all">{refLink}</span>
+          <button
+            onClick={copy}
+            className={`shrink-0 px-3 py-1.5 rounded-md text-[10px] font-black uppercase tracking-wider transition-colors flex items-center gap-1 ${copied ? 'bg-[#22C55E] text-black' : 'bg-[#22C55E]/10 hover:bg-[#22C55E]/20 text-[#22C55E] border border-[#22C55E]/30'}`}
+          >
+            {copied ? <><Check size={12} /> Copiado</> : <><Copy size={12} /> Copiar</>}
+          </button>
+        </div>
+      </div>
+      <p className="text-[#6B6B6B] text-[10px] leading-relaxed">
+        Compártelo en Discord, TikTok o donde quieras. Tracking activo desde el primer click — el descuento se aplica manualmente tras verificar el pago. Pronto será automático.
+      </p>
+    </div>
+  );
+};
 
 /* ── Small copy button ─────────────────────────────────────────── */
 const CopyBtn = ({ value }) => {
@@ -182,6 +219,11 @@ const SettingsView = ({ planStatus, user, server, onServerUpdate, memberRole = '
             </button>
           </div>
         </div>
+
+        {/* Referral Card — comparte y gana */}
+        {user?.id && (
+          <ReferralCard userId={user.id} />
+        )}
 
         {/* Active Subscription Card */}
         <div className="bg-[#171717] border border-[#2A2A2A] rounded-xl p-6 flex flex-col shadow-sm">

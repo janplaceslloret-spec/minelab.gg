@@ -246,6 +246,17 @@ const OrderConfigPage = () => {
   const initialPlanId = params.get('plan') || stored.planId || '6gb';
   const initialBilling = params.get('billing') || stored.billing || 'monthly';
 
+  // Tracking referido: si entra con ?ref=USER_ID lo persistimos para attribution post-pago
+  useEffect(() => {
+    const ref = params.get('ref');
+    if (ref && /^[0-9a-f-]{36}$/i.test(ref)) {
+      try {
+        localStorage.setItem('minelab-ref', ref);
+        localStorage.setItem('minelab-ref-at', String(Date.now()));
+      } catch {}
+    }
+  }, []);
+
   const [planId, setPlanId] = useState(PLANS[initialPlanId] ? initialPlanId : '6gb');
   const [billing, setBilling] = useState(initialBilling);
   const [templateId, setTemplateId] = useState(stored.templateId || null);
