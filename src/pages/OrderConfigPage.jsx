@@ -2,7 +2,8 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Check, ChevronRight, ArrowRight, Loader2, ServerCog, Globe,
-  Tag, AlertTriangle, ChevronLeft, Box, Sparkles, Search, Wand2
+  Tag, AlertTriangle, ChevronLeft, Box, Sparkles, Search, Wand2,
+  Package, X, FileText
 } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 
@@ -273,6 +274,15 @@ const OrderConfigPage = () => {
   const versionsRef = useRef(null);
   const [slugCheck, setSlugCheck] = useState({ status: 'idle', slug: null, suggestions: [], full: null });
 
+  // Modpack browser (sólo aplicable a Forge/Fabric/NeoForge)
+  const [modpackQuery, setModpackQuery] = useState('');
+  const [modpackResults, setModpackResults] = useState([]);
+  const [modpackLoading, setModpackLoading] = useState(false);
+  const [selectedModpack, setSelectedModpack] = useState(stored.modpack || null);
+
+  // Términos y condiciones — obligatorio para checkout (protección legal)
+  const [termsAccepted, setTermsAccepted] = useState(false);
+
   // Comprueba disponibilidad de slug con debounce 400ms
   useEffect(() => {
     const name = serverName.trim();
@@ -308,8 +318,52 @@ const OrderConfigPage = () => {
   useEffect(() => {
     localStorage.setItem(DRAFT_KEY, JSON.stringify({
       planId, billing, templateId, serverName, software, version, coupon,
+      modpack: selectedModpack,
     }));
-  }, [planId, billing, templateId, serverName, software, version, coupon]);
+  }, [planId, billing, templateId, serverName, software, version, coupon, selectedModpack]);
+
+  /* Modpack search — debounce 400ms, sólo si software es mod loader */
+  useEffect(() => {
+    const isModLoader = ['forge', 'fabric', 'neoforge'].includes(software);
+    if (!isModLoader) { setModpackResults([]); return; }
+    const t = setTimeout(async () => {
+      setModpackLoading(true);
+      try {
+        const q = modpackQuery.trim() || 'popular';
+        const url = `${import.meta.env.VITE_API_URL || 'https://api.fluxoai.co'}/api/catalog/search?q=${encodeURIComponent(q)}&type=modpack&server_type=${software}&limit=8&sort=popular`;
+        const r = await fetch(url);
+        const j = await r.json();
+        setModpackResults(Array.isArray(j.items) ? j.items : []);
+      } catch { setModpackResults([]); }
+      finally { setModpackLoading(false); }
+    }, 400);
+    return () => clearTimeout(t);
+  }, [modpackQuery, software]);
+
+  /* Si el software cambia a non-mod-loader (paper/vanilla), limpiar modpack elegido */
+  useEffect(() => {
+    if (!['forge', 'fabric', 'neoforge'].includes(software) && selectedModpack) {
+      setSelectedModpack(null);
+    }
+  }, [software, selectedModpack]);
+
+  /* Pick modpack: aplica versión recomendada y limpia template */
+  const pickModpack = (mp) => {
+    setSelectedModpack({
+      project_id: mp.project_id,
+      name: mp.name,
+      image: mp.image,
+      description: mp.description,
+      downloads: mp.downloads,
+      project_url: mp.project_url,
+      versions: mp.versions || [],
+    });
+    setTemplateId(null);
+    if (mp.versions && mp.versions[0] && versions.includes(mp.versions[0])) {
+      setVersion(mp.versions[0]);
+    }
+    if (!serverName.trim()) setServerName(mp.name);
+  };
 
   /* Apply template selection — autopopula software, version, nombre sugerido */
   const applyTemplate = (tpl) => {
@@ -378,7 +432,7 @@ const OrderConfigPage = () => {
   /* Validation */
   const cleanName = serverName.trim();
   const nameValid = cleanName.length >= 3 && cleanName.length <= 40;
-  const canCheckout = nameValid && version && plan && !submitting;
+  const canCheckout = nameValid && version && plan && termsAccepted && !submitting;
 
   /* Create draft + checkout */
   async function handleCheckout() {
@@ -416,9 +470,17 @@ const OrderConfigPage = () => {
         mods: false,
         mod_count: 0,
       };
-      const draftPayload = templateId && !selectedTemplate?.custom
-        ? { ...baseDraft, template: templateId }
-        : baseDraft;
+      // Componer payload con template y/o modpack si aplican.
+      // Las columnas `template` y `modpack_project_id` pueden no existir aún en
+      // la tabla; si insert falla con "column does not exist" se reintenta sin.
+      let draftPayload = { ...baseDraft };
+      if (templateId && !selectedTemplate?.custom) {
+        draftPayload.template = templateId;
+      }
+      if (selectedModpack?.project_id) {
+        draftPayload.modpack_project_id = selectedModpack.project_id;
+        draftPayload.modpack_name = selectedModpack.name;
+      }
 
       let { data: draft, error: insErr } = await supabase
         .from('mc_servers')
@@ -426,9 +488,9 @@ const OrderConfigPage = () => {
         .select('id')
         .single();
 
-      // Fallback si la columna template aún no existe en producción
-      if (insErr && /column.*template.*does not exist|template/i.test(insErr.message || '')) {
-        console.warn('[OrderConfig] template column missing, retry without it');
+      // Fallback si alguna columna opcional aún no existe en producción
+      if (insErr && /column.*(template|modpack).*does not exist/i.test(insErr.message || '')) {
+        console.warn('[OrderConfig] optional column missing, retry without modpack/template fields');
         const retry = await supabase
           .from('mc_servers')
           .insert(baseDraft)
@@ -776,8 +838,135 @@ const OrderConfigPage = () => {
               </div>
             </Section>
 
+            {/* Modpack picker — sólo visible para Forge/Fabric/NeoForge */}
+            {['forge', 'fabric', 'neoforge'].includes(software) && (
+              <Section number="06" title="¿Quieres un modpack?">
+                <p className="text-[#8B8B8B] text-sm mb-4 -mt-2">
+                  Busca cualquier modpack de CurseForge. Se instala automático tras pagar.
+                </p>
+
+                {/* Modpack seleccionado — card destacada con imagen */}
+                {selectedModpack ? (
+                  <div className="relative p-4 rounded-2xl border-2 border-[#22C55E]/40 bg-[#22C55E]/[0.06] shadow-[0_0_24px_rgba(34,197,94,0.15)] mb-3">
+                    <button
+                      onClick={() => setSelectedModpack(null)}
+                      className="absolute top-2 right-2 w-7 h-7 rounded-lg bg-[#0A0A0A]/80 border border-white/10 hover:border-[#22C55E]/40 flex items-center justify-center text-[#8B8B8B] hover:text-white transition-colors"
+                      aria-label="Quitar modpack"
+                    >
+                      <X size={13} />
+                    </button>
+                    <div className="flex items-start gap-4">
+                      {selectedModpack.image && (
+                        <img
+                          src={selectedModpack.image}
+                          alt={selectedModpack.name}
+                          className="w-20 h-20 rounded-xl object-cover bg-[#0A0A0A] border border-white/10 shrink-0"
+                          onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                        />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[10px] uppercase font-black text-[#22C55E] tracking-[0.2em] mb-1 flex items-center gap-1.5">
+                          <Check size={11} strokeWidth={3} /> Modpack elegido
+                        </p>
+                        <p className="text-white font-black text-base uppercase tracking-tight mb-1">
+                          {selectedModpack.name}
+                        </p>
+                        {selectedModpack.downloads > 0 && (
+                          <p className="text-[#22C55E] text-xs font-bold mb-1.5">
+                            {(selectedModpack.downloads / 1e6).toFixed(1)}M descargas
+                          </p>
+                        )}
+                        <p className="text-[#B3B3B3] text-xs leading-snug line-clamp-2">
+                          {selectedModpack.description}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+
+                {/* Buscador */}
+                <div className="relative mb-3">
+                  <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#6B6B6B]" />
+                  <input
+                    type="text"
+                    value={modpackQuery}
+                    onChange={e => setModpackQuery(e.target.value)}
+                    placeholder={`Buscar modpacks ${software === 'forge' ? 'Forge' : software === 'fabric' ? 'Fabric' : 'NeoForge'} (ej. RLCraft, ATM, Cobblemon…)`}
+                    className="w-full bg-[#0F0F0F] border-2 border-[#1F1F1F] rounded-xl pl-10 pr-4 py-3 text-white placeholder-[#4B4B4B] focus:outline-none focus:border-[#22C55E]/40 transition-colors text-sm"
+                  />
+                  {modpackLoading && (
+                    <Loader2 size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#22C55E] animate-spin" />
+                  )}
+                </div>
+
+                {/* Resultados */}
+                {modpackResults.length > 0 && (
+                  <div className="grid grid-cols-2 md:grid-cols-2 gap-2.5">
+                    {modpackResults.map(mp => {
+                      const sel = selectedModpack?.project_id === mp.project_id;
+                      return (
+                        <button
+                          key={mp.project_id}
+                          onClick={() => pickModpack(mp)}
+                          className={`text-left p-3 rounded-xl border-2 transition-all flex gap-3 ${
+                            sel
+                              ? 'border-[#22C55E] bg-[#22C55E]/5 shadow-[0_0_18px_rgba(34,197,94,0.18)]'
+                              : 'border-[#1F1F1F] bg-[#0F0F0F] hover:border-[#2A2A2A] hover:bg-[#141414]'
+                          }`}
+                        >
+                          {mp.image ? (
+                            <img
+                              src={mp.image}
+                              alt={mp.name}
+                              className="w-14 h-14 rounded-lg object-cover bg-[#0A0A0A] border border-white/5 shrink-0"
+                              loading="lazy"
+                              onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                            />
+                          ) : (
+                            <div className="w-14 h-14 rounded-lg bg-[#1A1A1A] border border-white/5 flex items-center justify-center shrink-0">
+                              <Package size={20} className="text-[#4B4B4B]" />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <p className={`font-black text-xs uppercase tracking-tight mb-0.5 truncate ${sel ? 'text-[#22C55E]' : 'text-white'}`}>
+                              {mp.name}
+                            </p>
+                            {mp.downloads > 0 && (
+                              <p className="text-[10px] text-[#22C55E]/80 font-bold mb-1">
+                                {mp.downloads >= 1e6
+                                  ? `${(mp.downloads / 1e6).toFixed(1)}M`
+                                  : `${Math.round(mp.downloads / 1000)}k`} descargas
+                              </p>
+                            )}
+                            <p className="text-[10px] text-[#8B8B8B] leading-snug line-clamp-2">
+                              {mp.description}
+                            </p>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {!modpackLoading && modpackResults.length === 0 && modpackQuery.trim() && (
+                  <p className="text-xs text-[#6B6B6B] text-center py-4">
+                    Sin resultados para "{modpackQuery}". Prueba otro nombre.
+                  </p>
+                )}
+
+                {selectedModpack && (
+                  <div className="mt-3 p-3 rounded-xl border border-[#22C55E]/20 bg-[#22C55E]/[0.04] flex items-start gap-2.5">
+                    <Wand2 size={14} className="text-[#22C55E] mt-0.5 shrink-0" />
+                    <p className="text-xs text-[#B3B3B3] leading-relaxed">
+                      Tras pagar, di al chat IA: <span className="text-[#22C55E] font-mono font-bold">"instálame el modpack {selectedModpack.name}"</span> y se configura automáticamente (descarga ~1-5 min).
+                    </p>
+                  </div>
+                )}
+              </Section>
+            )}
+
             {/* Location (info card, single location) */}
-            <Section number="06" title="Ubicación">
+            <Section number={['forge', 'fabric', 'neoforge'].includes(software) ? '07' : '06'} title="Ubicación">
               <div className="bg-[#0F0F0F] border-2 border-[#1F1F1F] rounded-xl p-4 flex items-center gap-4">
                 <div className="w-12 h-12 rounded-xl bg-[#22C55E]/10 border border-[#22C55E]/30 flex items-center justify-center shrink-0">
                   <Globe size={20} className="text-[#22C55E]" strokeWidth={2.2} />
@@ -794,7 +983,7 @@ const OrderConfigPage = () => {
             </Section>
 
             {/* Coupon — solo válido en pagos mensuales (los anuales NO admiten códigos) */}
-            <Section number="07" title="¿Tienes un cupón?">
+            <Section number={['forge', 'fabric', 'neoforge'].includes(software) ? '08' : '07'} title="¿Tienes un cupón?">
               {isAnnual ? (
                 <div className="rounded-xl border-2 border-[#F59E0B]/30 bg-[#F59E0B]/5 px-4 py-4 flex items-start gap-3">
                   <Tag size={16} className="text-[#F59E0B] shrink-0 mt-0.5" />
@@ -818,6 +1007,57 @@ const OrderConfigPage = () => {
               )}
             </Section>
 
+            {/* Términos y condiciones — obligatorio para pagar */}
+            <Section number={['forge', 'fabric', 'neoforge'].includes(software) ? '09' : '08'} title="Términos y condiciones">
+              <label
+                htmlFor="terms-checkbox"
+                className={`flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                  termsAccepted
+                    ? 'border-[#22C55E]/40 bg-[#22C55E]/[0.06] shadow-[0_0_18px_rgba(34,197,94,0.10)]'
+                    : 'border-[#1F1F1F] bg-[#0F0F0F] hover:border-[#2A2A2A]'
+                }`}
+              >
+                <input
+                  id="terms-checkbox"
+                  type="checkbox"
+                  checked={termsAccepted}
+                  onChange={e => setTermsAccepted(e.target.checked)}
+                  className="sr-only"
+                />
+                <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 mt-0.5 transition-all ${
+                  termsAccepted
+                    ? 'border-[#22C55E] bg-[#22C55E]'
+                    : 'border-[#3A3A3A] bg-[#0A0A0A]'
+                }`}>
+                  {termsAccepted && <Check size={13} strokeWidth={3} className="text-[#0A0A0A]" />}
+                </div>
+                <div className="flex-1 text-sm leading-relaxed">
+                  <p className="text-white font-bold mb-1 flex items-center gap-1.5">
+                    <FileText size={13} className="text-[#22C55E]" />
+                    Acepto los términos del servicio
+                  </p>
+                  <p className="text-[#8B8B8B] text-xs">
+                    He leído y acepto los{' '}
+                    <a
+                      href="/#terms"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={e => e.stopPropagation()}
+                      className="text-[#22C55E] underline hover:text-[#1eb754]"
+                    >Términos de Servicio</a>{' '}y la{' '}
+                    <a
+                      href="/#privacy"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={e => e.stopPropagation()}
+                      className="text-[#22C55E] underline hover:text-[#1eb754]"
+                    >Política de Privacidad</a>
+                    {' '}de MineLab. Confirmo que tengo al menos 16 años o cuento con permiso de mi tutor legal.
+                  </p>
+                </div>
+              </label>
+            </Section>
+
             {/* Mobile-only checkout button */}
             <button
               onClick={handleCheckout}
@@ -830,6 +1070,11 @@ const OrderConfigPage = () => {
             >
               {submitting ? <><Loader2 size={14} className="animate-spin" /> Procesando…</> : <>Continuar al pago · {fmtEur(totalToday)}€ <ArrowRight size={14} strokeWidth={3} /></>}
             </button>
+            {!termsAccepted && nameValid && version && (
+              <p className="lg:hidden text-[10px] text-[#EAB308] text-center mt-2 flex items-center justify-center gap-1">
+                <AlertTriangle size={10} /> Acepta los términos para continuar
+              </p>
+            )}
           </div>
 
           {/* ═══════ RIGHT: STICKY CART ═══════ */}
@@ -862,6 +1107,38 @@ const OrderConfigPage = () => {
                   ))}
                 </ul>
               </div>
+
+              {/* Selected modpack — card destacada con imagen real */}
+              {selectedModpack && (
+                <div className="px-5 py-4 border-b border-white/5 bg-[#22C55E]/[0.04]">
+                  <p className="text-[10px] uppercase font-black text-[#22C55E] tracking-wider mb-3 flex items-center gap-1.5">
+                    <Package size={10} /> Modpack incluido
+                  </p>
+                  <div className="flex items-center gap-3">
+                    {selectedModpack.image ? (
+                      <img
+                        src={selectedModpack.image}
+                        alt={selectedModpack.name}
+                        className="w-14 h-14 rounded-lg object-cover bg-[#0A0A0A] border border-white/10 shrink-0"
+                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                      />
+                    ) : (
+                      <div className="w-14 h-14 rounded-lg bg-[#1A1A1A] border border-white/10 flex items-center justify-center shrink-0">
+                        <Package size={20} className="text-[#22C55E]" />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white font-black text-sm uppercase tracking-tight truncate">{selectedModpack.name}</p>
+                      {selectedModpack.downloads > 0 && (
+                        <p className="text-[#22C55E] text-[10px] font-bold mt-0.5">
+                          {(selectedModpack.downloads / 1e6).toFixed(1)}M descargas
+                        </p>
+                      )}
+                      <p className="text-[#8B8B8B] text-[10px] mt-0.5">Auto-instalación tras pagar</p>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Selected config */}
               <div className="px-5 py-4 border-b border-white/5 bg-[#0A0A0A]/40">
@@ -944,6 +1221,12 @@ const OrderConfigPage = () => {
                 {!nameValid && cleanName.length > 0 && (
                   <p className="text-[10px] text-[#EAB308] text-center mt-3 flex items-center justify-center gap-1">
                     <AlertTriangle size={10} /> Nombre debe tener 3-40 caracteres
+                  </p>
+                )}
+
+                {nameValid && version && !termsAccepted && (
+                  <p className="text-[10px] text-[#EAB308] text-center mt-3 flex items-center justify-center gap-1">
+                    <AlertTriangle size={10} /> Acepta los términos abajo para continuar
                   </p>
                 )}
               </div>
