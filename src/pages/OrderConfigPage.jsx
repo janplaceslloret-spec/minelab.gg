@@ -347,6 +347,19 @@ const OrderConfigPage = () => {
     }
   }, [software, selectedModpack]);
 
+  /* Limpia nombre de modpack para sugerirlo como server_name:
+     - Elimina texto entre paréntesis (suele ser el loader o versión)
+     - Corta en el primer separador (- – — :)
+     - Trim a 40 chars
+     Ejemplo: "Cobbleverse - Pokemon Adventure (Cobblemon)" → "Cobbleverse"
+              "All The Mods 9 - To The Sky" → "All The Mods 9"  */
+  const cleanModpackName = (raw) => {
+    if (!raw) return '';
+    let s = String(raw).replace(/\s*\([^)]*\)\s*/g, ' ').trim();
+    s = s.split(/\s+[-–—:]\s+/)[0].trim();
+    return s.slice(0, 40);
+  };
+
   /* Pick modpack: aplica versión recomendada y limpia template */
   const pickModpack = (mp) => {
     setSelectedModpack({
@@ -362,7 +375,7 @@ const OrderConfigPage = () => {
     if (mp.versions && mp.versions[0] && versions.includes(mp.versions[0])) {
       setVersion(mp.versions[0]);
     }
-    if (!serverName.trim()) setServerName(mp.name);
+    if (!serverName.trim()) setServerName(cleanModpackName(mp.name));
   };
 
   /* Apply template selection — autopopula software, version, nombre sugerido */
@@ -561,13 +574,13 @@ const OrderConfigPage = () => {
             {/* Hero */}
             <div className="mb-10">
               <p className="text-[10px] uppercase font-black text-[#22C55E] tracking-[0.3em] mb-2 flex items-center gap-2">
-                <Sparkles size={11} /> Configura tu servidor
+                <Sparkles size={11} /> Paso 2 de 3 — Configuración
               </p>
               <h1 className="text-white font-black text-3xl md:text-5xl uppercase tracking-tight leading-[0.95]">
                 CASI <span className="text-[#22C55E]">LISTO</span>
               </h1>
               <p className="text-[#8B8B8B] text-sm mt-3 max-w-lg">
-                Personaliza tu servidor antes de pagar. Todo se aplica al instante tras la compra.
+                Solo lo esencial para crear tu servidor. Todo se aplica al instante tras pagar — y lo que elijas aquí se puede cambiar después.
               </p>
             </div>
 
@@ -631,9 +644,9 @@ const OrderConfigPage = () => {
             </Section>
 
             {/* Template picker — opcional, autopopula software/version/nombre */}
-            <Section number="02" title="¿Quieres un servidor pre-configurado?">
+            <Section number="02" title="Tipo de servidor">
               <p className="text-[#8B8B8B] text-sm mb-4 -mt-2">
-                Elige un template y nosotros nos ocupamos. O personaliza tú abajo.
+                Empieza desde un preset listo o configura todo a mano abajo.
               </p>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {TEMPLATES.map((tpl) => {
@@ -693,9 +706,9 @@ const OrderConfigPage = () => {
             </Section>
 
             {/* Modpack browser — siempre visible, con state-aware UI */}
-            <Section number="03" title="¿Quieres un modpack específico?">
+            <Section number="03" title="Modpack (opcional)">
               <p className="text-[#8B8B8B] text-sm mb-4 -mt-2">
-                Busca cualquier modpack de CurseForge (RLCraft, ATM10, Cobblemon, Vault Hunters…). Se instala automático tras pagar.
+                Busca cualquier modpack de CurseForge — RLCraft, ATM10, Cobblemon, Vault Hunters… Se instala solo tras pagar.
               </p>
 
               {/* Modpack seleccionado — card destacada con imagen real */}
@@ -858,6 +871,9 @@ const OrderConfigPage = () => {
 
             {/* Server name */}
             <Section number="04" title="Nombre del servidor">
+              <p className="text-[#8B8B8B] text-sm mb-4 -mt-2">
+                Será tu IP pública: <span className="text-white font-mono">tunombre.minelab.gg</span>. Letras, números y guiones.
+              </p>
               <input
                 type="text"
                 value={serverName}
@@ -873,7 +889,7 @@ const OrderConfigPage = () => {
               {/* Indicador de disponibilidad */}
               <div className="mt-2 min-h-[20px]">
                 {cleanName.length === 0 && (
-                  <p className="text-xs text-[#6B6B6B]">Cómo se llamará en el panel y tu IP de conexión.</p>
+                  <p className="text-xs text-[#6B6B6B]">Mínimo 3 caracteres.</p>
                 )}
                 {cleanName.length > 0 && cleanName.length < 3 && (
                   <p className="text-xs text-[#6B6B6B]">Mínimo 3 caracteres.</p>
@@ -916,7 +932,10 @@ const OrderConfigPage = () => {
             </Section>
 
             {/* Software */}
-            <Section number="05" title="Software inicial">
+            <Section number="05" title="Software del servidor">
+              <p className="text-[#8B8B8B] text-sm mb-4 -mt-2">
+                El motor que ejecuta tu Minecraft. Puedes cambiarlo después desde el panel.
+              </p>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
                 {SOFTWARES.map(s => {
                   const sel = software === s.id;
@@ -954,7 +973,10 @@ const OrderConfigPage = () => {
             </Section>
 
             {/* Version dropdown */}
-            <Section number="06" title="Versión inicial">
+            <Section number="06" title="Versión de Minecraft">
+              <p className="text-[#8B8B8B] text-sm mb-4 -mt-2">
+                Versiones reales de la fuente oficial. Cambiables después sin perder tu mundo.
+              </p>
               <div ref={versionsRef} className="relative">
                 <button
                   onClick={() => setVersionsOpen(o => !o)}
@@ -1025,7 +1047,7 @@ const OrderConfigPage = () => {
             </Section>
 
             {/* Coupon — solo válido en pagos mensuales (los anuales NO admiten códigos) */}
-            <Section number="08" title="¿Tienes un cupón?">
+            <Section number="08" title="Cupón de descuento">
               {isAnnual ? (
                 <div className="rounded-xl border-2 border-[#F59E0B]/30 bg-[#F59E0B]/5 px-4 py-4 flex items-start gap-3">
                   <Tag size={16} className="text-[#F59E0B] shrink-0 mt-0.5" />
