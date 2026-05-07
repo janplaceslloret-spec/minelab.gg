@@ -8,6 +8,7 @@ const HostingConMods = lazy(() => import('./pages/HostingConMods'));
 const MigrarAternos = lazy(() => import('./pages/MigrarAternos'));
 const OrderConfigPage = lazy(() => import('./pages/OrderConfigPage'));
 const StatusPage = lazy(() => import('./pages/StatusPage'));
+const ChangelogPage = lazy(() => import('./pages/ChangelogPage'));
 
 function SeoFallback() {
   return (
@@ -206,6 +207,7 @@ function App() {
         <Route path="/migrar-servidor-aternos" element={<Suspense fallback={<SeoFallback />}><MigrarAternos /></Suspense>} />
         <Route path="/configurar" element={<Suspense fallback={<SeoFallback />}><OrderConfigPage /></Suspense>} />
         <Route path="/status" element={<Suspense fallback={<SeoFallback />}><StatusPage /></Suspense>} />
+        <Route path="/changelog" element={<Suspense fallback={<SeoFallback />}><ChangelogPage /></Suspense>} />
       </Routes>
       <CookieBanner />
     </>
