@@ -83,8 +83,8 @@ const TEMPLATES = [
   {
     id: 'paper-smp',
     name: 'Paper SMP',
-    tagline: 'Survival multijugador con plugins',
-    description: 'EssentialsX, LuckPerms y Vault listos. Ideal para comunidades.',
+    tagline: 'Survival con plugins',
+    description: 'Servidor estable con EssentialsX, LuckPerms y Vault listos. Ideal para comunidades sin mods.',
     software: 'paper',
     version: '1.21.4',
     suggestedName: 'SMP Survival',
@@ -92,72 +92,28 @@ const TEMPLATES = [
     extrasLabel: 'Plugins recomendados',
     badge: 'Más popular',
     accent: 'green',
-    icon: '🌍',
+    logo: 'https://avatars.githubusercontent.com/u/7608950',
   },
   {
-    id: 'cobblemon',
-    name: 'Cobblemon',
-    tagline: 'Pokémon en Minecraft',
-    description: 'Atrapa, entrena y combate. 1025 Pokémon listos.',
-    software: 'fabric',
-    version: '1.21.1',
-    suggestedName: 'Pokémon Server',
-    extras: ['Cobblemon', 'Sodium', 'Fabric API'],
-    extrasLabel: 'Mods incluidos',
-    badge: 'Trending',
-    accent: 'pink',
-    icon: '⚡',
-  },
-  {
-    id: 'atm9',
-    name: 'All The Mods 9',
-    tagline: 'Modpack hardcore · 400+ mods',
-    description: 'Tech, magia, exploración, automatización. Para sesiones largas.',
+    id: 'modpack',
+    name: 'Modpack',
+    tagline: 'Forge · Fabric · NeoForge',
+    description: 'Busca cualquier modpack de CurseForge: RLCraft, ATM10, Cobblemon, Vault Hunters… Se instala solo.',
+    isModpack: true,
     software: 'forge',
-    version: '1.20.1',
-    suggestedName: 'ATM9 Server',
-    extras: ['ATM9 modpack (auto-install)'],
-    extrasLabel: 'Modpack',
-    badge: 'Para expertos',
+    badge: 'Trending',
     accent: 'orange',
-    icon: '⚙️',
-  },
-  {
-    id: 'better-mc',
-    name: 'Better MC',
-    tagline: 'Vanilla mejorado · QoL + shaders',
-    description: 'Optimizaciones, biomas mejorados, sin perder la esencia.',
-    software: 'fabric',
-    version: '1.21.1',
-    suggestedName: 'Better MC',
-    extras: ['Better MC modpack', 'Sodium', 'Iris Shaders'],
-    extrasLabel: 'Modpack + mejoras',
-    badge: 'Nuevo',
-    accent: 'blue',
-    icon: '✨',
-  },
-  {
-    id: 'vanilla',
-    name: 'Vanilla',
-    tagline: 'Minecraft puro · sin mods',
-    description: 'La experiencia oficial de Mojang. Para puristas.',
-    software: 'vanilla',
-    version: '1.21.4',
-    suggestedName: 'Vanilla Server',
-    extras: [],
-    badge: 'Limpio',
-    accent: 'gray',
-    icon: '🟩',
+    iconLucide: Package,
   },
   {
     id: 'custom',
     name: 'Personalizado',
-    tagline: 'Configura tú · desde cero',
-    description: 'Elige software, versión y todo lo demás. Para los que ya saben.',
+    tagline: 'Configura todo a mano',
+    description: 'Elige software, versión, plugins y mods desde cero. Para los que ya saben qué quieren.',
     custom: true,
     badge: null,
     accent: 'gray',
-    icon: '🛠️',
+    iconLucide: ServerCog,
   },
 ];
 
@@ -322,30 +278,40 @@ const OrderConfigPage = () => {
     }));
   }, [planId, billing, templateId, serverName, software, version, coupon, selectedModpack]);
 
-  /* Modpack search — debounce 400ms, sólo si software es mod loader */
+  /* Modpack search — debounce 400ms. Consulta los 3 loaders en paralelo y
+     mergea por project_id (ordenado por popularidad). Cada item lleva
+     `_loader` para mostrar el badge "Forge/Fabric/NeoForge" en la card. */
   useEffect(() => {
-    const isModLoader = ['forge', 'fabric', 'neoforge'].includes(software);
-    if (!isModLoader) { setModpackResults([]); return; }
     const t = setTimeout(async () => {
       setModpackLoading(true);
       try {
         const q = modpackQuery.trim() || 'popular';
-        const url = `${import.meta.env.VITE_API_URL || 'https://api.fluxoai.co'}/api/catalog/search?q=${encodeURIComponent(q)}&type=modpack&server_type=${software}&limit=8&sort=popular`;
-        const r = await fetch(url);
-        const j = await r.json();
-        setModpackResults(Array.isArray(j.items) ? j.items : []);
+        const apiUrl = import.meta.env.VITE_API_URL || 'https://api.fluxoai.co';
+        const loaders = ['forge', 'fabric', 'neoforge'];
+        const lists = await Promise.all(
+          loaders.map(loader =>
+            fetch(`${apiUrl}/api/catalog/search?q=${encodeURIComponent(q)}&type=modpack&server_type=${loader}&limit=4&sort=popular`)
+              .then(r => r.json())
+              .then(j => (Array.isArray(j.items) ? j.items : []).map(it => ({ ...it, _loader: loader })))
+              .catch(() => [])
+          )
+        );
+        const seen = new Set();
+        const merged = [];
+        for (const list of lists) {
+          for (const item of list) {
+            if (seen.has(item.project_id)) continue;
+            seen.add(item.project_id);
+            merged.push(item);
+          }
+        }
+        merged.sort((a, b) => (b.downloads || 0) - (a.downloads || 0));
+        setModpackResults(merged.slice(0, 12));
       } catch { setModpackResults([]); }
       finally { setModpackLoading(false); }
     }, 400);
     return () => clearTimeout(t);
-  }, [modpackQuery, software]);
-
-  /* Si el software cambia a non-mod-loader (paper/vanilla), limpiar modpack elegido */
-  useEffect(() => {
-    if (!['forge', 'fabric', 'neoforge'].includes(software) && selectedModpack) {
-      setSelectedModpack(null);
-    }
-  }, [software, selectedModpack]);
+  }, [modpackQuery]);
 
   /* Limpia nombre de modpack para sugerirlo como server_name:
      - Elimina texto entre paréntesis (suele ser el loader o versión)
@@ -360,7 +326,7 @@ const OrderConfigPage = () => {
     return s.slice(0, 40);
   };
 
-  /* Pick modpack: aplica versión recomendada y limpia template */
+  /* Pick modpack: cambia software al loader del modpack, aplica versión y nombre */
   const pickModpack = (mp) => {
     setSelectedModpack({
       project_id: mp.project_id,
@@ -370,10 +336,17 @@ const OrderConfigPage = () => {
       downloads: mp.downloads,
       project_url: mp.project_url,
       versions: mp.versions || [],
+      loader: mp._loader || 'forge',
     });
-    setTemplateId(null);
-    if (mp.versions && mp.versions[0] && versions.includes(mp.versions[0])) {
-      setVersion(mp.versions[0]);
+    // Selecciona el modpack como template (visualmente la card "Modpack" queda activa)
+    setTemplateId('modpack');
+    // Si el modpack es de un loader distinto al seleccionado actual, cambia software
+    if (mp._loader && mp._loader !== software) {
+      setSoftware(mp._loader);
+      // El effect de versions se disparará y elegirá la primera; aquí sólo guardamos pista
+    }
+    if (mp.versions && mp.versions[0]) {
+      setVersion(mp.versions[0]); // se valida más tarde contra la lista de versiones cargada
     }
     if (!serverName.trim()) setServerName(cleanModpackName(mp.name));
   };
@@ -381,7 +354,15 @@ const OrderConfigPage = () => {
   /* Apply template selection — autopopula software, version, nombre sugerido */
   const applyTemplate = (tpl) => {
     setTemplateId(tpl.id);
-    if (tpl.custom) return; // No tocar campos
+    if (tpl.custom) return; // Personalizado: no tocar campos
+    if (tpl.isModpack) {
+      // Modpack: pone software default si el actual no es mod-loader, scroll al picker
+      if (!['forge','fabric','neoforge'].includes(software)) setSoftware(tpl.software);
+      setTimeout(() => {
+        document.getElementById('modpack-picker')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+      return;
+    }
     setSoftware(tpl.software);
     setVersion(tpl.version);
     if (!serverName.trim()) setServerName(tpl.suggestedName);
@@ -648,15 +629,16 @@ const OrderConfigPage = () => {
               <p className="text-[#8B8B8B] text-sm mb-4 -mt-2">
                 Empieza desde un preset listo o configura todo a mano abajo.
               </p>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {TEMPLATES.map((tpl) => {
                   const sel = templateId === tpl.id;
                   const acc = TEMPLATE_ACCENT[tpl.accent] || TEMPLATE_ACCENT.gray;
+                  const Icon = tpl.iconLucide;
                   return (
                     <button
                       key={tpl.id}
                       onClick={() => applyTemplate(tpl)}
-                      className={`relative text-left p-4 rounded-2xl border-2 transition-all ${
+                      className={`relative text-left p-5 rounded-2xl border-2 transition-all ${
                         sel
                           ? `${acc.border} ${acc.bg} ${acc.glow}`
                           : 'border-[#1F1F1F] bg-[#0F0F0F] hover:border-[#2A2A2A] hover:bg-[#141414]'
@@ -670,13 +652,26 @@ const OrderConfigPage = () => {
                         </span>
                       )}
                       <div className="flex items-start justify-between mb-3">
-                        <span className="text-3xl leading-none">{tpl.icon}</span>
-                        {sel && <Check size={14} className={acc.text} strokeWidth={3} />}
+                        {tpl.logo ? (
+                          <img
+                            src={tpl.logo}
+                            alt={`${tpl.name} logo`}
+                            className="w-12 h-12 rounded-xl object-cover bg-[#0A0A0A] border border-white/10"
+                            loading="lazy"
+                          />
+                        ) : Icon ? (
+                          <div className={`w-12 h-12 rounded-xl flex items-center justify-center border ${
+                            sel ? `${acc.bg} ${acc.border}` : 'bg-[#0A0A0A] border-white/10'
+                          }`}>
+                            <Icon size={22} className={sel ? acc.text : 'text-white/70'} strokeWidth={2} />
+                          </div>
+                        ) : null}
+                        {sel && <Check size={16} className={acc.text} strokeWidth={3} />}
                       </div>
-                      <p className={`font-black text-sm uppercase tracking-tight mb-0.5 ${sel ? acc.text : 'text-white'}`}>
+                      <p className={`font-black text-base uppercase tracking-tight mb-0.5 ${sel ? acc.text : 'text-white'}`}>
                         {tpl.name}
                       </p>
-                      <p className="text-[10px] text-[#22C55E]/70 uppercase font-bold tracking-wider mb-2">
+                      <p className={`text-[10px] uppercase font-bold tracking-wider mb-2 ${sel ? acc.text : 'text-[#22C55E]/70'}`}>
                         {tpl.tagline}
                       </p>
                       <p className="text-xs text-[#8B8B8B] leading-snug">{tpl.description}</p>
@@ -706,6 +701,7 @@ const OrderConfigPage = () => {
             </Section>
 
             {/* Modpack browser — siempre visible, con state-aware UI */}
+            <div id="modpack-picker" />
             <Section number="03" title="Modpack (opcional)">
               <p className="text-[#8B8B8B] text-sm mb-4 -mt-2">
                 Busca cualquier modpack de CurseForge — RLCraft, ATM10, Cobblemon, Vault Hunters… Se instala solo tras pagar.
@@ -734,14 +730,26 @@ const OrderConfigPage = () => {
                       <p className="text-[10px] uppercase font-black text-[#22C55E] tracking-[0.2em] mb-1 flex items-center gap-1.5">
                         <Check size={11} strokeWidth={3} /> Modpack elegido
                       </p>
-                      <p className="text-white font-black text-base uppercase tracking-tight mb-1">
+                      <p className="text-white font-black text-base uppercase tracking-tight mb-1.5">
                         {selectedModpack.name}
                       </p>
-                      {selectedModpack.downloads > 0 && (
-                        <p className="text-[#22C55E] text-xs font-bold mb-1.5">
-                          {(selectedModpack.downloads / 1e6).toFixed(1)}M descargas
-                        </p>
-                      )}
+                      <div className="flex items-center gap-1.5 flex-wrap mb-2">
+                        {selectedModpack.loader && (
+                          <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-orange-500/15 text-orange-300 border border-orange-500/30">
+                            {selectedModpack.loader === 'forge' ? 'Forge' : selectedModpack.loader === 'fabric' ? 'Fabric' : 'NeoForge'}
+                          </span>
+                        )}
+                        {selectedModpack.versions && selectedModpack.versions[0] && (
+                          <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-[#22C55E]/10 text-[#22C55E] border border-[#22C55E]/25 font-mono">
+                            {selectedModpack.versions[0]}
+                          </span>
+                        )}
+                        {selectedModpack.downloads > 0 && (
+                          <span className="text-[10px] font-bold text-[#8B8B8B]">
+                            {(selectedModpack.downloads / 1e6).toFixed(1)}M descargas
+                          </span>
+                        )}
+                      </div>
                       <p className="text-[#B3B3B3] text-xs leading-snug line-clamp-2">
                         {selectedModpack.description}
                       </p>
@@ -750,44 +758,8 @@ const OrderConfigPage = () => {
                 </div>
               )}
 
-              {/* Si software no es mod loader, ofrecer cambio rápido */}
-              {!['forge', 'fabric', 'neoforge'].includes(software) && !selectedModpack && (
-                <div className="p-4 rounded-xl border-2 border-[#F59E0B]/25 bg-[#F59E0B]/[0.04]">
-                  <div className="flex items-start gap-3 mb-3">
-                    <AlertTriangle size={16} className="text-[#F59E0B] mt-0.5 shrink-0" />
-                    <div className="flex-1">
-                      <p className="text-white font-bold text-sm mb-1">
-                        Tu software actual ({software === 'paper' ? 'Paper' : 'Vanilla'}) no carga modpacks
-                      </p>
-                      <p className="text-[#B3B3B3] text-xs leading-relaxed">
-                        Los modpacks requieren un loader de mods. Cambia a uno de estos para ver modpacks compatibles:
-                      </p>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    {[
-                      { id: 'forge', label: 'Forge', logo: 'https://avatars.githubusercontent.com/u/588154', desc: 'Modpacks clásicos (ATM, RLCraft)' },
-                      { id: 'fabric', label: 'Fabric', logo: 'https://avatars.githubusercontent.com/u/53422383', desc: 'Modpacks ligeros (Cobblemon)' },
-                      { id: 'neoforge', label: 'NeoForge', logo: 'https://avatars.githubusercontent.com/u/131057723', desc: 'Forge moderno' },
-                    ].map(loader => (
-                      <button
-                        key={loader.id}
-                        onClick={() => { setSoftware(loader.id); setVersion(''); }}
-                        className="p-3 rounded-lg border border-[#1F1F1F] bg-[#0F0F0F] hover:border-[#22C55E]/40 hover:bg-[#22C55E]/[0.04] text-left transition-all"
-                      >
-                        <div className="flex items-center gap-2 mb-1">
-                          <img src={loader.logo} alt={`${loader.label} logo`} className="w-5 h-5 rounded-md object-cover bg-[#0A0A0A] border border-white/5" loading="lazy" />
-                          <span className="text-white font-black text-xs uppercase tracking-tight">{loader.label}</span>
-                        </div>
-                        <p className="text-[10px] text-[#8B8B8B] leading-tight">{loader.desc}</p>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Buscador y resultados — sólo si software es mod loader */}
-              {['forge', 'fabric', 'neoforge'].includes(software) && (
+              {/* Buscador y resultados (siempre visible — busca en los 3 loaders) */}
+              {(
                 <>
                   <div className="relative mb-3">
                     <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#6B6B6B]" />
@@ -795,7 +767,7 @@ const OrderConfigPage = () => {
                       type="text"
                       value={modpackQuery}
                       onChange={e => setModpackQuery(e.target.value)}
-                      placeholder={`Buscar modpacks ${software === 'forge' ? 'Forge' : software === 'fabric' ? 'Fabric' : 'NeoForge'} (RLCraft, ATM, Cobblemon…)`}
+                      placeholder="Buscar modpacks (RLCraft, ATM, Cobblemon…)"
                       className="w-full bg-[#0F0F0F] border-2 border-[#1F1F1F] rounded-xl pl-10 pr-4 py-3 text-white placeholder-[#4B4B4B] focus:outline-none focus:border-[#22C55E]/40 transition-colors text-sm"
                     />
                     {modpackLoading && (
@@ -807,9 +779,11 @@ const OrderConfigPage = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
                       {modpackResults.map(mp => {
                         const sel = selectedModpack?.project_id === mp.project_id;
+                        const loaderLabel = mp._loader === 'forge' ? 'Forge' : mp._loader === 'fabric' ? 'Fabric' : mp._loader === 'neoforge' ? 'NeoForge' : '';
+                        const mcVer = mp.versions && mp.versions[0] ? mp.versions[0] : '';
                         return (
                           <button
-                            key={mp.project_id}
+                            key={`${mp.project_id}-${mp._loader}`}
                             onClick={() => pickModpack(mp)}
                             className={`text-left p-3 rounded-xl border-2 transition-all flex gap-3 ${
                               sel
@@ -821,26 +795,38 @@ const OrderConfigPage = () => {
                               <img
                                 src={mp.image}
                                 alt={mp.name}
-                                className="w-14 h-14 rounded-lg object-cover bg-[#0A0A0A] border border-white/5 shrink-0"
+                                className="w-16 h-16 rounded-lg object-cover bg-[#0A0A0A] border border-white/5 shrink-0"
                                 loading="lazy"
                                 onError={(e) => { e.currentTarget.style.display = 'none'; }}
                               />
                             ) : (
-                              <div className="w-14 h-14 rounded-lg bg-[#1A1A1A] border border-white/5 flex items-center justify-center shrink-0">
-                                <Package size={20} className="text-[#4B4B4B]" />
+                              <div className="w-16 h-16 rounded-lg bg-[#1A1A1A] border border-white/5 flex items-center justify-center shrink-0">
+                                <Package size={22} className="text-[#4B4B4B]" />
                               </div>
                             )}
                             <div className="flex-1 min-w-0">
-                              <p className={`font-black text-xs uppercase tracking-tight mb-0.5 truncate ${sel ? 'text-[#22C55E]' : 'text-white'}`}>
+                              <p className={`font-black text-xs uppercase tracking-tight mb-1 truncate ${sel ? 'text-[#22C55E]' : 'text-white'}`}>
                                 {mp.name}
                               </p>
-                              {mp.downloads > 0 && (
-                                <p className="text-[10px] text-[#22C55E]/80 font-bold mb-1">
-                                  {mp.downloads >= 1e6
-                                    ? `${(mp.downloads / 1e6).toFixed(1)}M`
-                                    : `${Math.round(mp.downloads / 1000)}k`} descargas
-                                </p>
-                              )}
+                              <div className="flex items-center gap-1.5 flex-wrap mb-1.5">
+                                {loaderLabel && (
+                                  <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-orange-500/15 text-orange-300 border border-orange-500/30">
+                                    {loaderLabel}
+                                  </span>
+                                )}
+                                {mcVer && (
+                                  <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-[#22C55E]/10 text-[#22C55E] border border-[#22C55E]/25 font-mono">
+                                    {mcVer}
+                                  </span>
+                                )}
+                                {mp.downloads > 0 && (
+                                  <span className="text-[9px] font-bold text-[#8B8B8B]">
+                                    {mp.downloads >= 1e6
+                                      ? `${(mp.downloads / 1e6).toFixed(1)}M`
+                                      : `${Math.round(mp.downloads / 1000)}k`} dl
+                                  </span>
+                                )}
+                              </div>
                               <p className="text-[10px] text-[#8B8B8B] leading-snug line-clamp-2">
                                 {mp.description}
                               </p>
