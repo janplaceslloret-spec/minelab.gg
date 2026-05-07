@@ -238,8 +238,13 @@ const OrderConfigPage = () => {
   const [loaderFilter, setLoaderFilter] = useState('all'); // all | forge | fabric | neoforge
   const [sortBy, setSortBy] = useState('popular'); // popular | updated | created
 
-  // Términos y condiciones — obligatorio para checkout (protección legal)
-  const [termsAccepted, setTermsAccepted] = useState(false);
+  // Términos y condiciones — obligatorio para checkout (protección legal).
+  // Si el user ya marcó T&C antes y vuelve de OAuth con ?continue=1, se auto-acepta
+  // (de otra forma jamás hubiera podido iniciar el flujo OAuth — canCheckout exige T&C).
+  const [termsAccepted, setTermsAccepted] = useState(() => {
+    try { return new URLSearchParams(window.location.search).get('continue') === '1'; }
+    catch { return false; }
+  });
 
   // Comprueba disponibilidad de slug con debounce 400ms
   useEffect(() => {
