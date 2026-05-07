@@ -170,11 +170,11 @@ const TEMPLATE_ACCENT = {
 };
 
 const SOFTWARES = [
-  { id: 'paper',    label: 'Paper',    emoji: '📄', tag: 'Recomendado',     desc: 'Plugins Bukkit/Spigot. Lo más estable.' },
-  { id: 'fabric',   label: 'Fabric',   emoji: '🧵', tag: 'Mods modernos',   desc: 'Loader ligero. Cobblemon, Sodium…' },
-  { id: 'forge',    label: 'Forge',    emoji: '⚙️', tag: 'Modpacks',        desc: 'Estándar para mods complejos.' },
-  { id: 'neoforge', label: 'NeoForge', emoji: '🔥', tag: 'Forge moderno',   desc: 'Fork moderno y mejor mantenido.' },
-  { id: 'vanilla',  label: 'Vanilla',  emoji: '🟩', tag: 'Oficial Mojang',  desc: 'Sin modificaciones.' },
+  { id: 'paper',    label: 'Paper',    logo: 'https://avatars.githubusercontent.com/u/7608950',   tag: 'Recomendado',   desc: 'Plugins Bukkit/Spigot. Lo más estable.' },
+  { id: 'fabric',   label: 'Fabric',   logo: 'https://avatars.githubusercontent.com/u/53422383',  tag: 'Mods modernos', desc: 'Loader ligero. Cobblemon, Sodium…' },
+  { id: 'forge',    label: 'Forge',    logo: 'https://avatars.githubusercontent.com/u/588154',    tag: 'Modpacks',      desc: 'Estándar para mods complejos.' },
+  { id: 'neoforge', label: 'NeoForge', logo: 'https://avatars.githubusercontent.com/u/131057723', tag: 'Forge moderno', desc: 'Fork moderno y mejor mantenido.' },
+  { id: 'vanilla',  label: 'Vanilla',  logo: 'https://avatars.githubusercontent.com/u/1162641',   tag: 'Oficial Mojang',desc: 'Sin modificaciones.' },
 ];
 
 const FEATURES = (ram) => [
@@ -753,9 +753,9 @@ const OrderConfigPage = () => {
                   </div>
                   <div className="grid grid-cols-3 gap-2">
                     {[
-                      { id: 'forge', label: 'Forge', emoji: '⚙️', desc: 'Modpacks clásicos (ATM, RLCraft)' },
-                      { id: 'fabric', label: 'Fabric', emoji: '🧵', desc: 'Modpacks ligeros (Cobblemon)' },
-                      { id: 'neoforge', label: 'NeoForge', emoji: '🔥', desc: 'Forge moderno' },
+                      { id: 'forge', label: 'Forge', logo: 'https://avatars.githubusercontent.com/u/588154', desc: 'Modpacks clásicos (ATM, RLCraft)' },
+                      { id: 'fabric', label: 'Fabric', logo: 'https://avatars.githubusercontent.com/u/53422383', desc: 'Modpacks ligeros (Cobblemon)' },
+                      { id: 'neoforge', label: 'NeoForge', logo: 'https://avatars.githubusercontent.com/u/131057723', desc: 'Forge moderno' },
                     ].map(loader => (
                       <button
                         key={loader.id}
@@ -763,7 +763,7 @@ const OrderConfigPage = () => {
                         className="p-3 rounded-lg border border-[#1F1F1F] bg-[#0F0F0F] hover:border-[#22C55E]/40 hover:bg-[#22C55E]/[0.04] text-left transition-all"
                       >
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="text-lg leading-none">{loader.emoji}</span>
+                          <img src={loader.logo} alt={`${loader.label} logo`} className="w-5 h-5 rounded-md object-cover bg-[#0A0A0A] border border-white/5" loading="lazy" />
                           <span className="text-white font-black text-xs uppercase tracking-tight">{loader.label}</span>
                         </div>
                         <p className="text-[10px] text-[#8B8B8B] leading-tight">{loader.desc}</p>
@@ -930,7 +930,12 @@ const OrderConfigPage = () => {
                       }`}
                     >
                       <div className="flex items-start justify-between mb-2">
-                        <span className="text-2xl">{s.emoji}</span>
+                        <img
+                          src={s.logo}
+                          alt={`${s.label} logo`}
+                          className="w-9 h-9 rounded-lg object-cover bg-[#0A0A0A] border border-white/5"
+                          loading="lazy"
+                        />
                         {sel && (
                           <Check size={14} className="text-[#22C55E] mt-1" strokeWidth={3} />
                         )}
