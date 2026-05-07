@@ -235,6 +235,8 @@ const OrderConfigPage = () => {
   const [modpackResults, setModpackResults] = useState([]);
   const [modpackLoading, setModpackLoading] = useState(false);
   const [selectedModpack, setSelectedModpack] = useState(stored.modpack || null);
+  const [loaderFilter, setLoaderFilter] = useState('all'); // all | forge | fabric | neoforge
+  const [sortBy, setSortBy] = useState('popular'); // popular | updated | created
 
   // Términos y condiciones — obligatorio para checkout (protección legal)
   const [termsAccepted, setTermsAccepted] = useState(false);
@@ -278,40 +280,44 @@ const OrderConfigPage = () => {
     }));
   }, [planId, billing, templateId, serverName, software, version, coupon, selectedModpack]);
 
-  /* Modpack search — debounce 400ms. Consulta los 3 loaders en paralelo y
-     mergea por project_id (ordenado por popularidad). Cada item lleva
-     `_loader` para mostrar el badge "Forge/Fabric/NeoForge" en la card. */
+  /* Modpack search — debounce 400ms. Si loaderFilter=all consulta los 3
+     loaders en paralelo y mergea por project_id. Si está en uno concreto,
+     query directo a ese. Cada item lleva `_loader`. */
   useEffect(() => {
     const t = setTimeout(async () => {
       setModpackLoading(true);
       try {
         const q = modpackQuery.trim() || 'popular';
         const apiUrl = import.meta.env.VITE_API_URL || 'https://api.fluxoai.co';
-        const loaders = ['forge', 'fabric', 'neoforge'];
-        const lists = await Promise.all(
-          loaders.map(loader =>
-            fetch(`${apiUrl}/api/catalog/search?q=${encodeURIComponent(q)}&type=modpack&server_type=${loader}&limit=4&sort=popular`)
-              .then(r => r.json())
-              .then(j => (Array.isArray(j.items) ? j.items : []).map(it => ({ ...it, _loader: loader })))
-              .catch(() => [])
-          )
-        );
-        const seen = new Set();
-        const merged = [];
-        for (const list of lists) {
-          for (const item of list) {
-            if (seen.has(item.project_id)) continue;
-            seen.add(item.project_id);
-            merged.push(item);
+        const fetchOne = (loader, lim) =>
+          fetch(`${apiUrl}/api/catalog/search?q=${encodeURIComponent(q)}&type=modpack&server_type=${loader}&limit=${lim}&sort=${sortBy}`)
+            .then(r => r.json())
+            .then(j => (Array.isArray(j.items) ? j.items : []).map(it => ({ ...it, _loader: loader })))
+            .catch(() => []);
+
+        let merged = [];
+        if (loaderFilter === 'all') {
+          // 3 loaders paralelo, dedup por project_id (first wins)
+          const lists = await Promise.all([fetchOne('forge', 6), fetchOne('fabric', 6), fetchOne('neoforge', 6)]);
+          const seen = new Set();
+          for (const list of lists) {
+            for (const item of list) {
+              if (seen.has(item.project_id)) continue;
+              seen.add(item.project_id);
+              merged.push(item);
+            }
           }
+          if (sortBy === 'popular') merged.sort((a, b) => (b.downloads || 0) - (a.downloads || 0));
+          merged = merged.slice(0, 12);
+        } else {
+          merged = await fetchOne(loaderFilter, 12);
         }
-        merged.sort((a, b) => (b.downloads || 0) - (a.downloads || 0));
-        setModpackResults(merged.slice(0, 12));
+        setModpackResults(merged);
       } catch { setModpackResults([]); }
       finally { setModpackLoading(false); }
     }, 400);
     return () => clearTimeout(t);
-  }, [modpackQuery]);
+  }, [modpackQuery, loaderFilter, sortBy]);
 
   /* Limpia nombre de modpack para sugerirlo como server_name:
      - Elimina texto entre paréntesis (suele ser el loader o versión)
@@ -354,7 +360,11 @@ const OrderConfigPage = () => {
   /* Apply template selection — autopopula software, version, nombre sugerido */
   const applyTemplate = (tpl) => {
     setTemplateId(tpl.id);
-    if (tpl.custom) return; // Personalizado: no tocar campos
+    if (tpl.custom) {
+      // Personalizado: limpia modpack si había, deja que el user elija todo
+      setSelectedModpack(null);
+      return;
+    }
     if (tpl.isModpack) {
       // Modpack: pone software default si el actual no es mod-loader, scroll al picker
       if (!['forge','fabric','neoforge'].includes(software)) setSoftware(tpl.software);
@@ -363,10 +373,24 @@ const OrderConfigPage = () => {
       }, 100);
       return;
     }
+    // Paper SMP (o cualquier preset no-modpack): limpia modpack y aplica defaults
+    setSelectedModpack(null);
     setSoftware(tpl.software);
     setVersion(tpl.version);
     if (!serverName.trim()) setServerName(tpl.suggestedName);
   };
+
+  /* Helpers de visibilidad por template seleccionado */
+  const isPaperSMP = templateId === 'paper-smp';
+  const isModpackTpl = templateId === 'modpack';
+  const isCustomTpl = templateId === 'custom';
+  const noTemplate = !templateId;
+  // Sección 03 Modpack visible cuando el user picó "Modpack" (o todavía no eligió template)
+  const showModpackSection = isModpackTpl || noTemplate;
+  // Sección 05 Software: solo visible si Personalizado o sin template
+  const showSoftwareSection = isCustomTpl || noTemplate;
+  // Sección 06 Versión: si Modpack la versión la define el modpack → ocultar
+  const showVersionSection = !isModpackTpl;
 
   const selectedTemplate = TEMPLATES.find((t) => t.id === templateId);
 
@@ -700,11 +724,14 @@ const OrderConfigPage = () => {
               )}
             </Section>
 
-            {/* Modpack browser — siempre visible, con state-aware UI */}
+            {/* Modpack browser — visible cuando template=Modpack o sin template */}
             <div id="modpack-picker" />
-            <Section number="03" title="Modpack (opcional)">
+            {showModpackSection && (
+            <Section number="03" title={isModpackTpl ? 'Catálogo de modpacks' : 'Modpack (opcional)'}>
               <p className="text-[#8B8B8B] text-sm mb-4 -mt-2">
-                Busca cualquier modpack de CurseForge — RLCraft, ATM10, Cobblemon, Vault Hunters… Se instala solo tras pagar.
+                {isModpackTpl
+                  ? 'Filtra por loader y elige cualquier modpack de CurseForge. La versión y el software se eligen automático.'
+                  : 'Busca cualquier modpack de CurseForge — RLCraft, ATM10, Cobblemon, Vault Hunters…'}
               </p>
 
               {/* Modpack seleccionado — card destacada con imagen real */}
@@ -758,7 +785,7 @@ const OrderConfigPage = () => {
                 </div>
               )}
 
-              {/* Buscador y resultados (siempre visible — busca en los 3 loaders) */}
+              {/* Buscador y resultados (3 loaders en paralelo + filtros) */}
               {(
                 <>
                   <div className="relative mb-3">
@@ -773,6 +800,37 @@ const OrderConfigPage = () => {
                     {modpackLoading && (
                       <Loader2 size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#22C55E] animate-spin" />
                     )}
+                  </div>
+
+                  {/* Filtros: loader pills + sort */}
+                  <div className="flex flex-wrap items-center gap-2 mb-3">
+                    <span className="text-[10px] uppercase font-black text-[#6B6B6B] tracking-wider mr-1">Loader:</span>
+                    {[
+                      { id: 'all', label: 'Todos' },
+                      { id: 'forge', label: 'Forge' },
+                      { id: 'fabric', label: 'Fabric' },
+                      { id: 'neoforge', label: 'NeoForge' },
+                    ].map(p => (
+                      <button
+                        key={p.id}
+                        onClick={() => setLoaderFilter(p.id)}
+                        className={`px-3 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-wider border-2 transition-all ${
+                          loaderFilter === p.id
+                            ? 'border-[#22C55E] bg-[#22C55E]/10 text-[#22C55E]'
+                            : 'border-[#1F1F1F] bg-[#0F0F0F] text-[#8B8B8B] hover:border-[#2A2A2A] hover:text-white'
+                        }`}
+                      >{p.label}</button>
+                    ))}
+                    <span className="text-[10px] uppercase font-black text-[#6B6B6B] tracking-wider ml-2 mr-1">Orden:</span>
+                    <select
+                      value={sortBy}
+                      onChange={e => setSortBy(e.target.value)}
+                      className="bg-[#0F0F0F] border-2 border-[#1F1F1F] rounded-lg px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-white focus:outline-none focus:border-[#22C55E]/40 cursor-pointer"
+                    >
+                      <option value="popular">Más populares</option>
+                      <option value="updated">Actualizados</option>
+                      <option value="created">Más nuevos</option>
+                    </select>
                   </div>
 
                   {modpackResults.length > 0 && (
@@ -854,6 +912,7 @@ const OrderConfigPage = () => {
                 </div>
               )}
             </Section>
+            )}
 
             {/* Server name */}
             <Section number="04" title="Nombre del servidor">
@@ -917,7 +976,8 @@ const OrderConfigPage = () => {
               </div>
             </Section>
 
-            {/* Software */}
+            {/* Software — solo en Personalizado o sin template */}
+            {showSoftwareSection && (
             <Section number="05" title="Software del servidor">
               <p className="text-[#8B8B8B] text-sm mb-4 -mt-2">
                 El motor que ejecuta tu Minecraft. Puedes cambiarlo después desde el panel.
@@ -957,8 +1017,10 @@ const OrderConfigPage = () => {
                 })}
               </div>
             </Section>
+            )}
 
-            {/* Version dropdown */}
+            {/* Version dropdown — oculta en template Modpack (modpack define versión) */}
+            {showVersionSection && (
             <Section number="06" title="Versión de Minecraft">
               <p className="text-[#8B8B8B] text-sm mb-4 -mt-2">
                 Versiones reales de la fuente oficial. Cambiables después sin perder tu mundo.
@@ -1014,6 +1076,7 @@ const OrderConfigPage = () => {
                 )}
               </div>
             </Section>
+            )}
 
             {/* Location (info card, single location) */}
             <Section number="07" title="Ubicación">
