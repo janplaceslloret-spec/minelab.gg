@@ -246,6 +246,10 @@ const OrderConfigPage = () => {
     catch { return false; }
   });
 
+  // Custom manifest (modpack privado/custom) — solo en template Personalizado
+  const [customManifestText, setCustomManifestText] = useState(stored.customManifestText || '');
+  const [customManifestParsed, setCustomManifestParsed] = useState(null); // { count, modsList }
+
   // Comprueba disponibilidad de slug con debounce 400ms
   useEffect(() => {
     const name = serverName.trim();
@@ -282,8 +286,24 @@ const OrderConfigPage = () => {
     localStorage.setItem(DRAFT_KEY, JSON.stringify({
       planId, billing, templateId, serverName, software, version, coupon,
       modpack: selectedModpack,
+      customManifestText,
     }));
-  }, [planId, billing, templateId, serverName, software, version, coupon, selectedModpack]);
+  }, [planId, billing, templateId, serverName, software, version, coupon, selectedModpack, customManifestText]);
+
+  /* Parse custom manifest cuando cambia el textarea */
+  useEffect(() => {
+    if (!customManifestText.trim()) { setCustomManifestParsed(null); return; }
+    try {
+      const m = JSON.parse(customManifestText);
+      let count = 0;
+      if (Array.isArray(m.files)) count = m.files.length;
+      else if (Array.isArray(m.installedAddons)) count = m.installedAddons.length;
+      if (count > 0) setCustomManifestParsed({ count, manifest: m, error: null });
+      else setCustomManifestParsed({ count: 0, manifest: null, error: 'No detecté mods. Necesito files[] o installedAddons[].' });
+    } catch (e) {
+      setCustomManifestParsed({ count: 0, manifest: null, error: 'JSON inválido: ' + e.message.slice(0, 80) });
+    }
+  }, [customManifestText]);
 
   /* Modpack search — debounce 400ms. Si loaderFilter=all consulta los 3
      loaders en paralelo y mergea por project_id. Si está en uno concreto,
@@ -507,6 +527,10 @@ const OrderConfigPage = () => {
         draftPayload.modpack_project_id = selectedModpack.project_id;
         draftPayload.modpack_name = selectedModpack.name;
       }
+      // Custom manifest (modpack privado pegado por el user en Personalizado)
+      if (templateId === 'custom' && customManifestParsed?.manifest && customManifestParsed.count > 0) {
+        draftPayload.custom_manifest = customManifestParsed.manifest;
+      }
 
       let { data: draft, error: insErr } = await supabase
         .from('mc_servers')
@@ -515,7 +539,7 @@ const OrderConfigPage = () => {
         .single();
 
       // Fallback si alguna columna opcional aún no existe en producción
-      if (insErr && /column.*(template|modpack).*does not exist/i.test(insErr.message || '')) {
+      if (insErr && /column.*(template|modpack|custom_manifest).*does not exist/i.test(insErr.message || '')) {
         console.warn('[OrderConfig] optional column missing, retry without modpack/template fields');
         const retry = await supabase
           .from('mc_servers')
@@ -1081,6 +1105,50 @@ const OrderConfigPage = () => {
                       {versions.length} versiones · datos en vivo desde la fuente oficial
                     </div>
                   </div>
+                )}
+              </div>
+            </Section>
+            )}
+
+            {/* Custom manifest paste — solo en Personalizado + software mod-loader */}
+            {isCustomTpl && ['forge','fabric','neoforge'].includes(software) && (
+            <Section number="06b" title="¿Tienes un modpack privado de CurseForge?">
+              <p className="text-[#8B8B8B] text-sm mb-4 -mt-2">
+                Si tu modpack es privado o custom (no listado en CurseForge), pega el contenido de tu <span className="text-white font-mono">minecraftinstance.json</span> o <span className="text-white font-mono">manifest.json</span>. Lo extraigo y descargo todos los mods automático tras pagar.
+              </p>
+              <details className="mb-3">
+                <summary className="cursor-pointer text-[#22C55E] text-xs font-bold hover:underline">¿Cómo lo obtengo?</summary>
+                <div className="mt-2 p-3 rounded-lg bg-[#0A0A0A] border border-white/5 text-xs text-[#B3B3B3] leading-relaxed space-y-1.5">
+                  <p><span className="text-[#22C55E] font-bold">Opción A (rápida):</span> abre tu CF launcher → click derecho en el modpack → <strong>Open Folder</strong> → busca <span className="font-mono text-white">minecraftinstance.json</span> → ábrelo con bloc de notas → copia todo y pégalo abajo.</p>
+                  <p><span className="text-[#22C55E] font-bold">Opción B:</span> CF launcher → click derecho → <strong>Export</strong> → abre el zip → dentro hay <span className="font-mono text-white">manifest.json</span> → copia y pega.</p>
+                  <p className="text-[#6B6B6B]">Cualquiera de los dos formatos funciona. El manifest contiene la lista de mods con sus IDs de CurseForge — los descargo todos uno a uno desde la API pública.</p>
+                </div>
+              </details>
+              <textarea
+                value={customManifestText}
+                onChange={e => setCustomManifestText(e.target.value)}
+                placeholder='Pega aquí el contenido completo del archivo (empieza por { "files": [...] } o { "installedAddons": [...] })'
+                rows={6}
+                className={`w-full bg-[#0F0F0F] border-2 rounded-xl px-4 py-3 text-white placeholder-[#4B4B4B] focus:outline-none transition-colors text-xs font-mono ${
+                  customManifestParsed?.error ? 'border-amber-500/50 focus:border-amber-400' :
+                  customManifestParsed?.count > 0 ? 'border-[#22C55E]/40 focus:border-[#22C55E]' :
+                  'border-[#1F1F1F] focus:border-[#22C55E]/40'
+                }`}
+              />
+              {/* Feedback */}
+              <div className="mt-2 min-h-[20px]">
+                {customManifestText.length === 0 && (
+                  <p className="text-xs text-[#6B6B6B]">Opcional. Si lo dejas vacío, el server arranca sin mods y los puedes instalar después con el chat IA.</p>
+                )}
+                {customManifestParsed?.error && (
+                  <p className="text-xs text-amber-400 flex items-center gap-1.5">
+                    <AlertTriangle size={11} /> {customManifestParsed.error}
+                  </p>
+                )}
+                {customManifestParsed?.count > 0 && (
+                  <p className="text-xs text-[#22C55E] flex items-center gap-1.5 font-bold">
+                    <Check size={11} strokeWidth={3} /> Detectados {customManifestParsed.count} mods · se instalarán automático tras pagar (~3-5 min)
+                  </p>
                 )}
               </div>
             </Section>
