@@ -1125,56 +1125,34 @@ const OrderConfigPage = () => {
               )}
             </Section>
 
-            {/* Términos y condiciones — obligatorio para pagar */}
-            <Section number="09" title="Términos y condiciones">
+            {/* Mobile-only T&C + checkout button (en desktop ambos viven en el sticky cart) */}
+            <div className="lg:hidden mt-6 mb-3">
               <label
-                htmlFor="terms-checkbox"
-                className={`flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                htmlFor="terms-checkbox-mobile"
+                className={`flex items-start gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${
                   termsAccepted
-                    ? 'border-[#22C55E]/40 bg-[#22C55E]/[0.06] shadow-[0_0_18px_rgba(34,197,94,0.10)]'
-                    : 'border-[#1F1F1F] bg-[#0F0F0F] hover:border-[#2A2A2A]'
+                    ? 'border-[#22C55E]/40 bg-[#22C55E]/[0.06]'
+                    : 'border-[#1F1F1F] bg-[#0F0F0F]'
                 }`}
               >
                 <input
-                  id="terms-checkbox"
+                  id="terms-checkbox-mobile"
                   type="checkbox"
                   checked={termsAccepted}
                   onChange={e => setTermsAccepted(e.target.checked)}
                   className="sr-only"
                 />
                 <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 mt-0.5 transition-all ${
-                  termsAccepted
-                    ? 'border-[#22C55E] bg-[#22C55E]'
-                    : 'border-[#3A3A3A] bg-[#0A0A0A]'
+                  termsAccepted ? 'border-[#22C55E] bg-[#22C55E]' : 'border-[#3A3A3A] bg-[#0A0A0A]'
                 }`}>
                   {termsAccepted && <Check size={13} strokeWidth={3} className="text-[#0A0A0A]" />}
                 </div>
-                <div className="flex-1 text-sm leading-relaxed">
-                  <p className="text-white font-bold mb-1 flex items-center gap-1.5">
-                    <FileText size={13} className="text-[#22C55E]" />
-                    Acepto los términos del servicio
-                  </p>
-                  <p className="text-[#8B8B8B] text-xs">
-                    He leído y acepto los{' '}
-                    <a
-                      href="/#terms"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={e => e.stopPropagation()}
-                      className="text-[#22C55E] underline hover:text-[#1eb754]"
-                    >Términos de Servicio</a>{' '}y la{' '}
-                    <a
-                      href="/#privacy"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={e => e.stopPropagation()}
-                      className="text-[#22C55E] underline hover:text-[#1eb754]"
-                    >Política de Privacidad</a>
-                    {' '}de MineLab. Confirmo que tengo al menos 16 años o cuento con permiso de mi tutor legal.
-                  </p>
-                </div>
+                <p className="text-xs text-[#B3B3B3] leading-snug">
+                  Acepto los <a href="/#terms" target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="text-[#22C55E] underline">Términos</a> y la{' '}
+                  <a href="/#privacy" target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="text-[#22C55E] underline">Política de Privacidad</a>. Tengo al menos 16 años.
+                </p>
               </label>
-            </Section>
+            </div>
 
             {/* Mobile-only checkout button */}
             <button
@@ -1316,8 +1294,37 @@ const OrderConfigPage = () => {
                 </p>
               </div>
 
-              {/* CTA (desktop) */}
+              {/* CTA (desktop) — T&C inline justo encima del botón */}
               <div className="px-5 py-5 hidden lg:block">
+                {/* T&C compacto sobre el CTA */}
+                <label
+                  htmlFor="terms-checkbox"
+                  className={`flex items-start gap-2.5 p-3 rounded-xl border-2 cursor-pointer transition-all mb-3 ${
+                    termsAccepted
+                      ? 'border-[#22C55E]/40 bg-[#22C55E]/[0.06]'
+                      : 'border-[#1F1F1F] bg-[#0A0A0A] hover:border-[#2A2A2A]'
+                  }`}
+                >
+                  <input
+                    id="terms-checkbox"
+                    type="checkbox"
+                    checked={termsAccepted}
+                    onChange={e => setTermsAccepted(e.target.checked)}
+                    className="sr-only"
+                  />
+                  <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 mt-0.5 transition-all ${
+                    termsAccepted ? 'border-[#22C55E] bg-[#22C55E]' : 'border-[#3A3A3A] bg-[#0F0F0F]'
+                  }`}>
+                    {termsAccepted && <Check size={13} strokeWidth={3} className="text-[#0A0A0A]" />}
+                  </div>
+                  <p className="text-[11px] text-[#B3B3B3] leading-snug">
+                    Acepto los{' '}
+                    <a href="/#terms" target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="text-[#22C55E] underline hover:text-[#1eb754]">Términos</a>{' '}y la{' '}
+                    <a href="/#privacy" target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="text-[#22C55E] underline hover:text-[#1eb754]">Privacidad</a>.{' '}
+                    Tengo al menos 16 años.
+                  </p>
+                </label>
+
                 <button
                   onClick={handleCheckout}
                   disabled={!canCheckout}
@@ -1344,7 +1351,7 @@ const OrderConfigPage = () => {
 
                 {nameValid && version && !termsAccepted && (
                   <p className="text-[10px] text-[#EAB308] text-center mt-3 flex items-center justify-center gap-1">
-                    <AlertTriangle size={10} /> Acepta los términos abajo para continuar
+                    <AlertTriangle size={10} /> Marca la casilla arriba para continuar
                   </p>
                 )}
               </div>
