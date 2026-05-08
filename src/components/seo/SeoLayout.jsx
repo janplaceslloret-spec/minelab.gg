@@ -39,7 +39,10 @@ export default function SeoLayout({ children }) {
     } else {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo: window.location.origin + '/panel' },
+        options: {
+          redirectTo: window.location.origin + '/panel',
+          queryParams: { prompt: 'select_account' },
+        },
       });
       if (error) {
         console.error('Supabase OAuth Error:', error.message);

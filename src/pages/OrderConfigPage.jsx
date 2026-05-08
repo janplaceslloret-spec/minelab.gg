@@ -469,7 +469,10 @@ const OrderConfigPage = () => {
         localStorage.setItem('minelab-pending-order', '1');
         const { error } = await supabase.auth.signInWithOAuth({
           provider: 'google',
-          options: { redirectTo: window.location.origin + '/configurar?continue=1' }
+          options: {
+            redirectTo: window.location.origin + '/configurar?continue=1',
+            queryParams: { prompt: 'select_account' },
+          }
         });
         if (error) {
           alert('No se pudo iniciar sesión: ' + error.message);
@@ -1396,7 +1399,10 @@ const OrderConfigPage = () => {
                     onClick={() => {
                       supabase.auth.signInWithOAuth({
                         provider: 'google',
-                        options: { redirectTo: window.location.origin + '/panel' }
+                        options: {
+                          redirectTo: window.location.origin + '/panel',
+                          queryParams: { prompt: 'select_account' },
+                        }
                       });
                     }}
                     className="text-[#22C55E] font-bold hover:underline"

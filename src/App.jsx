@@ -187,7 +187,8 @@ function App() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin + '/panel'
+          redirectTo: window.location.origin + '/panel',
+          queryParams: { prompt: 'select_account' },
         }
       });
       if (error) {

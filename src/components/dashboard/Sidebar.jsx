@@ -271,10 +271,15 @@ const Sidebar = ({ viewState = 'dashboard', planStatus = 'none', onCreateServer,
               </span>
             </div>
           </div>
-          <button 
+          <button
             onClick={async () => {
               localStorage.removeItem('minelab-forced-token');
-              await supabase.auth.signOut();
+              localStorage.removeItem('minelab-pending-order');
+              localStorage.removeItem('minelab-order-draft');
+              // signOut con scope:'global' invalida sesión también en server side
+              await supabase.auth.signOut({ scope: 'global' });
+              // Limpia cualquier sb-* sobrante (cubre clock-skew leftovers)
+              Object.keys(localStorage).filter(k => k.startsWith('sb-')).forEach(k => localStorage.removeItem(k));
               navigate('/');
             }}
             className="w-full text-xs text-center py-2 rounded-lg bg-[#2A2A2A] hover:bg-red-500/20 hover:text-red-400 text-[#B3B3B3] transition-colors"
