@@ -1236,23 +1236,37 @@ const OrderConfigPage = () => {
                 </div>
               )}
 
-              {/* Selected config */}
+              {/* Selected config — campos faltantes en amarillo, click lleva al campo */}
               <div className="px-5 py-4 border-b border-white/5 bg-[#0A0A0A]/40">
                 <p className="text-[10px] uppercase font-black text-[#6B6B6B] tracking-wider mb-3">Tu configuración</p>
                 <div className="space-y-2 text-xs">
-                  <div className="flex justify-between">
+                  <div className="flex justify-between items-center">
                     <span className="text-[#8B8B8B]">Nombre</span>
-                    <span className={`font-bold ${cleanName ? 'text-white' : 'text-[#4B4B4B] italic'}`}>
-                      {cleanName || 'Sin definir'}
-                    </span>
+                    {cleanName ? (
+                      <span className="text-white font-bold truncate max-w-[180px]" title={cleanName}>{cleanName}</span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => document.querySelector('input[placeholder=\"Mi server épico\"]')?.scrollIntoView({behavior:'smooth', block:'center'}) || document.querySelector('input[placeholder=\"Mi server épico\"]')?.focus()}
+                        className="text-[#EAB308] font-bold flex items-center gap-1 hover:text-[#fbbf24] transition-colors"
+                      >
+                        <AlertTriangle size={11} /> Pon un nombre
+                      </button>
+                    )}
                   </div>
                   <div className="flex justify-between">
                     <span className="text-[#8B8B8B]">Software</span>
                     <span className="text-white font-bold uppercase">{software}</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between items-center">
                     <span className="text-[#8B8B8B]">Versión</span>
-                    <span className="text-white font-bold font-mono">{version || '—'}</span>
+                    {version ? (
+                      <span className="text-white font-bold font-mono">{version}</span>
+                    ) : (
+                      <span className="text-[#EAB308] font-bold flex items-center gap-1">
+                        <AlertTriangle size={11} /> Cargando…
+                      </span>
+                    )}
                   </div>
                   <div className="flex justify-between">
                     <span className="text-[#8B8B8B]">Ubicación</span>
@@ -1296,6 +1310,35 @@ const OrderConfigPage = () => {
 
               {/* CTA (desktop) — T&C inline justo encima del botón */}
               <div className="px-5 py-5 hidden lg:block">
+                {/* Checklist de qué falta para activar el CTA */}
+                {(!nameValid || !version || !termsAccepted) && (
+                  <div className="mb-3 p-3 rounded-xl border-2 border-[#EAB308]/30 bg-[#EAB308]/[0.05]">
+                    <p className="text-[10px] uppercase font-black text-[#EAB308] tracking-wider mb-2 flex items-center gap-1.5">
+                      <AlertTriangle size={11} /> Para continuar te falta:
+                    </p>
+                    <ul className="space-y-1 text-xs">
+                      {!nameValid && (
+                        <li className="flex items-center gap-2 text-[#FCD34D]">
+                          <span className="w-1 h-1 rounded-full bg-[#EAB308]" />
+                          {cleanName.length === 0 ? 'Poner un nombre al servidor' : 'Nombre debe tener 3-40 caracteres'}
+                        </li>
+                      )}
+                      {!version && (
+                        <li className="flex items-center gap-2 text-[#FCD34D]">
+                          <span className="w-1 h-1 rounded-full bg-[#EAB308]" />
+                          Elegir versión de Minecraft
+                        </li>
+                      )}
+                      {!termsAccepted && (
+                        <li className="flex items-center gap-2 text-[#FCD34D]">
+                          <span className="w-1 h-1 rounded-full bg-[#EAB308]" />
+                          Aceptar los términos abajo
+                        </li>
+                      )}
+                    </ul>
+                  </div>
+                )}
+
                 {/* T&C compacto sobre el CTA */}
                 <label
                   htmlFor="terms-checkbox"
@@ -1343,17 +1386,6 @@ const OrderConfigPage = () => {
                   </p>
                 )}
 
-                {!nameValid && cleanName.length > 0 && (
-                  <p className="text-[10px] text-[#EAB308] text-center mt-3 flex items-center justify-center gap-1">
-                    <AlertTriangle size={10} /> Nombre debe tener 3-40 caracteres
-                  </p>
-                )}
-
-                {nameValid && version && !termsAccepted && (
-                  <p className="text-[10px] text-[#EAB308] text-center mt-3 flex items-center justify-center gap-1">
-                    <AlertTriangle size={10} /> Marca la casilla arriba para continuar
-                  </p>
-                )}
               </div>
 
               {/* Existing client login */}
