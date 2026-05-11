@@ -156,7 +156,7 @@ const Navbar = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
             <a href="/#features" onClick={goToAnchor('features')} className="text-white/80 hover:text-white font-medium transition-colors py-2 uppercase tracking-wide text-sm">Características</a>
             <a href="/#how-it-works" onClick={goToAnchor('how-it-works')} className="text-white/80 hover:text-white font-medium transition-colors py-2 uppercase tracking-wide text-sm">Cómo Funciona</a>
             <a href="/#pricing" onClick={goToAnchor('pricing')} className="text-white/80 hover:text-white font-medium transition-colors py-2 uppercase tracking-wide text-sm">Planes</a>
-            <a href="/#about" onClick={goToAnchor('about')} className="text-white/80 hover:text-white font-medium transition-colors py-2 uppercase tracking-wide text-sm">Nosotros</a>
+            <Link to="/sobre-nosotros" className="text-white/80 hover:text-white font-medium transition-colors py-2 uppercase tracking-wide text-sm">Nosotros</Link>
           </div>
 
           {/* Right Actions desktop */}
@@ -250,7 +250,7 @@ const Navbar = ({ isLoggedIn, onLoginDemo, onOpenDashboard }) => {
             <p className="text-[10px] uppercase font-black text-white/30 tracking-[0.2em] mb-2 mt-6 px-2">Navegación</p>
             <a href="/#features" onClick={goToAnchor('features')} className="px-3 py-3 rounded-lg hover:bg-white/5 text-white/90 font-heading font-black uppercase tracking-tight text-sm transition-all">Características</a>
             <a href="/#how-it-works" onClick={goToAnchor('how-it-works')} className="px-3 py-3 rounded-lg hover:bg-white/5 text-white/90 font-heading font-black uppercase tracking-tight text-sm transition-all">Cómo Funciona</a>
-            <a href="/#about" onClick={goToAnchor('about')} className="px-3 py-3 rounded-lg hover:bg-white/5 text-white/90 font-heading font-black uppercase tracking-tight text-sm transition-all">Nosotros</a>
+            <Link to="/sobre-nosotros" onClick={() => setMobileMenuOpen(false)} className="px-3 py-3 rounded-lg hover:bg-white/5 text-white/90 font-heading font-black uppercase tracking-tight text-sm transition-all">Sobre nosotros</Link>
           </div>
 
           {/* CTAs sticky bottom */}
