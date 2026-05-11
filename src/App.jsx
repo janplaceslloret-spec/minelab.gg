@@ -9,6 +9,10 @@ const MigrarAternos = lazy(() => import('./pages/MigrarAternos'));
 const OrderConfigPage = lazy(() => import('./pages/OrderConfigPage'));
 const StatusPage = lazy(() => import('./pages/StatusPage'));
 const ChangelogPage = lazy(() => import('./pages/ChangelogPage'));
+const SobreNosotros = lazy(() => import('./pages/SobreNosotros'));
+const Terminos = lazy(() => import('./pages/legal/Terminos'));
+const Privacidad = lazy(() => import('./pages/legal/Privacidad'));
+const Reembolsos = lazy(() => import('./pages/legal/Reembolsos'));
 
 function SeoFallback() {
   return (
@@ -209,6 +213,10 @@ function App() {
         <Route path="/configurar" element={<Suspense fallback={<SeoFallback />}><OrderConfigPage /></Suspense>} />
         <Route path="/status" element={<Suspense fallback={<SeoFallback />}><StatusPage /></Suspense>} />
         <Route path="/changelog" element={<Suspense fallback={<SeoFallback />}><ChangelogPage /></Suspense>} />
+        <Route path="/sobre-nosotros" element={<Suspense fallback={<SeoFallback />}><SobreNosotros /></Suspense>} />
+        <Route path="/terminos" element={<Suspense fallback={<SeoFallback />}><Terminos /></Suspense>} />
+        <Route path="/privacidad" element={<Suspense fallback={<SeoFallback />}><Privacidad /></Suspense>} />
+        <Route path="/reembolsos" element={<Suspense fallback={<SeoFallback />}><Reembolsos /></Suspense>} />
       </Routes>
       <CookieBanner />
     </>

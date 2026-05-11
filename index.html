@@ -40,7 +40,7 @@
     <meta name="twitter:description" content="Servidor Minecraft con IA en 30 segundos. Mods y plugins instalables por chat. Desde 7,99 €/mes." />
     <meta name="twitter:image" content="https://minelab.gg/og-image.png" />
 
-    <!-- JSON-LD Organization + WebSite + Product -->
+    <!-- JSON-LD Organization + WebSite + Product + Founder -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -49,9 +49,35 @@
           "@type": "Organization",
           "@id": "https://minelab.gg/#org",
           "name": "MineLab",
+          "legalName": "MineLab Hosting",
+          "alternateName": "MineLab.gg",
           "url": "https://minelab.gg",
           "logo": "https://minelab.gg/logo.png",
-          "sameAs": ["https://discord.gg/wUJZkQxAQk", "https://www.tiktok.com/@minelab.gg"]
+          "description": "Proveedor español de hosting Minecraft con asistente IA integrado. Servidores Java en datacenter alemán, planes desde 7,99 €/mes, sin permanencia. Alternativa profesional a Aternos, Apex Hosting, Shockbyte y BisectHosting para creadores hispanohablantes.",
+          "foundingDate": "2025",
+          "founder": {
+            "@type": "Person",
+            "name": "Jan Places Lloret",
+            "jobTitle": "Fundador y CEO",
+            "nationality": "ES"
+          },
+          "address": {
+            "@type": "PostalAddress",
+            "addressCountry": "ES",
+            "addressRegion": "Comunidad Valenciana"
+          },
+          "contactPoint": [{
+            "@type": "ContactPoint",
+            "contactType": "customer support",
+            "email": "janplaces@minelab.gg",
+            "areaServed": ["ES", "MX", "AR", "CO", "CL", "PE"],
+            "availableLanguage": ["Spanish", "English"]
+          }],
+          "sameAs": [
+            "https://discord.gg/wUJZkQxAQk",
+            "https://www.tiktok.com/@minelab.gg",
+            "https://github.com/janplaceslloret-spec"
+          ]
         },
         {
           "@type": "WebSite",
@@ -68,21 +94,18 @@
         },
         {
           "@type": "Product",
+          "@id": "https://minelab.gg/#product",
           "name": "Hosting Minecraft MineLab",
-          "description": "Hosting Minecraft con asistente IA, mods y plugins instalables por chat, sin cortes 24/7.",
+          "description": "Hosting Minecraft Java con asistente IA integrado. Instala mods y plugins por chat, diagnostica crashes automáticamente, migra versiones sin tocar archivos. Datacenter alemán, ~30 ms desde España.",
           "brand": { "@id": "https://minelab.gg/#org" },
+          "category": "Game Server Hosting",
           "offers": {
             "@type": "AggregateOffer",
             "priceCurrency": "EUR",
             "lowPrice": "7.99",
             "highPrice": "24.99",
             "offerCount": "5",
-            "url": "https://minelab.gg/#planes"
-          },
-          "aggregateRating": {
-            "@type": "AggregateRating",
-            "ratingValue": "4.9",
-            "reviewCount": "127"
+            "url": "https://minelab.gg/#pricing"
           }
         }
       ]
