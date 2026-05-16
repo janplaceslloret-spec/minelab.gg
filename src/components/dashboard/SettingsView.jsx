@@ -277,20 +277,34 @@ const SettingsView = ({ planStatus, user, server, onServerUpdate, memberRole = '
               </div>
             )}
 
-            {/* Si tiene suscripción Stripe real → portal Stripe.
+            {/* Si tiene suscripción Stripe real → portal Stripe dinámico (session per click).
                 Si no (Founder Members + asignados manualmente) → contacto soporte */}
             {server?.stripe_subscription_id ? (
               <>
-                <a
-                  href="https://billing.stripe.com/p/login/eVadRua7ygSU6kU288"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  onClick={async () => {
+                    try {
+                      const res = await fetch('https://api.fluxoai.co/api/billing/portal-session', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ server_id: server.id, return_url: window.location.href }),
+                      });
+                      const j = await res.json();
+                      if (j.ok && j.url) {
+                        window.location.href = j.url;
+                      } else {
+                        alert('No se pudo abrir el portal de facturación. Escríbele a janplaces@minelab.gg y lo solucionamos en minutos.');
+                      }
+                    } catch (e) {
+                      alert('Error de conexión. Escríbele a janplaces@minelab.gg.');
+                    }
+                  }}
                   className="mt-2 w-full bg-[#22C55E] hover:bg-[#1eb754] text-[#0A0A0A] py-2.5 rounded-lg text-sm font-black uppercase tracking-wider transition-colors text-center inline-flex items-center justify-center gap-2 shadow-[0_4px_12px_rgba(34,197,94,0.25)]"
                 >
                   Gestionar facturación →
-                </a>
+                </button>
                 <p className="text-[#6B6B6B] text-[10px] mt-2 text-center">
-                  Cancela, cambia tarjeta o descarga facturas. Te enviaremos un link a {user?.email || 'tu email'}.
+                  Cancela, cambia tarjeta o descarga facturas. Te abriremos directamente tu portal de Stripe.
                 </p>
               </>
             ) : planStatus !== 'none' ? (
